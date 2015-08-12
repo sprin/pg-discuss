@@ -207,18 +207,7 @@ class CsrfProtect(object):
         return view
 
     def _error_response(self, reason):
-        return abort(400, reason)
-
-    def error_handler(self, view):
-        """A decorator that set the error response handler.
-        It accepts one parameter `reason`::
-            @csrf.error_handler
-            def csrf_error(reason):
-                return render_template('error.html', reason=reason)
-        By default, it will return a 400 response.
-        """
-        self._error_response = view
-        return view
+        return abort(403, reason)
 
 
 def same_origin(current_uri, compare_uri):
