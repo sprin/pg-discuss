@@ -9,7 +9,6 @@ import os
 import hmac
 import hashlib
 import time
-from flask import Blueprint
 from flask import current_app, session, request, abort
 from werkzeug.security import safe_str_cmp
 from ._compat import to_bytes, string_types
@@ -119,7 +118,6 @@ class CsrfProtect(object):
 
     def __init__(self, app=None):
         self._exempt_views = set()
-        self._exempt_blueprints = set()
 
         if app:
             self.init_app(app)
@@ -152,7 +150,7 @@ class CsrfProtect(object):
             if request.method not in app.config['CSRF_METHODS']:
                 return
 
-            if self._exempt_views or self._exempt_blueprints:
+            if self._exempt_views:
                 if not request.endpoint:
                     return
 
@@ -162,8 +160,6 @@ class CsrfProtect(object):
 
                 dest = '%s.%s' % (view.__module__, view.__name__)
                 if dest in self._exempt_views:
-                    return
-                if request.blueprint in self._exempt_blueprints:
                     return
 
             self.protect()
@@ -213,9 +209,6 @@ class CsrfProtect(object):
             def some_view():
                 return
         """
-        if isinstance(view, Blueprint):
-            self._exempt_blueprints.add(view.name)
-            return view
         if isinstance(view, string_types):
             view_location = view
         else:
