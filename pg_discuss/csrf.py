@@ -104,6 +104,7 @@ def validate_csrf(data, secret_key=None, time_limit=None):
 
     return safe_str_cmp(hmac_compare, hmac_csrf)
 
+
 class CsrfProtect(object):
     """Enable csrf protect for Flask.
     Register it with::
@@ -133,11 +134,6 @@ class CsrfProtect(object):
         app.config.setdefault('CSRF_CHECK_DEFAULT', True)
         app.config.setdefault('CSRF_EXEMPT_METHODS',
                               ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
-
-        # expose csrf_token as a helper in all templates
-        @app.context_processor
-        def csrf_token():
-            return dict(csrf_token=generate_csrf)
 
         if not app.config['CSRF_ENABLED']:
             return
