@@ -127,7 +127,7 @@ class CsrfProtect(object):
         self._app = app
         app.jinja_env.globals['csrf_token'] = generate_csrf
         app.config.setdefault(
-            'CSRF_HEADERS', ['X-CSRFToken', 'X-CSRF-Token']
+            'CSRF_HEADERS', ['X-CSRF-Token']
         )
         app.config.setdefault('CSRF_SSL_STRICT', True)
         app.config.setdefault('CSRF_ENABLED', True)
@@ -162,15 +162,8 @@ class CsrfProtect(object):
             self.protect()
 
     def _get_csrf_token(self):
-        # find the ``csrf_token`` field in the subitted form
-        # if the form had a prefix, the name will be
-        # ``{prefix}-csrf_token``
-        for key in request.form:
-            if key.endswith('csrf_token'):
-                csrf_token = request.form[key]
-                if csrf_token:
-                    return csrf_token
-
+        """Extract CSRF token from headers.
+        """
         for header_name in self._app.config['CSRF_HEADERS']:
             csrf_token = request.headers.get(header_name)
             if csrf_token:
