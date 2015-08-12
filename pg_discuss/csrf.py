@@ -131,7 +131,8 @@ class CsrfProtect(object):
         app.config.setdefault('CSRF_SSL_STRICT', True)
         app.config.setdefault('CSRF_ENABLED', True)
         app.config.setdefault('CSRF_CHECK_DEFAULT', True)
-        app.config.setdefault('CSRF_METHODS', ['POST', 'PUT', 'PATCH'])
+        app.config.setdefault('CSRF_EXEMPT_METHODS',
+                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
 
         # expose csrf_token as a helper in all templates
         @app.context_processor
@@ -147,7 +148,7 @@ class CsrfProtect(object):
         @app.before_request
         def _csrf_protect():
             # many things come from django.middleware.csrf
-            if request.method not in app.config['CSRF_METHODS']:
+            if request.method in app.config['CSRF_EXEMPT_METHODS']:
                 return
 
             if self._exempt_views:
@@ -181,7 +182,7 @@ class CsrfProtect(object):
         return None
 
     def protect(self):
-        if request.method not in self._app.config['CSRF_METHODS']:
+        if request.method in self._app.config['CSRF_EXEMPT_METHODS']:
             return
 
         if not validate_csrf(self._get_csrf_token()):
