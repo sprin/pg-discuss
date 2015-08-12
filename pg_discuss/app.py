@@ -14,7 +14,11 @@ from flask import (
     abort,
     request,
 )
+
+from pg_discuss import CsrfProtect
+
 app = Flask('pg-discuss')
+CsrfProtect(app)
 
 
 def xhr(f):
