@@ -11,10 +11,10 @@ import hashlib
 import time
 from flask import current_app, session, request, abort
 from werkzeug.security import safe_str_cmp
-from ._compat import to_bytes, string_types
+from ._compat import to_bytes
 try:
     from urlparse import urlparse
-except ImportError:
+except ImportError: # pragma: no cover
     # python 3
     from urllib.parse import urlparse
 
@@ -31,11 +31,12 @@ def generate_csrf(secret_key=None, time_limit=None):
     """
     if not secret_key:
         secret_key = current_app.config.get(
-            'CSRF_SECRET_KEY', current_app.secret_key
+            'SECRET_KEY', current_app.secret_key
         )
 
+    print secret_key
     if not secret_key:
-        raise Exception('Must provide secret_key to use csrf.')
+        raise ValueError('Must provide secret_key to use csrf.')
 
     if time_limit is None:
         time_limit = current_app.config.get('CSRF_TIME_LIMIT', 3600)
@@ -69,10 +70,7 @@ def validate_csrf(data, secret_key=None, time_limit=None):
     if not data or '##' not in data:
         return False
 
-    try:
-        expires, hmac_csrf = data.split('##', 1)
-    except ValueError:
-        return False  # unpack error
+    expires, hmac_csrf = data.split('##', 1)
 
     if time_limit is None:
         time_limit = current_app.config.get('CSRF_TIME_LIMIT', 3600)
@@ -196,10 +194,7 @@ class CsrfProtect(object):
             def some_view():
                 return
         """
-        if isinstance(view, string_types):
-            view_location = view
-        else:
-            view_location = '%s.%s' % (view.__module__, view.__name__)
+        view_location = '%s.%s' % (view.__module__, view.__name__)
         self._exempt_views.add(view_location)
         return view
 

@@ -5,7 +5,7 @@ From flask_wtf._compat:
 https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
 """
 import sys
-if sys.version_info[0] == 3:
+if sys.version_info[0] == 3: # pragma: no cover
     text_type = str
     string_types = (str,)
 else:
