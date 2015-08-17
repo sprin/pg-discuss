@@ -15,7 +15,7 @@ from flask import (
     request,
 )
 
-from pg_discuss import CsrfProtect
+from pg_discuss.csrf import CsrfProtect, generate_csrf
 
 app = Flask('pg-discuss')
 CsrfProtect(app)
@@ -27,6 +27,9 @@ def xhr(f):
     Note that this does not necessarily protect against CSRF if browsers
     implement "HTML JSON form submission":
     http://www.w3.org/TR/html-json-forms/
+
+    The CsrfProtect middleware (enabled by default) must be enabled for full
+    token-based CSRF protection.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -57,3 +60,7 @@ def edit():
 @app.route('/id/<int:id>', methods=['DELETE'])
 def delete():
     pass
+
+@app.route('/csrftoken', methods=['GET'])
+def csrftoken():
+    return generate_csrf()
