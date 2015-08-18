@@ -30,16 +30,12 @@ def generate_csrf(secret_key=None, time_limit=None):
                        default is 3600s.
     """
     if not secret_key:
-        secret_key = current_app.config.get(
-            'SECRET_KEY', current_app.secret_key
-        )
-
-    print secret_key
-    if not secret_key:
-        raise ValueError('Must provide secret_key to use csrf.')
+        secret_key = current_app.config['SECRET_KEY']
+        if not secret_key:
+            raise ValueError('Must provide secret_key to use csrf.')
 
     if time_limit is None:
-        time_limit = current_app.config.get('CSRF_TIME_LIMIT', 3600)
+        time_limit = current_app.config['CSRF_TIME_LIMIT']
 
     if 'csrf_token' not in session:
         session['csrf_token'] = hashlib.sha1(os.urandom(64)).hexdigest()
@@ -73,7 +69,7 @@ def validate_csrf(data, secret_key=None, time_limit=None):
     expires, hmac_csrf = data.split('##', 1)
 
     if time_limit is None:
-        time_limit = current_app.config.get('CSRF_TIME_LIMIT', 3600)
+        time_limit = current_app.config['CSRF_TIME_LIMIT']
 
     if time_limit:
         try:
@@ -86,9 +82,9 @@ def validate_csrf(data, secret_key=None, time_limit=None):
             return False
 
     if not secret_key:
-        secret_key = current_app.config.get(
-            'CSRF_SECRET_KEY', current_app.secret_key
-        )
+        secret_key = current_app.config['SECRET_KEY']
+        if not secret_key:
+            raise ValueError('Must provide secret_key to use csrf.')
 
     if 'csrf_token' not in session:
         return False
@@ -123,13 +119,6 @@ class CsrfProtect(object):
 
     def init_app(self, app):
         self._app = app
-        app.config.setdefault('CSRF_HEADERS', ['X-CSRF-Token'])
-        app.config.setdefault('CSRF_SSL_STRICT', True)
-        app.config.setdefault('CSRF_ENABLED', True)
-        app.config.setdefault('CSRF_CHECK_DEFAULT', True)
-        app.config.setdefault('CSRF_EXEMPT_METHODS',
-                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
-
         if not app.config['CSRF_ENABLED']:
             return
 
