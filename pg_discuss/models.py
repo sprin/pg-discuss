@@ -36,6 +36,7 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -51,6 +52,7 @@ class Comment(db.Model):
     tid = Column(Integer)
     parent = Column(Integer)
     active = Column(Boolean)
+    deleted = Column(Boolean, server_default=text('FALSE'))
     created = Column(DateTime)
     modified = Column(DateTime)
     text = Column(String)
