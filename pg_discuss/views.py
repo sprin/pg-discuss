@@ -14,9 +14,9 @@ from flask import (
     request,
 )
 
-from pg_discuss.csrf import generate_csrf
-from pg_discuss import queries
-from pg_discuss import forms
+from .csrf import generate_csrf
+from . import queries
+from . import forms
 
 def fetch(name):
     pass

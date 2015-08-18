@@ -6,7 +6,7 @@ from voluptuous import (
     Length,
     Invalid,
 )
-from pg_discuss.queries import validate_parent_exists
+from .queries import validate_parent_exists
 
 def validate_parent(parent):
     if not validate_parent_exists(parent):

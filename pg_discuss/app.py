@@ -4,13 +4,13 @@ from flask import Flask
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 
-from pg_discuss import config
-from pg_discuss.models import db
-from pg_discuss import views
-from pg_discuss.csrf_token import CsrfProtectWithToken
-from pg_discuss.csrf_header import CsrfProtectWithHeader
-from pg_discuss.json_mimetype import CheckJsonMimetype
-from pg_discuss.json import CustomJSONEncoder
+from  . import config
+from .models import db
+from  . import views
+from .csrf_token import CsrfProtectWithToken
+from .csrf_header import CsrfProtectWithHeader
+from .json_mimetype import CheckJsonMimetype
+from .json import CustomJSONEncoder
 
 def app_factory():
     app = Flask('pg-discuss')

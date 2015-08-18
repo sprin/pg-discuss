@@ -1,4 +1,4 @@
-from pg_discuss.app import app_factory
+from .app import app_factory
 
 app = app_factory()
 

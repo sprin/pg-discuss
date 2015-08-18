@@ -1,5 +1,5 @@
-from pg_discuss import tables
-from pg_discuss.models import db
+from . import tables
+from .models import db
 
 from sqlalchemy.sql import (
     select,

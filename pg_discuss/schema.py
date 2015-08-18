@@ -29,7 +29,7 @@ the core code. Some possible uses:
  - likes/dislikes
  - moderation status (pending, approved, deleted)
 """
-from pg_discuss.app import db
+from .app import db
 
 
 class Thread(db.Model):
