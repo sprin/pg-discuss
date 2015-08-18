@@ -8,6 +8,7 @@ from pg_discuss.config import Config
 from pg_discuss.models import db
 from pg_discuss import views
 from pg_discuss.csrf import CsrfProtect
+from pg_discuss.json import CustomJSONEncoder
 
 def app_factory():
     app = Flask('pg-discuss')
@@ -16,6 +17,8 @@ def app_factory():
     db.init_app(app)
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
+    app.json_encoder = CustomJSONEncoder
+
     app.manager.add_command('db', MigrateCommand)
 
     app.route('/', methods=['GET'])(views.fetch)
