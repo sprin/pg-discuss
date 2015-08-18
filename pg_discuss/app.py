@@ -8,6 +8,7 @@ from pg_discuss import config
 from pg_discuss.models import db
 from pg_discuss import views
 from pg_discuss.csrf import CsrfProtect
+from pg_discuss.xhr import XhrCheck
 from pg_discuss.json import CustomJSONEncoder
 
 def app_factory():
@@ -18,7 +19,8 @@ def app_factory():
     # Load custom config from user-defined PG_DISCUSS_SETTINGS_FILE
     app.config.from_pyfile(os.environ['PG_DISCUSS_SETTINGS_FILE'])
 
-    CsrfProtect(app)
+    app.csrf = CsrfProtect(app)
+    app.xhr = XhrCheck(app)
     db.init_app(app)
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
