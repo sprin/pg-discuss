@@ -48,12 +48,12 @@ class Thread(db.Model):
 
 
 class Comment(db.Model):
-    id = Column(Integer, primary_key=True)
-    tid = Column(Integer)
+    id = Column(Integer, primary_key=True, nullable=False)
+    tid = Column(Integer, nullable=False)
     parent = Column(Integer)
-    active = Column(Boolean)
-    deleted = Column(Boolean, server_default=text('FALSE'))
-    created = Column(DateTime)
-    modified = Column(DateTime)
-    text = Column(String)
+    active = Column(Boolean, server_default='TRUE', nullable=False)
+    deleted = Column(Boolean, server_default=text('FALSE'), nullable=False)
+    created = Column(DateTime, server_default=text('NOW()'), nullable=False)
+    modified = Column(DateTime, server_default=text('NOW()'))
+    text = Column(String, nullable=False)
     custom_json = Column(JSONB)
