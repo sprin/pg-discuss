@@ -32,9 +32,9 @@ def app_factory():
 
     app.route('/', methods=['GET'])(views.fetch)
     app.route('/new', methods=['POST'])(views.new)
-    app.route('/id/<int:id>', methods=['GET'])(views.view)
-    app.route('/id/<int:id>', methods=['PUT'])(views.edit)
-    app.route('/id/<int:id>', methods=['DELETE'])(views.delete)
+    app.route('/id/<int:comment_id>', methods=['GET'])(views.view)
+    app.route('/id/<int:comment_id>', methods=['PUT'])(views.edit)
+    app.route('/id/<int:comment_id>', methods=['DELETE'])(views.delete)
     app.route('/csrftoken', methods=['GET'])(views.csrftoken)
 
     return app

@@ -18,7 +18,7 @@ from pg_discuss.csrf import generate_csrf
 from pg_discuss import queries
 from pg_discuss import forms
 
-def fetch():
+def fetch(name):
     pass
 
 def new():
@@ -37,13 +37,25 @@ def new():
     result = queries.insert_comment(new_comment)
     return jsonify(result)
 
-def view():
-    pass
+def view(comment_id):
+    # Fetch the comment
+    result = queries.fetch_comment(comment_id)
+    return jsonify(result)
 
-def edit():
-    pass
+def edit(comment_id):
+    json = request.get_json()
+    allowed_keys = ['text']
+    comment_edit = {k: json[k] for k in allowed_keys if json.has_key(k)}
 
-def delete():
+    # Validate required, type, text length
+    # Use the id given in the URL path, ignoring any in the request JSON
+    comment_edit = forms.validate_comment_edit(comment_edit)
+
+    # Update the comment
+    result = queries.update_comment(comment_id, comment_edit)
+    return jsonify(result)
+
+def delete(comment_id):
     pass
 
 def csrftoken():
