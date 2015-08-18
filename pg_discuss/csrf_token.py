@@ -35,7 +35,7 @@ def generate_csrf(secret_key=None, time_limit=None):
             raise ValueError('Must provide secret_key to use csrf.')
 
     if time_limit is None:
-        time_limit = current_app.config['CSRF_TIME_LIMIT']
+        time_limit = current_app.config['CSRF_TOKEN_TIME_LIMIT']
 
     if 'csrf_token' not in session:
         session['csrf_token'] = hashlib.sha1(os.urandom(64)).hexdigest()
@@ -69,7 +69,7 @@ def validate_csrf(data, secret_key=None, time_limit=None):
     expires, hmac_csrf = data.split('##', 1)
 
     if time_limit is None:
-        time_limit = current_app.config['CSRF_TIME_LIMIT']
+        time_limit = current_app.config['CSRF_TOKEN_TIME_LIMIT']
 
     if time_limit:
         try:
@@ -99,11 +99,11 @@ def validate_csrf(data, secret_key=None, time_limit=None):
     return safe_str_cmp(hmac_compare, hmac_csrf)
 
 
-class CsrfProtect(object):
+class CsrfProtectWithToken(object):
     """Enable csrf protect for Flask.
     Register it with::
         app = Flask(__name__)
-        CsrfProtect(app)
+        CsrfProtectWithToken(app)
     And in the templates, add the token input::
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     If you need to send the token via AJAX, and there is no form::
@@ -119,16 +119,16 @@ class CsrfProtect(object):
 
     def init_app(self, app):
         self._app = app
-        if not app.config['CSRF_ENABLED']:
+        if not app.config['CSRF_TOKEN_ENABLED']:
             return
 
-        if not app.config['CSRF_CHECK_DEFAULT']:
+        if not app.config['CSRF_TOKEN_CHECK_DEFAULT']:
             return
 
         @app.before_request
         def _csrf_protect():
             # many things come from django.middleware.csrf
-            if request.method in app.config['CSRF_EXEMPT_METHODS']:
+            if request.method in app.config['CSRF_TOKEN_EXEMPT_METHODS']:
                 return
 
             if self._exempt_views:
@@ -148,14 +148,14 @@ class CsrfProtect(object):
     def _get_csrf_token(self):
         """Extract CSRF token from headers.
         """
-        for header_name in self._app.config['CSRF_HEADERS']:
+        for header_name in self._app.config['CSRF_TOKEN_HEADERS']:
             csrf_token = request.headers.get(header_name)
             if csrf_token:
                 return csrf_token
         return None
 
     def protect(self):
-        if request.method in self._app.config['CSRF_EXEMPT_METHODS']:
+        if request.method in self._app.config['CSRF_TOKEN_EXEMPT_METHODS']:
             return
 
         if not validate_csrf(self._get_csrf_token()):
@@ -172,7 +172,7 @@ class CsrfProtect(object):
                 reason = 'Referrer checking failed - origin does not match.'
                 return self._error_response(reason)
 
-        request.csrf_valid = True  # mark this request is csrf valid
+        request.csrf_token_valid = True  # mark this request is csrf valid
 
     def exempt(self, view):
         """A decorator that can exclude a view from csrf protection.

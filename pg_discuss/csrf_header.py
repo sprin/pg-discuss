@@ -3,21 +3,25 @@ from flask import (
     request,
 )
 
-class XhrCheck(object):
-    """Middleware to verify the request is an XHR request and that Content-Type
-    header is set to 'application/json'. This assumes that all, or most,
-    data-modifying views are intended to handle XHR requests.
+class CsrfProtectWithHeader(object):
+    """Middleware to verify the request is an XHR request.
+    This assumes that all, or most, data-modifying views are intended to handle
+    XHR requests.
 
     Register it with::
         app = Flask(__name__)
-        XhrCheck(app)
+        CsrfProtectWithHeader(app)
 
-    Note that Content-Type checking does not necessarily protect against CSRF if
-    browsers implement "HTML JSON form submission":
+    Note that Content-Type checking alone does not necessarily protect against
+    CSRF if browsers implement "HTML JSON form submission":
     http://www.w3.org/TR/html-json-forms/
 
-    The CsrfProtect middleware (enabled by default) must be enabled for full
-    token-based CSRF protection.
+    However, when the X-Requested-With header is checked, this is considered to
+    be adequate protection by some:
+    http://security.stackexchange.com/q/23371
+
+    The CsrfProtectWithToken middleware (enabled by default) must be enabled for
+    full token-based CSRF protection.
     """
 
     def __init__(self, app=None):
@@ -28,16 +32,16 @@ class XhrCheck(object):
 
     def init_app(self, app):
         self._app = app
-        if not app.config['XHR_CHECK_ENABLED']:
+        if not app.config['CSRF_HEADER_ENABLED']:
             return
 
-        if not app.config['XHR_CHECK_DEFAULT']:
+        if not app.config['CSRF_HEADER_CHECK_DEFAULT']:
             return
 
         @app.before_request
         def _csrf_protect():
             # many things come from django.middleware.csrf
-            if request.method in app.config['XHR_CHECK_EXEMPT_METHODS']:
+            if request.method in app.config['CSRF_HEADER_EXEMPT_METHODS']:
                 return
 
             if self._exempt_views:
@@ -52,29 +56,23 @@ class XhrCheck(object):
                 if dest in self._exempt_views:
                     return
 
-            self.check()
+            self.protect()
 
-    def check(self):
-        if self._app.config['XHR_CHECK_ENABLED']:
+    def protect(self):
+        if self._app.config['CSRF_HEADER_ENABLED']:
             if not request.is_xhr:
                 reason = (
                     'XHR checking failed - X-Requested-With not set '
                     'to XMLHttpRequest'
                 )
                 return self._error_response(reason)
-            if not request.content_type == 'application/json':
-                reason = (
-                    'XHR checking failed - Content-Type not set '
-                    'to application/json'
-                )
-                return self._error_response(reason)
-        request.xhr_valid = True
+        request.csrf_header_valid = True
 
     def exempt(self, view):
         """A decorator that can exclude a view from XHR checking.
         Remember to put the decorator above the `route`::
-            xhr = XhrCheck(app)
-            @xhr.exempt
+            csrf_header = CsrfProtectWithHeader(app)
+            @csrf_header.exempt
             @app.route('/some-view', methods=['POST'])
             def some_view():
                 return
