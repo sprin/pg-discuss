@@ -56,7 +56,18 @@ def edit(comment_id):
     return jsonify(result)
 
 def delete(comment_id):
-    pass
+    """Mark a comment as deleted. The comment will still show up in API reults,
+    but only containing real values for it's `id`, `tid`, `parent`. `text` will
+    be returned as "[deleted]".
+
+    Note that the actual database record is not deleted, and the text and other
+    metadata remain intact.
+    """
+    comment_edit = {'deleted': True}
+
+    # Mark the comment as deleted
+    result = queries.update_comment(comment_id, comment_edit)
+    return jsonify(result)
 
 def csrftoken():
     return generate_csrf()

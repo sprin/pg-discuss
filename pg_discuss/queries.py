@@ -13,11 +13,16 @@ def fetch_comment(comment_id):
     """Fetch a comment by id from the database."""
     t = tables.comment
     stmt = t.select().where(t.c.id == comment_id)
-    result = db.engine.execute(stmt)
-    comment = result.first()
-    if not comment:
+    result = db.engine.execute(stmt).first()
+    if not result:
         raise CommentNotFoundError('Comment {0} not found'.format(comment_id))
-    return dict(comment.items())
+    comment = dict(result.items())
+
+    # Set `text` to None if marked deleted.
+    if comment['deleted']:
+        comment['text'] = None
+
+    return comment
 
 def insert_comment(new_comment):
     """Insert the `new_comment` object in to the database."""
