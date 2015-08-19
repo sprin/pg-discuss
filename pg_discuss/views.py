@@ -33,6 +33,9 @@ def new():
     # Validate required, type, text length
     new_comment = forms.validate_new_comment(new_comment)
 
+    # TODO: Using dummy tid. Replace with real tid.
+    new_comment['tid'] = 1
+
     # Insert the comment
     result = queries.insert_comment(new_comment)
     return jsonify(result)
@@ -57,13 +60,17 @@ def edit(comment_id):
 
 def delete(comment_id):
     """Mark a comment as deleted. The comment will still show up in API reults,
-    but only containing real values for it's `id`, `tid`, `parent`. `text` will
-    be returned as "[deleted]".
+    but only containing values for it's `id`, `tid`, `parent`.
 
-    Note that the actual database record is not deleted, and the text and other
-    metadata remain intact.
+    Note that the actual database record is not deleted. Deletes are handled
+    in the same way that edits are: the record is updated in place, and an
+    archive is made of the old record. The `deleted` flag may be used to
+    indicate special rendering of deleted comments.
     """
-    comment_edit = {'deleted': True}
+    comment_edit = {
+        'deleted': True,
+        'text': '',
+    }
 
     # Mark the comment as deleted
     result = queries.update_comment(comment_id, comment_edit)
