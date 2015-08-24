@@ -13,7 +13,7 @@ def validate_parent(parent):
         raise Invalid('parent does not exist')
     return parent
 
-def comment_text_validator(
+def default_comment_text_validator_factory(
     min_comment_length=None,
     max_comment_length=None,
 ):
@@ -43,16 +43,3 @@ def validate_new_comment(
 
     return new_comment_schema(new_comment)
 
-def validate_comment_edit(
-    comment_edit,
-    min_comment_length=None,
-    max_comment_length=None,
-):
-    comment_edit_schema = Schema({
-            Required('text'): comment_text_validator(
-                min_comment_length,
-                max_comment_length,
-            )
-    })
-
-    return comment_edit_schema(comment_edit)
