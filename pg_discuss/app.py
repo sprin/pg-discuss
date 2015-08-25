@@ -16,6 +16,7 @@ from .csrf_token import CsrfProtectWithToken
 from .csrf_header import CsrfProtectWithHeader
 from .json_mimetype import CheckJsonMimetype
 from .json import CustomJSONEncoder
+from .management import ListRoutes
 
 def app_factory():
     app = Flask('pg-discuss')
@@ -24,15 +25,6 @@ def app_factory():
     app.config.from_object(config)
     # Load custom config from user-defined PG_DISCUSS_SETTINGS_FILE
     app.config.from_pyfile(os.environ['PG_DISCUSS_SETTINGS_FILE'])
-
-    # Set up logging
-    app.logger.setLevel(app.config['LOGLEVEL'])
-
-    # Log configuration parameters
-    app.logger.info('Configuration parameters:\n{}'.format(
-        '\n'.join([k + '=' + str(v) for k, v in
-                   sorted(app.config.items())
-                   if k not in config.DO_NOT_LOG_VARS])))
 
     app.comment_text_validator_factory = (
         forms.default_comment_text_validator_factory
@@ -46,13 +38,11 @@ def app_factory():
     app.json_encoder = CustomJSONEncoder
 
     ## Use stevedore to load extensions.
-    # Discover and log all extensions (but do not load any)
-    app.ext_mgr = extension.ExtensionManager(
+    # Discover all extensions, but do not load any.
+    # Used for logging found extensions.
+    app.ext_mgr_all = extension.ExtensionManager(
         namespace='pg_discuss.ext'
     )
-    app.logger.info('Found extensions:\n{}'.format(
-        '\n'.join([e.name for e in app.ext_mgr.extensions])))
-
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = named.NamedExtensionManager(
         namespace='pg_discuss.ext',
@@ -60,10 +50,9 @@ def app_factory():
         invoke_on_load=True,
         invoke_kwds={'app': app},
     )
-    app.logger.info('Enabled extensions:\n{}'.format(
-        '\n'.join([e.name for e in app.ext_mgr.extensions])))
 
     app.manager.add_command('db', MigrateCommand)
+    app.manager.add_command('list_routes', ListRoutes())
 
     # Default routes. Other routes must be added through App extensions.
     app.route('/', methods=['GET'])(views.fetch)

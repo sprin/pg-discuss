@@ -5,12 +5,15 @@ From flask_wtf._compat:
 https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
 """
 import sys
+import urllib
 if sys.version_info[0] == 3: # pragma: no cover
     text_type = str
     string_types = (str,)
+    unquote = urllib.parse.unquote
 else:
     text_type = unicode
     string_types = (str, unicode)
+    unquote = urllib.unquote
 
 
 def to_bytes(text):
