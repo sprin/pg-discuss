@@ -11,13 +11,10 @@ import hashlib
 import time
 from flask import current_app, session, request, abort
 from werkzeug.security import safe_str_cmp
-from ._compat import to_bytes
-try:
-    from urlparse import urlparse
-except ImportError: # pragma: no cover
-    # python 3
-    from urllib.parse import urlparse
-
+from ._compat import (
+    to_bytes,
+    urlparse,
+)
 
 __all__ = ('generate_csrf', 'validate_csrf', 'CsrfProtect')
 

@@ -6,6 +6,12 @@ https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
 """
 import sys
 import urllib
+try:
+    from urlparse import urlparse
+except ImportError: # pragma: no cover
+    # python 3
+    from urllib.parse import urlparse
+
 if sys.version_info[0] == 3: # pragma: no cover
     text_type = str
     string_types = (str,)
@@ -14,7 +20,6 @@ else:
     text_type = unicode
     string_types = (str, unicode)
     unquote = urllib.unquote
-
 
 def to_bytes(text):
     """Transform string to bytes."""
