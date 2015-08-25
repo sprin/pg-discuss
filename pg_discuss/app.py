@@ -13,7 +13,6 @@ from .models import db
 from  . import views
 from . import forms
 from .json import CustomJSONEncoder
-from .management import ListRoutes
 
 def app_factory():
     app = Flask('pg-discuss')
@@ -46,7 +45,6 @@ def app_factory():
     )
 
     app.manager.add_command('db', MigrateCommand)
-    app.manager.add_command('list_routes', ListRoutes())
 
     # Default routes. Other routes must be added through App extensions.
     app.route('/', methods=['GET'])(views.fetch)
