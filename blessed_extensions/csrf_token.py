@@ -15,7 +15,7 @@ from pg_discuss._compat import (
     to_bytes,
     urlparse,
 )
-from pg_discuss.extension_base import AppExtBase
+from pg_discuss.ext import AppExtBase
 
 __all__ = ('generate_csrf', 'validate_csrf', 'CsrfProtect')
 

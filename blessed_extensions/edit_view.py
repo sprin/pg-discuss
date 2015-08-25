@@ -8,7 +8,7 @@ from voluptuous import (
     Required,
 )
 
-from pg_discuss.extension_base import AppExtBase
+from pg_discuss.ext import AppExtBase
 from pg_discuss import queries
 
 class EditViewExt(AppExtBase):
@@ -25,7 +25,11 @@ def edit(comment_id):
     comment_edit = validate_comment_edit(comment_edit)
 
     # Update the comment
-    result = queries.update_comment(comment_id, comment_edit)
+    result = queries.update_comment(
+        comment_id,
+        comment_edit,
+        update_modified=True
+    )
     return jsonify(result)
 
 def validate_comment_edit(comment_edit):

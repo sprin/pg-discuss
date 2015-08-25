@@ -52,7 +52,6 @@ class Comment(db.Model):
     tid = Column(Integer, nullable=False)
     parent = Column(Integer)
     active = Column(Boolean, server_default='TRUE', nullable=False)
-    deleted = Column(Boolean, server_default=text('FALSE'), nullable=False)
     archived_from = Column(Integer)
     created = Column(DateTime, server_default=text('NOW()'), nullable=False)
     modified = Column(DateTime, server_default=text('NOW()'), nullable=False)

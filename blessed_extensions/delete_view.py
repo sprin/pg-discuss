@@ -2,7 +2,7 @@ from flask import (
     jsonify,
 )
 
-from pg_discuss.extension_base import AppExtBase
+from pg_discuss.ext import AppExtBase
 from pg_discuss import queries
 
 class DeleteViewExt(AppExtBase):
@@ -24,5 +24,9 @@ def delete(comment_id):
     }
 
     # Mark the comment as deleted
-    result = queries.update_comment(comment_id, comment_edit)
+    result = queries.update_comment(
+        comment_id,
+        comment_edit,
+        update_modified=True
+    )
     return jsonify(result)

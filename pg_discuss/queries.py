@@ -6,6 +6,7 @@ from sqlalchemy.sql import (
     exists,
     text,
 )
+from . import ext
 
 class CommentNotFoundError(Exception):
     pass
@@ -34,34 +35,36 @@ def insert_comment(new_comment):
     result = db.engine.execute(stmt)
     return dict(result.first().items())
 
-def update_comment(comment_id, comment_edit):
-    """Update the comment in to the database."""
+def update_comment(comment_id, comment_edit, update_modified=False):
+    """Update the comment in the database in response to a request
+    from the author. The `modified` timestamp will be set to the current time.
+
+    Update requests should be validated before being passed to this function.
+    """
     t = tables.comment
     # Fetch the "old" comment
     old_comment = fetch_comment(comment_id)
-    # Update the "old" comment in place, setting `modified` to `NOW()`
+    # Update the "old" comment in place.
     stmt = (
         t.update()
         .where(t.c.id == comment_id)
-        .values(modified=text('NOW()'), **comment_edit)
+        .values(**comment_edit)
         .returning(*list(t.c))
     )
-    # TODO: Pass stmt, new_comment, and req to extensions iterator
+
+    # Update the `modified` timestamp if specified.
+    if update_modified:
+        stmt = stmt.values(modified=text('NOW()'))
+
+    # TODO: Pass stmt, old_comment, comment_edit to extensions iterator
+
     result = db.engine.execute(stmt)
     comment = result.first()
     if not comment:
         raise CommentNotFoundError('Comment {0} not found'.format(comment_id))
 
-    # "Archive" the old comment by re-inserting it, with a new pk.
-    # Set `active` to False.
-    old_comment['archived_from'] = old_comment['id']
-    del old_comment['id']
-    old_comment['active'] = False
-    stmt = (
-        t.insert()
-        .values(**old_comment)
-    )
-    db.engine.execute(stmt)
+    # Run hooks
+    ext.map_do_on_update(old_comment, comment)
 
     return dict(comment.items())
 

@@ -36,12 +36,18 @@ def app_factory():
     app.ext_mgr_all = extension.ExtensionManager(
         namespace='pg_discuss.ext'
     )
+    def fail_on_ext_load(manager, entrypoint, exception):
+        import traceback
+        print(traceback.format_exc())
+        raise exception
+
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = named.NamedExtensionManager(
         namespace='pg_discuss.ext',
         names=config.get_enabled_extensions(app.config),
         invoke_on_load=True,
         invoke_kwds={'app': app},
+        on_load_failure_callback=fail_on_ext_load,
     )
 
     app.manager.add_command('db', MigrateCommand)

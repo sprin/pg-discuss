@@ -3,7 +3,7 @@ from flask import (
     request,
 )
 
-from pg_discuss.extension_base import AppExtBase
+from pg_discuss.ext import AppExtBase
 
 class JsonMimetypeExt(AppExtBase):
     """Middleware to verify the request has Content-Type set to

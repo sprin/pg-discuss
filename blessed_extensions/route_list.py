@@ -5,7 +5,7 @@ from flask.ext.script import Command
 
 from pg_discuss._compat import unquote
 
-from pg_discuss.extension_base import AppExtBase
+from pg_discuss.ext import AppExtBase
 
 class ListRoutes(Command):
     """List all routes configured on application.
