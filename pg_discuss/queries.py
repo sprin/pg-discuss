@@ -31,9 +31,16 @@ def insert_comment(new_comment):
         .returning(*list(t.c))
     )
 
-    # TODO: Pass stmt, new_comment, and req to extensions iterator
-    result = db.engine.execute(stmt)
-    return dict(result.first().items())
+    # Run modify_insert_stmt hooks
+    ext.exec_hooks(ext.ModifyInsertStmtMixin, new_comment, stmt)
+
+    result = db.engine.execute(stmt).first()
+    comment = dict(result.items())
+
+    # Run do_on_insert hooks
+    ext.exec_hooks(ext.DoOnInsertMixin, comment)
+
+    return comment
 
 def update_comment(comment_id, comment_edit, update_modified=False):
     """Update the comment in the database in response to a request
@@ -56,17 +63,19 @@ def update_comment(comment_id, comment_edit, update_modified=False):
     if update_modified:
         stmt = stmt.values(modified=text('NOW()'))
 
-    # TODO: Pass stmt, old_comment, comment_edit to extensions iterator
+    # Run modify_update_stmt hooks
+    ext.exec_hooks(ext.ModifyUpdateStmtMixin, old_comment, comment_edit, stmt)
 
-    result = db.engine.execute(stmt)
-    comment = result.first()
-    if not comment:
+    result = db.engine.execute(stmt).first()
+    if not result:
         raise CommentNotFoundError('Comment {0} not found'.format(comment_id))
 
-    # Run hooks
-    ext.map_do_on_update(old_comment, comment)
+    comment = dict(result.items())
 
-    return dict(comment.items())
+    # Run do_on_update hooks
+    ext.exec_hooks(ext.DoOnUpdateMixin, old_comment, comment)
+
+    return comment
 
 def validate_parent_exists(parent):
     """Validate that the parent exists in the database."""

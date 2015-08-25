@@ -48,6 +48,7 @@ def app_factory():
         invoke_on_load=True,
         invoke_kwds={'app': app},
         on_load_failure_callback=fail_on_ext_load,
+        propagate_map_exceptions=True,
     )
 
     app.manager.add_command('db', MigrateCommand)
