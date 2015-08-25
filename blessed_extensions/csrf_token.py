@@ -113,6 +113,12 @@ class CsrfTokenExt(AppExtBase):
 
     def init_app(self, app):
         self._app = app
+        app.config.setdefault('CSRF_TOKEN_CHECK_DEFAULT', True)
+        app.config.setdefault('CSRF_TOKEN_TIME_LIMIT', 3600)
+        app.config.setdefault('CSRF_TOKEN_HEADERS', ['X-CSRF-Token'])
+        app.config.setdefault('CSRF_TOKEN_EXEMPT_METHODS',
+                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
+        app.config.setdefault('CSRF_SSL_STRICT', True)
 
         app.route('/csrftoken', methods=['GET'])(get_csrf_token)
 
