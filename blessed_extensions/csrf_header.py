@@ -3,14 +3,16 @@ from flask import (
     request,
 )
 
-class CsrfProtectWithHeader(object):
+from pg_discuss.extension_base import AppExtBase
+
+class CsrfHeaderExt(AppExtBase):
     """Middleware to verify the request is an XHR request.
     This assumes that all, or most, data-modifying views are intended to handle
     XHR requests.
 
     Register it with::
         app = Flask(__name__)
-        CsrfProtectWithHeader(app)
+        CsrfHeaderExt(app)
 
     Note that Content-Type checking alone does not necessarily protect against
     CSRF if browsers implement "HTML JSON form submission":
@@ -24,16 +26,13 @@ class CsrfProtectWithHeader(object):
     full token-based CSRF protection.
     """
 
-    def __init__(self, app=None):
-        self._exempt_views = set()
-
-        if app:
-            self.init_app(app)
-
     def init_app(self, app):
         self._app = app
-        if not app.config['CSRF_HEADER_ENABLED']:
-            return
+
+        app.config.setdefault('CSRF_HEADER_ENABLED', True)
+        app.config.setdefault('CSRF_HEADER_CHECK_DEFAULT', True)
+        app.config.setdefault('CSRF_HEADER_EXEMPT_METHODS',
+                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
 
         if not app.config['CSRF_HEADER_CHECK_DEFAULT']:
             return
