@@ -12,7 +12,6 @@ from  . import config
 from .models import db
 from  . import views
 from . import forms
-from .json_mimetype import CheckJsonMimetype
 from .json import CustomJSONEncoder
 from .management import ListRoutes
 
@@ -27,7 +26,6 @@ def app_factory():
     app.comment_text_validator_factory = (
         forms.default_comment_text_validator_factory
     )
-    app.json_mimetype = CheckJsonMimetype(app)
     db.init_app(app)
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)

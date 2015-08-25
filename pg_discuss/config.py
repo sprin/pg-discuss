@@ -30,17 +30,13 @@ ENABLE_EXT_BLESSED_EDIT_VIEW = True
 ENABLE_EXT_BLESSED_DELETE_VIEW = True
 ENABLE_EXT_BLESSED_CSRF_TOKEN = True
 ENABLE_EXT_BLESSED_CSRF_HEADER = True
+ENABLE_EXT_BLESSED_JSON_MIMETYPE = True
 
 LOGLEVEL = 'INFO'
 
 # Connection parameters and secrets
 SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 SECRET_KEY = os.environ['SECRET_KEY']
-
-# Security defaults
-JSON_MIMETYPE_ENABLED = True
-JSON_MIMETYPE_CHECK_DEFAULT = True
-JSON_MIMETYPE_EXEMPT_METHODS = ['GET', 'HEAD', 'OPTIONS', 'TRACE']
 
 # Comment defaults
 MIN_COMMENT_LENGTH = 3
@@ -58,6 +54,7 @@ def get_enabled_extensions(config):
     """Get the list of extension entrypoint names where `ENABLE_EXT_*` is True.
     """
     prefix = 'ENABLE_EXT_'
+
     enable_ext_vars = [k for k in config.keys() if k.startswith(prefix)]
 
     return [k[len(prefix):].lower() for k in enable_ext_vars if config[k]]

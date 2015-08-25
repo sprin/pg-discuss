@@ -3,7 +3,9 @@ from flask import (
     request,
 )
 
-class CheckJsonMimetype(object):
+from pg_discuss.extension_base import AppExtBase
+
+class JsonMimetypeExt(AppExtBase):
     """Middleware to verify the request has Content-Type set to
     application/json for data-modifying views.
     This assumes that all, or most, data-modifying views are intended to handle
@@ -14,16 +16,12 @@ class CheckJsonMimetype(object):
         CheckJsonMimetype(app)
     """
 
-    def __init__(self, app=None):
-        self._exempt_views = set()
-
-        if app:
-            self.init_app(app)
-
     def init_app(self, app):
         self._app = app
-        if not app.config['JSON_MIMETYPE_ENABLED']:
-            return
+
+        app.config.setdefault('JSON_MIMETYPE_CHECK_DEFAULT', True)
+        app.config.setdefault('JSON_MIMETYPE_EXEMPT_METHODS',
+                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
 
         if not app.config['JSON_MIMETYPE_CHECK_DEFAULT']:
             return
