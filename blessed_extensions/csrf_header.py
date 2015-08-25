@@ -34,6 +34,8 @@ class CsrfHeaderExt(AppExtBase):
         app.config.setdefault('CSRF_HEADER_EXEMPT_METHODS',
                               ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
 
+        self._exempt_views = []
+
         if not app.config['CSRF_HEADER_CHECK_DEFAULT']:
             return
 

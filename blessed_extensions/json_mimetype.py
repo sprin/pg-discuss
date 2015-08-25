@@ -18,6 +18,7 @@ class JsonMimetypeExt(AppExtBase):
 
     def init_app(self, app):
         self._app = app
+        self._exempt_views = []
 
         app.config.setdefault('JSON_MIMETYPE_CHECK_DEFAULT', True)
         app.config.setdefault('JSON_MIMETYPE_EXEMPT_METHODS',
@@ -44,13 +45,12 @@ class JsonMimetypeExt(AppExtBase):
             self.check_mimetype()
 
     def check_mimetype(self):
-        if self._app.config['JSON_MIMETYPE_ENABLED']:
-            if request.mimetype != 'application/json':
-                reason = (
-                    'Mimetype checking failed - Content-Type not set '
-                    'to application/json'
-                )
-                return self._error_response(reason)
+        if request.mimetype != 'application/json':
+            reason = (
+                'Mimetype checking failed - Content-Type not set '
+                'to application/json'
+            )
+            return self._error_response(reason)
         request.json_mimetype_valid = True
 
     def exempt(self, view):
