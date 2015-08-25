@@ -14,7 +14,6 @@ from flask import (
     request,
 )
 
-from .csrf import generate_csrf
 from . import queries
 from . import forms
 
@@ -44,7 +43,3 @@ def view(comment_id):
     # Fetch the comment
     result = queries.fetch_comment(comment_id)
     return jsonify(result)
-
-
-def csrftoken():
-    return generate_csrf()

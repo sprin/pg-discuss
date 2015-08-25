@@ -28,6 +28,7 @@ import os
 # See the `get_enabled_extensions` in this module for parsing details.
 ENABLE_EXT_BLESSED_EDIT_VIEW = True
 ENABLE_EXT_BLESSED_DELETE_VIEW = True
+ENABLE_EXT_BLESSED_CSRF_TOKEN = True
 
 LOGLEVEL = 'INFO'
 
@@ -36,7 +37,6 @@ SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # Security defaults
-CSRF_TOKEN_ENABLED = True
 CSRF_TOKEN_CHECK_DEFAULT = True
 CSRF_TOKEN_TIME_LIMIT = 3600
 CSRF_TOKEN_HEADERS = ['X-CSRF-Token']

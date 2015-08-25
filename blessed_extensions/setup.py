@@ -38,6 +38,7 @@ setup(
         'pg_discuss.ext': [
             'blessed_edit_view = blessed_extensions.edit_view:EditViewExt',
             'blessed_delete_view = blessed_extensions.delete_view:DeleteViewExt',
+            'blessed_csrf_token = blessed_extensions.csrf_token:CsrfTokenExt',
         ],
     },
 

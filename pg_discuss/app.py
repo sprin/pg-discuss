@@ -12,7 +12,6 @@ from  . import config
 from .models import db
 from  . import views
 from . import forms
-from .csrf_token import CsrfProtectWithToken
 from .csrf_header import CsrfProtectWithHeader
 from .json_mimetype import CheckJsonMimetype
 from .json import CustomJSONEncoder
@@ -29,7 +28,6 @@ def app_factory():
     app.comment_text_validator_factory = (
         forms.default_comment_text_validator_factory
     )
-    app.csrf_token = CsrfProtectWithToken(app)
     app.csrf_header = CsrfProtectWithHeader(app)
     app.json_mimetype = CheckJsonMimetype(app)
     db.init_app(app)
@@ -58,6 +56,5 @@ def app_factory():
     app.route('/', methods=['GET'])(views.fetch)
     app.route('/new', methods=['POST'])(views.new)
     app.route('/id/<int:comment_id>', methods=['GET'])(views.view)
-    app.route('/csrftoken', methods=['GET'])(views.csrftoken)
 
     return app

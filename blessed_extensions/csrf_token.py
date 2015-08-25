@@ -11,10 +11,11 @@ import hashlib
 import time
 from flask import current_app, session, request, abort
 from werkzeug.security import safe_str_cmp
-from ._compat import (
+from pg_discuss._compat import (
     to_bytes,
     urlparse,
 )
+from pg_discuss.extension_base import AppExtBase
 
 __all__ = ('generate_csrf', 'validate_csrf', 'CsrfProtect')
 
@@ -95,12 +96,14 @@ def validate_csrf(data, secret_key=None, time_limit=None):
 
     return safe_str_cmp(hmac_compare, hmac_csrf)
 
+def get_csrf_token():
+    return generate_csrf()
 
-class CsrfProtectWithToken(object):
+class CsrfTokenExt(AppExtBase):
     """Enable csrf protect for Flask.
     Register it with::
         app = Flask(__name__)
-        CsrfProtectWithToken(app)
+        CsrfTokenExt(app)
     And in the templates, add the token input::
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     If you need to send the token via AJAX, and there is no form::
@@ -108,16 +111,10 @@ class CsrfProtectWithToken(object):
     You can grab the csrf token with JavaScript, and send the token together.
     """
 
-    def __init__(self, app=None):
-        self._exempt_views = set()
-
-        if app:
-            self.init_app(app)
-
     def init_app(self, app):
         self._app = app
-        if not app.config['CSRF_TOKEN_ENABLED']:
-            return
+
+        app.route('/csrftoken', methods=['GET'])(get_csrf_token)
 
         if not app.config['CSRF_TOKEN_CHECK_DEFAULT']:
             return
