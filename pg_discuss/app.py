@@ -11,7 +11,6 @@ from stevedore import (
 from  . import config
 from .models import db
 from  . import views
-from . import forms
 from .json import CustomJSONEncoder
 
 def app_factory():
@@ -22,9 +21,6 @@ def app_factory():
     # Load custom config from user-defined PG_DISCUSS_SETTINGS_FILE
     app.config.from_pyfile(os.environ['PG_DISCUSS_SETTINGS_FILE'])
 
-    app.comment_text_validator_factory = (
-        forms.default_comment_text_validator_factory
-    )
     db.init_app(app)
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
@@ -45,6 +41,7 @@ def app_factory():
     app.ext_mgr = named.NamedExtensionManager(
         namespace='pg_discuss.ext',
         names=config.get_enabled_extensions(app.config),
+        name_order=True,
         invoke_on_load=True,
         invoke_kwds={'app': app},
         on_load_failure_callback=fail_on_ext_load,

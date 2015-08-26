@@ -98,14 +98,35 @@ class OnPostUpdate(GenericExtBase):
         """Perform some action with the result of an insert.
         """
 
+@six.add_metaclass(abc.ABCMeta)
+class ValidateComment(GenericExtBase):
+    """Mixin class for extensions that validate comment data. Validators
+    may mutate the comment data into a valid form.
+    """
+    hook_name = 'validate_comment'
+
+    @abc.abstractmethod
+    def validate_comment(self, comment, **extras):
+        """Validate a comment dictionary.
+        """
+
 
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
     Note that this allows for extensions to subclass multiple hook mixins.
+
+    Returns the list of results obtained from calling all relevant
+    extensions in order. Similar to stevedore's `ExtensionManager.map()`,
+    however, we only call on extensions that are an instance of the base class
+    given.
     """
 
     def execute_hook(ext, *args, **kwargs):
-        if isinstance(ext.obj, ext_class):
-            getattr(ext.obj, ext.plugin.hook_name)(*args, **kwargs)
+        return getattr(ext.obj, ext.plugin.hook_name)(*args, **kwargs)
 
-    current_app.ext_mgr.map(execute_hook, *args, **kwargs)
+    results = []
+    for ext in current_app.ext_mgr.extensions:
+        if isinstance(ext.obj, ext_class):
+            results.append(execute_hook(ext, *args, **kwargs))
+
+    return results

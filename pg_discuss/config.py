@@ -33,6 +33,14 @@ ENABLE_EXT_BLESSED_CSRF_HEADER = True
 ENABLE_EXT_BLESSED_JSON_MIMETYPE = True
 ENABLE_EXT_BLESSED_ROUTE_LIST = True
 ENABLE_EXT_BLESSED_ARCHIVE_UPDATES = True
+ENABLE_EXT_BLESSED_VALIDATE_COMMENT_LEN = True
+
+# Optional: Order extensions using comma-separated list of extension names.
+# It is generally discouraged to write order-dependent extensions, but it may
+# be required in some cases.
+# It is not necessary to list all extensions, only those that are required
+# to be ordered. See `config:sorted_ext_names` for sort logic details.
+EXT_ORDER = ''
 
 LOGLEVEL = 'INFO'
 
@@ -59,4 +67,22 @@ def get_enabled_extensions(config):
 
     enable_ext_vars = [k for k in config.keys() if k.startswith(prefix)]
 
-    return [k[len(prefix):].lower() for k in enable_ext_vars if config[k]]
+    ext_names = [k[len(prefix):].lower() for k in enable_ext_vars if config[k]]
+
+    return sorted_ext_names(config, ext_names)
+
+def sorted_ext_names(config, ext_names):
+    """Sort extensions if `EXT_ORDER` is specified. Extensions not listed in
+    `EXT_ORDER` will be appended to the end of the list in an arbitrary order.
+    """
+    ext_order = [e.strip() for e in config['EXT_ORDER'].split(',')]
+
+    def sort_key(ext_name):
+        try:
+            return ext_order.index(ext_name)
+        except ValueError:
+            # If `ext_name` is not in the sort list, it has a sort value of
+            # positive infinity (last).
+            return float('inf')
+
+    return sorted(ext_names, key=sort_key)

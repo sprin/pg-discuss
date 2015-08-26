@@ -2,7 +2,7 @@ from pg_discuss import ext
 from pg_discuss.models import db
 from pg_discuss import tables
 
-class ArchiveUpdatesExt(ext.OnPostUpdateV1):
+class ArchiveUpdatesExt(ext.OnPostUpdate):
 
     def on_post_update(self, old_comment, new_comment):
         # "Archive" the old comment by re-inserting it, with a new pk.

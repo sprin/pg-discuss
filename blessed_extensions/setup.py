@@ -43,6 +43,7 @@ setup(
             'blessed_json_mimetype = blessed_extensions.json_mimetype:JsonMimetypeExt',
             'blessed_route_list = blessed_extensions.route_list:RouteListExt',
             'blessed_archive_updates = blessed_extensions.archive_updates:ArchiveUpdatesExt',
+            'blessed_validate_comment_len = blessed_extensions.validate_comment_len:ValidateCommentLen',
         ],
     },
 
