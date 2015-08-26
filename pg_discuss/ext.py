@@ -1,3 +1,19 @@
+"""Extension base classes.
+
+There are two types of extensions base clases: the Application Extension base
+and Hook bases. Base classes can be used as mixins, so that it is possible for
+an extensions to implement more than one behavior defined by a base class. As an
+extreme example, it is possible to make an extension that implements the
+Application Extension base and all Hook bases by subclassing all of the bases in
+this module.
+
+The Application Extension base class allows an extension to modify the Flask app
+upon initialization, for example, to add routes or request/response middleware.
+
+The Hook base classes allow an extension to implement a method that is called
+when a certain event occurs. To allow Hook APIs to send additional parameters in
+the future, all Hook methods must take a `**extras` argument.
+"""
 import abc
 import six
 
@@ -28,14 +44,14 @@ class AppExtBase(GenericExtBase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ModifyInsertStmtMixin(GenericExtBase):
+class OnPreInsert(GenericExtBase):
     """Mixin class for extensions that modify the insert statement for new
     comments.
     """
-    hook_name = 'modify_insert_stmt'
+    hook_name = 'on_pre_insert'
 
     @abc.abstractmethod
-    def modify_insert_stmt(self, new_comment, stmt):
+    def on_pre_insert(self, new_comment, stmt, **extras):
         """Modify the insert statement for comment updates.
 
         Returns a new SQL Alchemy statement.
@@ -43,27 +59,27 @@ class ModifyInsertStmtMixin(GenericExtBase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DoOnInsertMixin(GenericExtBase):
+class OnPostInsert(GenericExtBase):
     """Mixin class for extensions that perform some action with the result of an
     insert.
     """
-    hook_name = 'do_on_insert'
+    hook_name = 'on_post_insert'
 
     @abc.abstractmethod
-    def do_on_insert(self, new_comment):
+    def on_post_insert(self, new_comment, **extras):
         """Perform some action with the result of an insert.
         """
 
 
 @six.add_metaclass(abc.ABCMeta)
-class ModifyUpdateStmtMixin(GenericExtBase):
+class OnPreUpdate(GenericExtBase):
     """Mixin class for extensions that modify the update statement for comment
     updates.
     """
-    hook_name = 'modify_update_stmt'
+    hook_name = 'on_pre_update'
 
     @abc.abstractmethod
-    def modify_update_stmt(self, old_comment, comment_edit, stmt):
+    def on_pre_update(self, old_comment, comment_edit, stmt, **extras):
         """Modify the update statement for comment updates.
 
         Returns a new SQL Alchemy statement.
@@ -71,14 +87,14 @@ class ModifyUpdateStmtMixin(GenericExtBase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DoOnUpdateMixin(GenericExtBase):
+class OnPostUpdate(GenericExtBase):
     """Mixin class for extensions that perform some action with the result of an
     update.
     """
-    hook_name = 'do_on_update'
+    hook_name = 'on_post_update'
 
     @abc.abstractmethod
-    def do_on_update(self, old_comment, new_comment):
+    def on_post_update(self, old_comment, new_comment, **extras):
         """Perform some action with the result of an insert.
         """
 

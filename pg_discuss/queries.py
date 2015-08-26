@@ -31,14 +31,14 @@ def insert_comment(new_comment):
         .returning(*list(t.c))
     )
 
-    # Run modify_insert_stmt hooks
-    ext.exec_hooks(ext.ModifyInsertStmtMixin, new_comment, stmt)
+    # Run on_pre_insert hooks
+    ext.exec_hooks(ext.OnPreInsert, new_comment, stmt)
 
     result = db.engine.execute(stmt).first()
     comment = dict(result.items())
 
-    # Run do_on_insert hooks
-    ext.exec_hooks(ext.DoOnInsertMixin, comment)
+    # Run on_post_insert hooks
+    ext.exec_hooks(ext.OnPostInsert, comment)
 
     return comment
 
@@ -63,8 +63,8 @@ def update_comment(comment_id, comment_edit, update_modified=False):
     if update_modified:
         stmt = stmt.values(modified=text('NOW()'))
 
-    # Run modify_update_stmt hooks
-    ext.exec_hooks(ext.ModifyUpdateStmtMixin, old_comment, comment_edit, stmt)
+    # Run on_pre_update hooks
+    ext.exec_hooks(ext.OnPreUpdate, old_comment, comment_edit, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -72,8 +72,8 @@ def update_comment(comment_id, comment_edit, update_modified=False):
 
     comment = dict(result.items())
 
-    # Run do_on_update hooks
-    ext.exec_hooks(ext.DoOnUpdateMixin, old_comment, comment)
+    # Run on_post_update hooks
+    ext.exec_hooks(ext.OnPostUpdate, old_comment, comment)
 
     return comment
 
