@@ -27,11 +27,11 @@ def app_factory():
     app.migrate = Migrate(app, db)
 
     ## Use stevedore to load JSON encoder driver
-    json_encoder_mgr = driver.DriverManager(
-        namespace='pg_discuss.driver',
+    app.json_encoder_mgr = driver.DriverManager(
+        namespace='pg_discuss.ext',
         name=app.config['DRIVER_JSON_ENCODER'],
     )
-    app.json_encoder= json_encoder_mgr.driver
+    app.json_encoder = app.json_encoder_mgr.driver
 
     ## Use stevedore to load extensions.
     # Discover all extensions, but do not load any.
