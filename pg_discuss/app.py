@@ -13,6 +13,9 @@ from .models import db
 from  . import views
 from .json import CustomJSONEncoder
 
+class PluginLoadError(Exception):
+    pass
+
 def app_factory():
     app = Flask('pg-discuss')
 
@@ -32,10 +35,15 @@ def app_factory():
     app.ext_mgr_all = extension.ExtensionManager(
         namespace='pg_discuss.ext'
     )
+
     def fail_on_ext_load(manager, entrypoint, exception):
         import traceback
-        print(traceback.format_exc())
-        raise exception
+        msg = (
+            'Error loading plugin {0}\n'
+            'Plugin load error traceback:\n{1}'.format( entrypoint,
+                traceback.format_exc()
+            ))
+        raise PluginLoadError(msg)
 
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = named.NamedExtensionManager(
