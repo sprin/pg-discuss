@@ -54,8 +54,8 @@ def app_factory():
     app.manager.add_command('db', MigrateCommand)
 
     # Default routes. Other routes must be added through App extensions.
-    app.route('/', methods=['GET'])(views.fetch)
-    app.route('/new', methods=['POST'])(views.new)
-    app.route('/id/<int:comment_id>', methods=['GET'])(views.view)
+    app.route('/comments', methods=['GET'])(views.fetch)
+    app.route('/comments', methods=['POST'])(views.new)
+    app.route('/comments/<int:comment_id>', methods=['GET'])(views.view)
 
     return app

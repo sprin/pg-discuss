@@ -7,7 +7,7 @@ from pg_discuss import queries
 
 class DeleteViewExt(AppExtBase):
     def init_app(self, app):
-        app.route('/id/<int:comment_id>', methods=['DELETE'])(delete)
+        app.route('/comments/<int:comment_id>', methods=['DELETE'])(delete)
 
 def delete(comment_id):
     """Mark a comment as deleted. The comment will still show up in API reults,

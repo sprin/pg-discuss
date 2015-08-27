@@ -13,7 +13,7 @@ from pg_discuss import queries
 
 class EditViewExt(AppExtBase):
     def init_app(self, app):
-        app.route('/id/<int:comment_id>', methods=['PUT'])(edit)
+        app.route('/comments/<int:comment_id>', methods=['PATCH'])(edit)
 
 def edit(comment_id):
     json = request.get_json()
