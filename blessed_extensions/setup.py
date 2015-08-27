@@ -45,6 +45,10 @@ setup(
             'blessed_archive_updates = blessed_extensions.archive_updates:ArchiveUpdatesExt',
             'blessed_validate_comment_len = blessed_extensions.validate_comment_len:ValidateCommentLen',
         ],
+        'pg_discuss.driver': [
+            'blessed_unix_time_json_encoder = blessed_extensions.json_encoder:UnixTimeJsonEncoder',
+            'blessed_iso_date_json_encoder = blessed_extensions.json_encoder:IsoDateJsonEncoder',
+        ],
     },
 
     zip_safe=False,

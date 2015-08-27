@@ -6,6 +6,7 @@ All connection parameters and secrets should be read from the environment.
 """
 import os
 
+## Extension settings
 # Configuration parameters of the form `ENABLE_EXT_*` are special:
 # the set of these parameters are parsed into a list of extension entrypoints to
 # be enabled.  The part of the string after the prefix `ENABLE_EXT_` is taken to
@@ -42,15 +43,11 @@ ENABLE_EXT_BLESSED_VALIDATE_COMMENT_LEN = True
 # to be ordered. See `config:sorted_ext_names` for sort logic details.
 EXT_ORDER = ''
 
+## Driver settings
+DRIVER_JSON_ENCODER = 'blessed_iso_date_json_encoder'
+
+## Log settings
 LOGLEVEL = 'INFO'
-
-# Connection parameters and secrets
-SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-SECRET_KEY = os.environ['SECRET_KEY']
-
-# Comment defaults
-MIN_COMMENT_LENGTH = 3
-MAX_COMMENT_LENGTH = 65535
 
 # List of parameters which should not be logged. This should list any
 # configuration parameters which include secrets, such as SECRET_KEY,
@@ -59,6 +56,14 @@ DO_NOT_LOG_VARS = [
     'SECRET_KEY',
     'SQLALCHEMY_DATABASE_URI',
 ]
+
+## Connection parameters and secrets
+SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+SECRET_KEY = os.environ['SECRET_KEY']
+
+# Comment defaults
+MIN_COMMENT_LENGTH = 3
+MAX_COMMENT_LENGTH = 65535
 
 def get_enabled_extensions(config):
     """Get the list of extension entrypoint names where `ENABLE_EXT_*` is True.

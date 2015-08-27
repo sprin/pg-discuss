@@ -5,16 +5,14 @@ from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 from stevedore import (
     extension,
+    driver,
     named,
 )
 
 from  . import config
 from .models import db
 from  . import views
-from .json import CustomJSONEncoder
-
-class PluginLoadError(Exception):
-    pass
+from . import ext
 
 def app_factory():
     app = Flask('pg-discuss')
@@ -27,7 +25,13 @@ def app_factory():
     db.init_app(app)
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
-    app.json_encoder = CustomJSONEncoder
+
+    ## Use stevedore to load JSON encoder driver
+    json_encoder_mgr = driver.DriverManager(
+        namespace='pg_discuss.driver',
+        name=app.config['DRIVER_JSON_ENCODER'],
+    )
+    app.json_encoder= json_encoder_mgr.driver
 
     ## Use stevedore to load extensions.
     # Discover all extensions, but do not load any.
@@ -36,15 +40,6 @@ def app_factory():
         namespace='pg_discuss.ext'
     )
 
-    def fail_on_ext_load(manager, entrypoint, exception):
-        import traceback
-        msg = (
-            'Error loading plugin {0}\n'
-            'Plugin load error traceback:\n{1}'.format( entrypoint,
-                traceback.format_exc()
-            ))
-        raise PluginLoadError(msg)
-
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = named.NamedExtensionManager(
         namespace='pg_discuss.ext',
@@ -52,7 +47,7 @@ def app_factory():
         name_order=True,
         invoke_on_load=True,
         invoke_kwds={'app': app},
-        on_load_failure_callback=fail_on_ext_load,
+        on_load_failure_callback=ext.fail_on_ext_load,
         propagate_map_exceptions=True,
     )
 

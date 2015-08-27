@@ -19,6 +19,10 @@ import six
 
 from flask import current_app
 
+class PluginLoadError(Exception):
+    pass
+
+
 class GenericExtBase(object):
     """
     Provide a default class with an __init__ that accepts an app argument.
@@ -130,3 +134,17 @@ def exec_hooks(ext_class, *args, **kwargs):
             results.append(execute_hook(ext, *args, **kwargs))
 
     return results
+
+def fail_on_ext_load(manager, entrypoint, exception):
+    """Function to be used as `on_load_failure_callback` for stevedore.
+
+    Raise an exception that includes the traceback from the failed
+    plugin load.
+    """
+    import traceback
+    msg = (
+        'Error loading plugin {0}\n'
+        'Plugin load error traceback:\n{1}'.format( entrypoint,
+            traceback.format_exc()
+        ))
+    raise PluginLoadError(msg)
