@@ -15,7 +15,7 @@ from  . import views
 from . import ext
 
 def app_factory():
-    app = Flask('pg-discuss')
+    app = Flask('pg-discuss', static_folder=None)
 
     # Load default config values from pg_discuss.config module
     app.config.from_object(config)
