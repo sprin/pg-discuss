@@ -40,6 +40,13 @@ def app_factory():
         namespace='pg_discuss.ext'
     )
 
+    # Default routes. Other routes must be added through App extensions.
+    # Default routes are set up before app extensions are loaded so extensions
+    # can introspect/modify view functions.
+    app.route('/comments', methods=['GET'])(views.fetch)
+    app.route('/comments', methods=['POST'])(views.new)
+    app.route('/comments/<int:comment_id>', methods=['GET'])(views.view)
+
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = named.NamedExtensionManager(
         namespace='pg_discuss.ext',
@@ -52,10 +59,5 @@ def app_factory():
     )
 
     app.manager.add_command('db', MigrateCommand)
-
-    # Default routes. Other routes must be added through App extensions.
-    app.route('/comments', methods=['GET'])(views.fetch)
-    app.route('/comments', methods=['POST'])(views.new)
-    app.route('/comments/<int:comment_id>', methods=['GET'])(views.view)
 
     return app
