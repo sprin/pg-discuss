@@ -2,13 +2,14 @@ from voluptuous import (
     Schema,
     Required,
     All,
+    Any,
     Invalid,
 )
 from .queries import validate_parent_exists
 from . import ext
 
 def validate_parent(parent):
-    if not validate_parent_exists(parent):
+    if parent is not None and not validate_parent_exists(parent):
         raise Invalid('parent does not exist')
     return parent
 
@@ -33,7 +34,7 @@ def validate_new_comment(
 ):
     new_comment_schema = All(
         Schema({
-            'parent': All(int, validate_parent),
+            'parent': All(Any(int, None), validate_parent),
             Required('text'): All(unicode)
         }),
         exec_comment_validators,
