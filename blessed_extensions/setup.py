@@ -46,6 +46,7 @@ setup(
             'blessed_validate_comment_len = blessed_extensions.validate_comment_len:ValidateCommentLen',
             'blessed_unix_time_json_encoder = blessed_extensions.json_encoder:UnixTimeJsonEncoder',
             'blessed_iso_date_json_encoder = blessed_extensions.json_encoder:IsoDateJsonEncoder',
+            'blessed_cors = blessed_extensions.cors:CorsExt',
         ],
     },
 

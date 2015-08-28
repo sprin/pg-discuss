@@ -35,6 +35,7 @@ ENABLE_EXT_BLESSED_JSON_MIMETYPE = True
 ENABLE_EXT_BLESSED_ROUTE_LIST = True
 ENABLE_EXT_BLESSED_ARCHIVE_UPDATES = True
 ENABLE_EXT_BLESSED_VALIDATE_COMMENT_LEN = True
+ENABLE_EXT_BLESSED_CORS = True
 
 # Optional: Order extensions using comma-separated list of extension names.
 # It is generally discouraged to write order-dependent extensions, but it may
@@ -64,6 +65,10 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # Comment defaults
 MIN_COMMENT_LENGTH = 3
 MAX_COMMENT_LENGTH = 65535
+
+# CORS: List of allowed origins (origins where widget will be embedded)
+# http://www.w3.org/TR/cors/
+CORS_ORIGINS=[]
 
 def get_enabled_extensions(config):
     """Get the list of extension entrypoint names where `ENABLE_EXT_*` is True.
