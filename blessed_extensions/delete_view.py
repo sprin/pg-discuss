@@ -19,8 +19,10 @@ def delete(comment_id):
     indicate special rendering of deleted comments.
     """
     comment_edit = {
-        'deleted': True,
         'text': '',
+        'custom_json_patch': {
+            'deleted': True,
+        }
     }
 
     # Mark the comment as deleted

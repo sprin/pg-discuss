@@ -51,6 +51,14 @@ def update_comment(comment_id, comment_edit, update_modified=False):
     t = tables.comment
     # Fetch the "old" comment
     old_comment = fetch_comment(comment_id)
+
+    if 'custom_json_patch' in comment_edit:
+        comment_edit['custom_json'] = dict(
+            old_comment['custom_json'],
+            **comment_edit['custom_json_patch']
+        )
+        del comment_edit['custom_json_patch']
+
     # Update the "old" comment in place.
     stmt = (
         t.update()
