@@ -34,7 +34,7 @@ def fetch(thread_client_id):
     comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
     return jsonify({'comments': comments_seq})
 
-def new():
+def new(thread_client_id):
     # Extract whitelisted attributes from request JSON
     # Note that extensions have the opportunity to process/persist additional
     # attributes from the request JSON, since they have access to the
@@ -46,8 +46,17 @@ def new():
     # Validate required, type, text length
     new_comment = forms.validate_new_comment(new_comment)
 
-    # TODO: Using dummy thread_id. Replace with real thread_id.
-    new_comment['thread_id'] = 1
+    # Create empty `custom_json`, for extensions to populate.
+    new_comment['custom_json'] = {}
+
+    # Try to fetch the existing thread record
+    try:
+        thread = queries.fetch_thread_by_client_id(thread_client_id)
+    except queries.ThreadNotFoundError:
+        # Create a new thread record if one does not exist.
+        thread = queries.insert_thread({'client_id': thread_client_id})
+
+    new_comment['thread_id'] = thread['id']
 
     # Insert the comment
     comment = queries.insert_comment(new_comment)

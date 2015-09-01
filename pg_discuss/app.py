@@ -44,7 +44,7 @@ def app_factory():
     # Default routes are set up before app extensions are loaded so extensions
     # can introspect/modify view functions.
     app.route('/threads/<string:thread_client_id>/comments', methods=['GET'])(views.fetch)
-    app.route('/comments', methods=['POST'])(views.new)
+    app.route('/threads/<string:thread_client_id>/comments', methods=['POST'])(views.new)
     app.route('/comments/<int:comment_id>', methods=['GET'])(views.view)
 
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.

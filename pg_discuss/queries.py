@@ -12,6 +12,26 @@ from . import ext
 class CommentNotFoundError(Exception):
     pass
 
+class ThreadNotFoundError(Exception):
+    pass
+
+def fetch_thread_by_client_id(thread_client_id):
+    t = tables.thread
+    stmt = t.select().where(t.c.client_id == thread_client_id)
+
+    # TODO: Run on_thread_pre_fetch hooks
+    #stmt = ext.exec_query_hooks(ext.OnThreadPreFetch, stmt)
+
+    result = db.engine.execute(stmt).first()
+    if not result:
+        raise ThreadNotFoundError(
+            'Thread {0} not found'.format(thread_client_id)
+        )
+    comment = dict(result.items())
+
+    return comment
+
+
 def fetch_comment_by_id(comment_id):
     """Fetch a single comment by id from the database."""
     t = tables.comment
@@ -65,6 +85,26 @@ def insert_comment(new_comment):
     ext.exec_hooks(ext.OnPostInsert, comment)
 
     return comment
+
+def insert_thread(new_thread):
+    """Insert the `new_thread` object in to the database."""
+    t = tables.thread
+    stmt = (
+        t.insert()
+        .values(**new_thread)
+        .returning(*list(t.c))
+    )
+
+    # TODO: Run on_pre_insert hooks
+    #stmt = ext.exec_query_hooks(ext.OnThreadPreInsert, stmt, new_thread)
+
+    result = db.engine.execute(stmt).first()
+    thread = dict(result.items())
+
+    # TODO: Run on_post_insert hooks
+    #ext.exec_hooks(ext.OnPostInsert, comment)
+
+    return thread
 
 def update_comment(comment_id, comment_edit, update_modified=False):
     """Update the comment in the database in response to a request
