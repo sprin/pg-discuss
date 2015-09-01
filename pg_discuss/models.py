@@ -28,7 +28,6 @@ Comment schema:
  - parent_id: Foreign key to parent comment.
  - version_of_id: Foreign key to the comment of which this comment is a
    version. Used by extensions that preserve comment versions.
- - active: Boolean indicating whether comment is included in default fetch.
  - created: Creation timestamp.
  - modified: Modified timestamp.
  - text: The comment text itself.
@@ -40,8 +39,10 @@ the core code. Some possible uses:
 
  - email
  - website
+ - archived flag
+ - deleted flag
+ - moderated flag
  - likes/dislikes
- - moderation status (pending, approved, deleted)
 """
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import (
@@ -49,7 +50,6 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    Boolean,
     DateTime,
     text,
 )
@@ -68,7 +68,6 @@ class Comment(db.Model):
     thread_id = Column(Integer, ForeignKey('thread.id'), nullable=False)
     parent_id = Column(Integer, ForeignKey('comment.id'))
     version_of_id = Column(Integer, ForeignKey('comment.id'), nullable=True)
-    active = Column(Boolean, server_default='TRUE', nullable=False)
     created = Column(DateTime, server_default=text('NOW()'), nullable=False)
     modified = Column(DateTime, server_default=text('NOW()'), nullable=False)
     text = Column(String, nullable=False)
