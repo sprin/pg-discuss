@@ -4,11 +4,13 @@ from flask import (
     current_app,
 )
 from voluptuous import (
+    All,
     Schema,
     Required,
 )
 
 from pg_discuss.ext import AppExtBase
+from pg_discuss import forms
 from pg_discuss import queries
 
 class EditViewExt(AppExtBase):
@@ -33,8 +35,11 @@ def edit(comment_id):
     return jsonify(result)
 
 def validate_comment_edit(comment_edit):
-    comment_edit_schema = Schema({
-            Required('text'): current_app.comment_text_validator_factory()
-    })
+    comment_edit_schema = All(
+        Schema({
+            Required('text'): unicode,
+        }),
+        forms.exec_comment_validators,
+    )
 
     return comment_edit_schema(comment_edit)

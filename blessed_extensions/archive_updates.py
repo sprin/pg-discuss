@@ -1,18 +1,32 @@
+from sqlalchemy import (
+    Boolean,
+    or_,
+)
+
 from pg_discuss import ext
 from pg_discuss.models import db
 from pg_discuss import tables
 
-class ArchiveUpdatesExt(ext.OnPostUpdate):
+class ArchiveUpdatesExt(ext.OnPostUpdate, ext.OnPreFetch):
 
-    def on_post_update(self, old_comment, new_comment):
+    def on_post_update(self, old_comment, new_comment, **extras):
         # "Archive" the old comment by re-inserting it, with a new pk.
-        # Set `active` to False.
+        # Set `archived` to False.
         t = tables.comment
         old_comment['version_of_id'] = old_comment['id']
         del old_comment['id']
-        old_comment['active'] = False
+        old_comment['custom_json']['archived'] = True
         stmt = (
             t.insert()
             .values(**old_comment)
         )
         db.engine.execute(stmt)
+
+    def on_pre_fetch(self, stmt_wrapper, **extras):
+        """Exclude archived comments from the default fetch.
+        """
+        t = tables.comment
+        stmt_wrapper.stmt = (
+            stmt_wrapper.stmt
+            .where(t.c.custom_json['archived'].cast(Boolean).isnot(True))
+        )

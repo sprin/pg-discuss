@@ -5,22 +5,46 @@ from sqlalchemy.sql import (
     select,
     exists,
     text,
+    join,
 )
 from . import ext
 
 class CommentNotFoundError(Exception):
     pass
 
-def fetch_comment(comment_id):
-    """Fetch a comment by id from the database."""
+def fetch_comment_by_id(comment_id):
+    """Fetch a single comment by id from the database."""
     t = tables.comment
     stmt = t.select().where(t.c.id == comment_id)
+
+    # Run on_pre_fetch hooks
+    stmt = ext.exec_query_hooks(ext.OnPreFetch, stmt)
+
     result = db.engine.execute(stmt).first()
     if not result:
         raise CommentNotFoundError('Comment {0} not found'.format(comment_id))
     comment = dict(result.items())
 
     return comment
+
+def fetch_comments_by_thread_client_id(thread_client_id):
+    """Fetch a list of comments for the given thread's client_id from the
+    database."""
+    t_comment = tables.comment
+    t_thread = tables.thread
+    stmt = (
+        select(t_comment.c)
+        .select_from(join(t_comment, t_thread))
+        .where(t_thread.c.client_id == thread_client_id)
+    )
+
+    # Run on_pre_fetch hooks
+    stmt = ext.exec_query_hooks(ext.OnPreFetch, stmt)
+
+    result = db.engine.execute(stmt)
+    comments_seq = [dict(x) for x in result]
+
+    return comments_seq
 
 def insert_comment(new_comment):
     """Insert the `new_comment` object in to the database."""
@@ -32,7 +56,7 @@ def insert_comment(new_comment):
     )
 
     # Run on_pre_insert hooks
-    ext.exec_hooks(ext.OnPreInsert, new_comment, stmt)
+    stmt = ext.exec_query_hooks(ext.OnPreInsert, stmt, new_comment)
 
     result = db.engine.execute(stmt).first()
     comment = dict(result.items())
@@ -50,7 +74,7 @@ def update_comment(comment_id, comment_edit, update_modified=False):
     """
     t = tables.comment
     # Fetch the "old" comment
-    old_comment = fetch_comment(comment_id)
+    old_comment = fetch_comment_by_id(comment_id)
 
     if 'custom_json_patch' in comment_edit:
         comment_edit['custom_json'] = dict(
@@ -72,7 +96,12 @@ def update_comment(comment_id, comment_edit, update_modified=False):
         stmt = stmt.values(modified=text('NOW()'))
 
     # Run on_pre_update hooks
-    ext.exec_hooks(ext.OnPreUpdate, old_comment, comment_edit, stmt)
+    stmt = ext.exec_query_hooks(
+        ext.OnPreUpdate,
+        stmt,
+        old_comment,
+        comment_edit,
+    )
 
     result = db.engine.execute(stmt).first()
     if not result:

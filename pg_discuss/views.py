@@ -7,6 +7,17 @@ https://github.com/posativ/isso/blob/master/isso/js/app/api.js
  - view: fetch a single comment
  - edit: update an existing comment
  - delete: delete a comment
+
+Important: XSS Prevention
+By defualt, the JSON returned by these views is not HTML-escaped. Any data
+rendered in to the DOM must be HTML-escaped on the client-side. If you cannot
+trust web clients to properly escape JSON data before rendering to HTML, it is
+recommended to set `DRIVER_JSON_ENCODER` to a subclass of simplejson's
+`JSONEncoderForHTML`, such as one of those in blessed_extensions.json_encoder.
+
+JSON is not HTML-escaped by default because it is not presumed that all
+clients are web clients.
+
 """
 
 from flask import (
@@ -16,9 +27,12 @@ from flask import (
 
 from . import queries
 from . import forms
+from . import serialize
 
-def fetch(name):
-    pass
+def fetch(thread_client_id):
+    comments_seq = queries.fetch_comments_by_thread_client_id(thread_client_id)
+    comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
+    return jsonify({'comments': comments_seq})
 
 def new():
     # Extract whitelisted attributes from request JSON
@@ -36,10 +50,12 @@ def new():
     new_comment['thread_id'] = 1
 
     # Insert the comment
-    result = queries.insert_comment(new_comment)
-    return jsonify(result)
+    comment = queries.insert_comment(new_comment)
+    comment = serialize.to_client_comment(comment)
+    return jsonify(comment)
 
 def view(comment_id):
     # Fetch the comment
-    result = queries.fetch_comment(comment_id)
-    return jsonify(result)
+    comment = queries.fetch_comment_by_id(comment_id)
+    comment = serialize.to_client_comment(comment)
+    return jsonify(comment)

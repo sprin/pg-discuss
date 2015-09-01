@@ -27,15 +27,11 @@ def exec_comment_validators(comment):
     if len(result) > 0:
         return result[-1]
 
-def validate_new_comment(
-    new_comment,
-    min_comment_length=None,
-    max_comment_length=None,
-):
+def validate_new_comment(new_comment):
     new_comment_schema = All(
         Schema({
             'parent': All(Any(int, None), validate_parent),
-            Required('text'): All(unicode)
+            Required('text'): unicode,
         }),
         exec_comment_validators,
     )

@@ -55,10 +55,11 @@ class OnPreInsert(GenericExtBase):
     hook_name = 'on_pre_insert'
 
     @abc.abstractmethod
-    def on_pre_insert(self, new_comment, stmt, **extras):
+    def on_pre_insert(self, stmt_wrapper, new_comment, **extras):
         """Modify the insert statement for comment updates.
 
-        Returns a new SQL Alchemy statement.
+        The SQL Alchemy statement can be modified with
+        `stmt_wrapper.stmt = ...`.
         """
 
 
@@ -83,10 +84,11 @@ class OnPreUpdate(GenericExtBase):
     hook_name = 'on_pre_update'
 
     @abc.abstractmethod
-    def on_pre_update(self, old_comment, comment_edit, stmt, **extras):
+    def on_pre_update(self, stmt_wrapper, old_comment, comment_edit, **extras):
         """Modify the update statement for comment updates.
 
-        Returns a new SQL Alchemy statement.
+        The SQL Alchemy statement can be modified with
+        `stmt_wrapper.stmt = ...`.
         """
 
 
@@ -114,6 +116,48 @@ class ValidateComment(GenericExtBase):
         """Validate a comment dictionary.
         """
 
+@six.add_metaclass(abc.ABCMeta)
+class OnPreFetch(GenericExtBase):
+    """Mixin class for extensions that modify the select statement for
+    comment fetches.
+    """
+    hook_name = 'on_pre_fetch'
+
+    @abc.abstractmethod
+    def on_pre_fetch(self, stmt_wrapper, **extras):
+        """Modify the select statement for comment fetches.
+
+        The SQL Alchemy statement can be modified with
+        `stmt_wrapper.stmt = ...`.
+        """
+
+@six.add_metaclass(abc.ABCMeta)
+class OnCommentPreSerialize(GenericExtBase):
+    """Mixin class for extensions that want to add fields to the serialized
+    comment.
+    """
+    hook_name = 'on_comment_preserialize'
+
+    @abc.abstractmethod
+    def on_comment_preserialize(self, raw_comment, client_comment, **extras):
+        """Add fields to the comment representation to be serialized,
+        `client_comment`, from the dictionary representing the raw database row,
+        `raw_comment`.
+        """
+
+@six.add_metaclass(abc.ABCMeta)
+class OnThreadPreSerialize(GenericExtBase):
+    """Mixin class for extensions that want to add fields to the serialized
+    thread.
+    """
+    hook_name = 'on_thread_preserialize'
+
+    @abc.abstractmethod
+    def on_comment_preserialize(self, raw_thread, client_thread, **extras):
+        """Add fields to the thread representation to be serialized,
+        `client_thread`, from the dictionary representing the raw database row,
+        `raw_thread`.
+        """
 
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
@@ -125,13 +169,13 @@ def exec_hooks(ext_class, *args, **kwargs):
     given.
     """
 
-    def execute_hook(ext, *args, **kwargs):
-        return getattr(ext.obj, ext.plugin.hook_name)(*args, **kwargs)
+    def execute_hook(ext, ext_class, *args, **kwargs):
+        return getattr(ext.obj, ext_class.hook_name)(*args, **kwargs)
 
     results = []
     for ext in current_app.ext_mgr.extensions:
         if isinstance(ext.obj, ext_class):
-            results.append(execute_hook(ext, *args, **kwargs))
+            results.append(execute_hook(ext, ext_class, *args, **kwargs))
 
     return results
 
@@ -148,3 +192,19 @@ def fail_on_ext_load(manager, entrypoint, exception):
             traceback.format_exc()
         ))
     raise PluginLoadError(msg)
+
+class StatementWrapper(object):
+    """Wrapper for SQL Alchemy statements to allow statements to be passed to
+    functions that can mutate them.
+    """
+
+    def __init__(self, stmt):
+        self.stmt = stmt
+
+def exec_query_hooks(ext_class, stmt, *args, **kwargs):
+    """Execute query hooks. Wraps the SQL Alchemy statement in a container
+    object to allow hooks to mutate the statement.
+    """
+    stmt_wrapper = StatementWrapper(stmt)
+    exec_hooks(ext_class, stmt_wrapper, *args, **kwargs)
+    return stmt_wrapper.stmt

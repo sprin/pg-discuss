@@ -46,7 +46,7 @@ ENABLE_EXT_BLESSED_CORS = True
 EXT_ORDER = ''
 
 ## Driver settings
-DRIVER_JSON_ENCODER = 'blessed_iso_date_json_encoder'
+DRIVER_JSON_ENCODER = 'blessed_smart_iso_date_json_encoder'
 
 ## Log settings
 LOGLEVEL = 'INFO'

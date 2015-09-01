@@ -2,12 +2,19 @@ from flask import (
     jsonify,
 )
 
-from pg_discuss.ext import AppExtBase
+from pg_discuss.ext import (
+    AppExtBase,
+    OnCommentPreSerialize,
+)
 from pg_discuss import queries
 
-class DeleteViewExt(AppExtBase):
+class DeleteViewExt(AppExtBase, OnCommentPreSerialize):
     def init_app(self, app):
         app.route('/comments/<int:comment_id>', methods=['DELETE'])(delete)
+
+    def on_comment_preserialize(self, raw_comment, client_comment, **extras):
+        if 'deleted' in raw_comment['custom_json']:
+            client_comment['deleted'] = raw_comment['custom_json']['deleted']
 
 def delete(comment_id):
     """Mark a comment as deleted. The comment will still show up in API reults,
