@@ -28,6 +28,22 @@ def to_client_comment(raw_comment):
 
     return client_comment
 
+def to_client_comment_collection_obj(comment_seq):
+    """Prepare collection of comments for serialization to JSON.
+
+    Return value is an object whose JSON representation is the response.
+    """
+    collection_obj = {
+        'comments': comment_seq
+    }
+
+    # Run on_comment_serialize hooks
+    ext.exec_hooks(ext.OnCommentCollectionPreSerialize, comment_seq,
+                   collection_obj)
+
+    return collection_obj
+
+
 def to_client_thread(raw_thread):
     """Prepare threads for serialization to JSON.
 

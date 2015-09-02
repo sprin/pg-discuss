@@ -159,6 +159,20 @@ class OnThreadPreSerialize(GenericExtBase):
         `raw_thread`.
         """
 
+@six.add_metaclass(abc.ABCMeta)
+class OnCommentCollectionPreSerialize(GenericExtBase):
+    """Mixin class for extensions that want to add fields to the serialized
+    thread.
+    """
+    hook_name = 'on_comment_collection_preserialize'
+
+    @abc.abstractmethod
+    def on_comment_collection_preserialize(self, comment_seq, collection_obj,
+                                           **extras):
+        """Add to or modify the comment collection object, whose JSON
+        representation is the response.
+        """
+
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
     Note that this allows for extensions to subclass multiple hook mixins.

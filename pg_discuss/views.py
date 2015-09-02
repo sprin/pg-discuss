@@ -32,7 +32,8 @@ from . import serialize
 def fetch(thread_client_id):
     comments_seq = queries.fetch_comments_by_thread_client_id(thread_client_id)
     comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
-    return jsonify({'replies': comments_seq})
+    collection_obj = serialize.to_client_comment_collection_obj(comments_seq)
+    return jsonify(collection_obj)
 
 def new(thread_client_id):
     # Extract whitelisted attributes from request JSON
