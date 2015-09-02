@@ -61,7 +61,9 @@ def new(thread_client_id):
     # Insert the comment
     comment = queries.insert_comment(new_comment)
     comment = serialize.to_client_comment(comment)
-    return jsonify(comment)
+    resp = jsonify(comment)
+    resp.status_code = 201
+    return resp
 
 def view(comment_id):
     # Fetch the comment
