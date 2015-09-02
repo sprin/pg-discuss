@@ -55,7 +55,15 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
-db = SQLAlchemy()
+class PgAlchemy(SQLAlchemy):
+    """Custom subclass of the SQLAlchemy extension that sets the
+    connection timezone to UTC. The backend should handle timestamps entirely
+    in UTC, with timezone adjustment performed on the client side.
+    """
+    def apply_driver_hacks(self, app, info, options):
+        options['connect_args'] = {"options": "-c timezone=utc"}
+
+db = PgAlchemy()
 
 class Thread(db.Model):
     id = Column(Integer, primary_key=True)
@@ -68,7 +76,7 @@ class Comment(db.Model):
     thread_id = Column(Integer, ForeignKey('thread.id'), nullable=False)
     parent_id = Column(Integer, ForeignKey('comment.id'))
     version_of_id = Column(Integer, ForeignKey('comment.id'), nullable=True)
-    created = Column(DateTime, server_default=text('NOW()'), nullable=False)
-    modified = Column(DateTime, server_default=text('NOW()'), nullable=False)
+    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
+    modified = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     text = Column(String, nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)

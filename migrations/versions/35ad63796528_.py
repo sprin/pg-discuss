@@ -1,13 +1,13 @@
 """empty message
 
-Revision ID: 528348fb938d
+Revision ID: 35ad63796528
 Revises: None
-Create Date: 2015-09-01 01:12:00.255389
+Create Date: 2015-09-02 00:18:10.066389
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '528348fb938d'
+revision = '35ad63796528'
 down_revision = None
 
 from alembic import op
@@ -28,8 +28,8 @@ def upgrade():
     sa.Column('thread_id', sa.Integer(), nullable=False),
     sa.Column('parent_id', sa.Integer(), nullable=True),
     sa.Column('version_of_id', sa.Integer(), nullable=True),
-    sa.Column('created', sa.DateTime(), server_default=sa.text(u'NOW()'), nullable=False),
-    sa.Column('modified', sa.DateTime(), server_default=sa.text(u'NOW()'), nullable=False),
+    sa.Column('created', sa.DateTime(timezone=True), server_default=sa.text(u'NOW()'), nullable=False),
+    sa.Column('modified', sa.DateTime(timezone=True), server_default=sa.text(u'NOW()'), nullable=False),
     sa.Column('text', sa.String(), nullable=False),
     sa.Column('custom_json', postgresql.JSONB(), server_default='{}', nullable=False),
     sa.ForeignKeyConstraint(['parent_id'], ['comment.id'], ),

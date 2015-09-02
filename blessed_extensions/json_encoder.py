@@ -9,7 +9,7 @@ from simplejson import (
 
 def unix_time(dt):
     epoch = datetime.datetime.utcfromtimestamp(0)
-    delta = dt - epoch
+    delta = dt.replace(tzinfo = None) - epoch
     return delta.total_seconds()
 
 class UnixTimeJSONEncoder(JSONEncoder):
