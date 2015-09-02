@@ -30,7 +30,7 @@ def exec_comment_validators(comment):
 def validate_new_comment(new_comment):
     new_comment_schema = All(
         Schema({
-            'parent': All(Any(int, None), validate_parent),
+            'parent_id': All(Any(int, None), validate_parent),
             Required('text'): unicode,
         }),
         exec_comment_validators,
