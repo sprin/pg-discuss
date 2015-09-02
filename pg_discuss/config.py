@@ -46,7 +46,7 @@ ENABLE_EXT_BLESSED_CORS = True
 EXT_ORDER = ''
 
 ## Driver settings
-DRIVER_JSON_ENCODER = 'blessed_smart_iso_date_json_encoder'
+DRIVER_JSON_ENCODER = 'blessed_smart_unix_time_json_encoder'
 
 ## Log settings
 LOGLEVEL = 'INFO'
@@ -70,6 +70,8 @@ MAX_COMMENT_LENGTH = 65535
 # CORS: List of allowed origins (origins where widget will be embedded)
 # http://www.w3.org/TR/cors/
 CORS_ORIGINS=[]
+# CORS: List of headers that client is allowed to read.
+CORS_EXPOSE_HEADERS=['Date','X-Set-Cookie']
 
 def get_enabled_extensions(config):
     """Get the list of extension entrypoint names where `ENABLE_EXT_*` is True.
