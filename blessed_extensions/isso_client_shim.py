@@ -4,23 +4,29 @@ If extensions that add edit/delete views are enabled, they must be loaded before
 this extension.
 """
 import datetime
+import functools
 from flask import request
 from pg_discuss.ext import (
     AppExtBase,
     OnCommentPreSerialize,
     OnCommentCollectionPreSerialize,
     OnPreInsert,
+    OnNewCommentResponse,
 )
 import codecs
 from werkzeug.security import pbkdf2_bin as pbkdf2
+from werkzeug.http import dump_cookie
 
 class IssoClientShim(AppExtBase, OnCommentPreSerialize,
-                     OnCommentCollectionPreSerialize, OnPreInsert):
+                     OnCommentCollectionPreSerialize, OnPreInsert,
+                     OnNewCommentResponse):
     def init_app(self, app):
         self.app = app
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+        # Default cookie age is 900s, or 15m.
+        self.max_age = app.config.get('COOKIE_MAX_AGE', 900)
 
         app.route('/', methods=['GET'])(self.fetch_)
         app.route('/new', methods=['POST'])(self.new_)
@@ -72,7 +78,28 @@ class IssoClientShim(AppExtBase, OnCommentPreSerialize,
         json = request.get_json()
         json['parent_id'] = json['parent']
 
+        # Return response. Response will be further processed by
+        # `on_new_comment_response` to set cookies.
         return self.app.view_functions['new'](thread_client_id)
+
+    def on_new_comment_response(self, resp, raw_comment, client_comment,
+                                **extras):
+        """Set a cookie to allow the client to edit/delete the comment.
+        """
+        # Set a cookie with a non-empty string value.
+        # It does not matter to the client what the value is, just so long
+        # as it is non-empty.
+        cookie = functools.partial(dump_cookie,
+            value='.',
+            max_age=self.max_age,
+        )
+
+        comment_id = raw_comment['id']
+
+        resp.headers.add("Set-Cookie", cookie(str(comment_id)))
+        resp.headers.add("X-Set-Cookie", cookie("isso-%i" % comment_id))
+
+        return resp
 
     def fetch_(self):
         """Fetch the list of comments associated with the thread.
