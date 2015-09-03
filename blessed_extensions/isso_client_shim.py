@@ -9,10 +9,13 @@ from pg_discuss.ext import (
     AppExtBase,
     OnCommentPreSerialize,
     OnCommentCollectionPreSerialize,
+    OnPreInsert,
 )
+import codecs
+from werkzeug.security import pbkdf2_bin as pbkdf2
 
 class IssoClientShim(AppExtBase, OnCommentPreSerialize,
-                     OnCommentCollectionPreSerialize):
+                     OnCommentCollectionPreSerialize, OnPreInsert):
     def init_app(self, app):
         self.app = app
         # Disable all pretty-printing. Flask will not disable it since
@@ -36,6 +39,7 @@ class IssoClientShim(AppExtBase, OnCommentPreSerialize,
 
     def on_comment_preserialize(self, raw_comment, client_comment, **extras):
         client_comment['parent'] = raw_comment['parent_id']
+        client_comment['hash'] = raw_comment['custom_json'].get('hash')
 
     def on_comment_collection_preserialize(self, comment_seq, collection_obj,
                                            **extras):
@@ -45,6 +49,15 @@ class IssoClientShim(AppExtBase, OnCommentPreSerialize,
 
         # Add the count of top-level comments under key `total_replies'
         collection_obj['total_replies'] = len(collection_obj['replies'])
+
+    def on_pre_insert(self, stmt_wrapper, new_comment, **extras):
+        # Hash email, or remote_addr
+        custom_json = new_comment['custom_json']
+        custom_json['hash'] = hash(
+            custom_json['email'] or custom_json['remote_addr']
+        )
+        stmt_wrapper.stmt = stmt_wrapper.stmt.values(custom_json=custom_json)
+
 
     def new_(self):
         """Create a new comments.
@@ -86,3 +99,9 @@ def build_comment_tree(comment_seq, parent_id=None):
         c['replies'] = build_comment_tree(comment_seq, c['id'])
         c['total_replies'] = len(c['replies'])
     return children
+
+
+def hash(val):
+    salt = b"Eech7co8Ohloopo9Ol6baimi"
+    hashed = pbkdf2(val.encode('utf-8'), salt, 1000, 6, "sha1")
+    return codecs.encode(hashed, "hex_codec").decode("utf-8")
