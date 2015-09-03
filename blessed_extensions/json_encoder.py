@@ -2,10 +2,8 @@
 """
 import datetime
 from flask import request
-from simplejson import (
-    JSONEncoder,
-    JSONEncoderForHTML,
-)
+from simplejson import JSONEncoder
+from pg_discuss import _compat
 
 def unix_time(dt):
     epoch = datetime.datetime.utcfromtimestamp(0)
@@ -28,22 +26,11 @@ class IsoDateJSONEncoder(JSONEncoder):
             return obj.isoformat() + 'Z'
         return JSONEncoder.default(self, obj)
 
-class UnixTimeJSONEncoderForHTML(JSONEncoderForHTML):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return unix_time(obj)
-        return JSONEncoderForHTML.default(self, obj)
-
-class IsoDateJSONEncoderForHTML(JSONEncoderForHTML):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat() + 'Z'
-        return JSONEncoderForHTML.default(self, obj)
-
 class SmartJSONEncoderBase(object):
-    """Base class for "smart" JSON encoders that escape HTML by default,
-    but will send unescaped HTML if the HTTP header `X-HTML-Escape` is set to
-    0.
+    """Base class for "smart" JSON encoders that escape HTML (using HTML entity
+    escaping) by default, but will send unescaped HTML if the HTTP header
+    `X-HTML-Escape` is set to 0.
+
 
     This ensures that web clients that cannot be trusted to properly escape
     JSON data before rendering in to the DOM are protected from XSS by default,
@@ -51,28 +38,16 @@ class SmartJSONEncoderBase(object):
     escaping is undesirable.
     """
     def __init__(self, *args, **kwargs):
-        if request.headers.get('X-HTML-Escape') == '0':
-            self.wrapped_class = self.no_html_escape_class(*args, **kwargs)
-        else:
-            self.wrapped_class = self.html_escape_class(*args, **kwargs)
+        self.wrapped_class = self.encoder_class(*args, **kwargs)
 
-    def __getattr__(self,attr):
-        orig_attr = self.wrapped_class.__getattribute__(attr)
-        if callable(orig_attr):
-            def hooked(*args, **kwargs):
-                result = orig_attr(*args, **kwargs)
-                # prevent wrapped_class from becoming unwrapped
-                if result == self.wrapped_class:
-                    return self
-                return result
-            return hooked
-        else:
-            return orig_attr
+    def encode(self, *args, **kwargs):
+        rv = self.wrapped_class.encode(*args, **kwargs)
+        if request.headers.get('X-HTML-Escape') == '0':
+            return rv
+        return _compat.escape(rv)
 
 class SmartUnixTimeJSONEncoder(SmartJSONEncoderBase):
-    no_html_escape_class = UnixTimeJSONEncoder
-    html_escape_class = UnixTimeJSONEncoderForHTML
+    encoder_class = UnixTimeJSONEncoder
 
 class SmartIsoDateJSONEncoder(SmartJSONEncoderBase):
-    no_html_escape_class = IsoDateJSONEncoder
-    html_escape_class = IsoDateJSONEncoderForHTML
+    encoder_class = IsoDateJSONEncoder

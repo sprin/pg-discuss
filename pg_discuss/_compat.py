@@ -12,14 +12,17 @@ except ImportError: # pragma: no cover
     # python 3
     from urllib.parse import urlparse
 
-if sys.version_info[0] == 3: # pragma: no cover
+PY3 = sys.version_info[0] == 3
+if PY3: # pragma: no cover
     text_type = str
     string_types = (str,)
     unquote = urllib.parse.unquote
-else:
+    from html import escape
+else: # pragma: no cover
     text_type = unicode
     string_types = (str, unicode)
     unquote = urllib.unquote
+    from cgi import escape
 
 def to_bytes(text):
     """Transform string to bytes."""
