@@ -63,7 +63,7 @@ class JsonMimetypeExt(AppExtBase):
                 return
         """
         view_location = '%s.%s' % (view.__module__, view.__name__)
-        self._exempt_views.add(view_location)
+        self._exempt_views.append(view_location)
         return view
 
     def _error_response(self, reason):
