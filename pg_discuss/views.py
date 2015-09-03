@@ -28,6 +28,7 @@ from flask import (
 from . import queries
 from . import forms
 from . import serialize
+from . import ext
 
 def fetch(thread_client_id):
     comments_seq = queries.fetch_comments_by_thread_client_id(thread_client_id)
@@ -60,10 +61,15 @@ def new(thread_client_id):
     new_comment['thread_id'] = thread['id']
 
     # Insert the comment
-    comment = queries.insert_comment(new_comment)
-    comment = serialize.to_client_comment(comment)
-    resp = jsonify(comment)
+    raw_comment = queries.insert_comment(new_comment)
+    client_comment = serialize.to_client_comment(raw_comment)
+
+
+    resp = jsonify(client_comment)
     resp.status_code = 201
+
+    ext.exec_hooks(ext.OnNewCommentResponse, resp, raw_comment, client_comment)
+
     return resp
 
 def view(comment_id):

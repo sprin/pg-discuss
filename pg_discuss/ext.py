@@ -173,6 +173,23 @@ class OnCommentCollectionPreSerialize(GenericExtBase):
         representation is the response.
         """
 
+@six.add_metaclass(abc.ABCMeta)
+class OnNewCommentResponse(GenericExtBase):
+    """Mixin class for extensions that want to process the response of the new
+    comment view.
+
+    A common case is to set cookies or other headers using the value of the
+    newly created comment.
+    """
+    hook_name = 'on_new_comment_response'
+
+    @abc.abstractmethod
+    def on_new_comment_response(self, resp, raw_comment, client_comment,
+                                **extras):
+        """Process the response of the new comment view. Both the 'raw' comment
+        and the comment formatted for the client are given as arguments.
+        """
+
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
     Note that this allows for extensions to subclass multiple hook mixins.
