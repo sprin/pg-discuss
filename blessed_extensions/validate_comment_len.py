@@ -7,5 +7,5 @@ class ValidateCommentLen(ext.ValidateComment):
         text = comment['text']
         min_comment_length = self.app.config['MIN_COMMENT_LENGTH']
         max_comment_length = self.app.config['MAX_COMMENT_LENGTH']
-        Length(min=min_comment_length, max=max_comment_length)(text)
+        Length(min=min_comment_length, max=max_comment_length)(text.rstrip())
         return comment
