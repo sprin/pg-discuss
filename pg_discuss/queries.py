@@ -116,12 +116,11 @@ def update_comment(comment_id, comment_edit, update_modified=False):
     # Fetch the "old" comment
     old_comment = fetch_comment_by_id(comment_id)
 
-    if 'custom_json_patch' in comment_edit:
+    if 'custom_json' in comment_edit:
         comment_edit['custom_json'] = dict(
             old_comment['custom_json'],
-            **comment_edit['custom_json_patch']
+            **comment_edit['custom_json']
         )
-        del comment_edit['custom_json_patch']
 
     # Update the "old" comment in place.
     stmt = (

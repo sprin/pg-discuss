@@ -64,7 +64,6 @@ def new(thread_client_id):
     raw_comment = queries.insert_comment(new_comment)
     client_comment = serialize.to_client_comment(raw_comment)
 
-
     resp = jsonify(client_comment)
     resp.status_code = 201
 
@@ -77,3 +76,23 @@ def view(comment_id):
     comment = queries.fetch_comment_by_id(comment_id)
     comment = serialize.to_client_comment(comment)
     return jsonify(comment)
+
+def edit(comment_id):
+    json = request.get_json()
+    comment_edit = {'text': json['text']}
+
+    # Create empty `custom_json`, for extensions to populate.
+    # This will later be merged in to the existing `custom_json`.
+    comment_edit['custom_json'] = {}
+
+    # Validate required, type, text length
+    # Use the id given in the URL path, ignoring any in the request JSON
+    comment_edit = forms.validate_comment_edit(comment_edit)
+
+    # Update the comment
+    result = queries.update_comment(
+        comment_id,
+        comment_edit,
+        update_modified=True
+    )
+    return jsonify(result)

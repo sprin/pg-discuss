@@ -9,7 +9,7 @@ from voluptuous import (
 from pg_discuss import ext
 
 class CaptureEmail(ext.ValidateComment):
-    def validate_comment(self, comment, **extras):
+    def validate_comment(self, comment, action, **extras):
         email = request.get_json().get('email')
         if email:
             comment['custom_json']['email'] = Schema(

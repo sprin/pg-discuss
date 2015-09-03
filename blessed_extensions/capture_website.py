@@ -8,7 +8,7 @@ from voluptuous import (
 from pg_discuss import ext
 
 class CaptureWebsite(ext.ValidateComment, ext.OnCommentPreSerialize):
-    def validate_comment(self, comment, **extras):
+    def validate_comment(self, comment, action, **extras):
         website = request.get_json().get('website')
         if website:
             url = Schema(All(unicode, Url()))(website)

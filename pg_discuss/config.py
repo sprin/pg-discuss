@@ -27,7 +27,6 @@ import os
 #   complicates atomic enabling and disabling of extensions.
 #
 # See the `get_enabled_extensions` in this module for parsing details.
-ENABLE_EXT_BLESSED_EDIT_VIEW = True
 ENABLE_EXT_BLESSED_DELETE_VIEW = True
 ENABLE_EXT_BLESSED_CSRF_TOKEN = True
 ENABLE_EXT_BLESSED_CSRF_HEADER = True

@@ -112,7 +112,7 @@ class ValidateComment(GenericExtBase):
     hook_name = 'validate_comment'
 
     @abc.abstractmethod
-    def validate_comment(self, comment, **extras):
+    def validate_comment(self, comment, action, **extras):
         """Validate a comment dictionary.
         """
 
