@@ -50,6 +50,10 @@ setup(
             'blessed_smart_iso_date_json_encoder = blessed_extensions.json_encoder:SmartIsoDateJSONEncoder',
             'blessed_isso_client_shim = blessed_extensions.isso_client_shim:IssoClientShim',
             'blessed_cors = blessed_extensions.cors:CorsExt',
+            'blessed_capture_author = blessed_extensions.capture_author:CaptureAuthor',
+            'blessed_capture_website = blessed_extensions.capture_website:CaptureWebsite',
+            'blessed_capture_email = blessed_extensions.capture_email:CaptureEmail',
+            'blessed_capture_remote_addr = blessed_extensions.capture_remote_addr:CaptureRemoteAddr',
         ],
     },
 

@@ -44,11 +44,11 @@ def new(thread_client_id):
     allowed_keys = ['parent_id', 'text']
     new_comment = {k: json[k] for k in allowed_keys if json.has_key(k)}
 
-    # Validate required, type, text length
-    new_comment = forms.validate_new_comment(new_comment)
-
     # Create empty `custom_json`, for extensions to populate.
     new_comment['custom_json'] = {}
+
+    # Validate required, type, text length
+    new_comment = forms.validate_new_comment(new_comment)
 
     # Try to fetch the existing thread record
     try:

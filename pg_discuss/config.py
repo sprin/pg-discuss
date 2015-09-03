@@ -37,6 +37,10 @@ ENABLE_EXT_BLESSED_ARCHIVE_UPDATES = True
 ENABLE_EXT_BLESSED_VALIDATE_COMMENT_LEN = True
 ENABLE_EXT_BLESSED_ISSO_CLIENT_SHIM = True
 ENABLE_EXT_BLESSED_CORS = True
+ENABLE_EXT_BLESSED_CAPTURE_AUTHOR = True
+ENABLE_EXT_BLESSED_CAPTURE_EMAIL = True
+ENABLE_EXT_BLESSED_CAPTURE_WEBSITE = True
+ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
 
 # Optional: Order extensions using comma-separated list of extension names.
 # It is generally discouraged to write order-dependent extensions, but it may

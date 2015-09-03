@@ -32,6 +32,7 @@ def validate_new_comment(new_comment):
         Schema({
             'parent_id': All(Any(int, None), validate_parent),
             Required('text'): unicode,
+            Required('custom_json'): dict,
         }),
         exec_comment_validators,
     )
