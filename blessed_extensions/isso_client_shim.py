@@ -6,46 +6,37 @@ this extension.
 import datetime
 import functools
 from flask import request
-from pg_discuss.ext import (
-    AppExtBase,
-    OnCommentPreSerialize,
-    OnCommentCollectionPreSerialize,
-    OnPreInsert,
-    OnNewCommentResponse,
-)
+from pg_discuss import ext
 import codecs
 from werkzeug.security import pbkdf2_bin as pbkdf2
 from werkzeug.http import dump_cookie
 
-class IssoClientShim(AppExtBase, OnCommentPreSerialize,
-                     OnCommentCollectionPreSerialize, OnPreInsert,
-                     OnNewCommentResponse):
+class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
+                     ext.OnCommentCollectionPreSerialize, ext.OnPreInsert,
+                     ext.OnNewCommentResponse):
     def init_app(self, app):
         self.app = app
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
         # Default cookie age is 900s, or 15m.
-        self.max_age = app.config.get('COOKIE_MAX_AGE', 900)
+        app.config.setdefault('COOKIE_MAX_AGE', 900)
 
+        views = app.view_functions
         app.route('/', methods=['GET'])(self.fetch_)
         app.route('/new', methods=['POST'])(self.new_)
-        app.route('/id/<int:comment_id>', methods=['GET'])(
-            app.view_functions['view'])
+        app.route('/id/<int:comment_id>', methods=['GET'])( views['view'])
         app.route('/count', methods=['POST'])(self.count)
-
-        # Create routes to edit and delete views, if they have been configured.
-        if 'edit' in app.view_functions:
-            app.route('/id/<int:comment_id>', methods=['PUT'])(
-                app.view_functions['edit'])
-
-        if 'delete' in app.view_functions:
-            app.route('/id/<int:comment_id>', methods=['DELETE'])(
-                app.view_functions['delete'])
+        app.route('/id/<int:comment_id>', methods=['PUT'])( views['edit'])
+        app.route('/id/<int:comment_id>', methods=['DELETE'])(views['delete'])
 
     def on_comment_preserialize(self, raw_comment, client_comment, **extras):
         client_comment['parent'] = raw_comment['parent_id']
         client_comment['hash'] = raw_comment['custom_json'].get('hash')
+
+        # Set "mode" to 4 for deleted comments
+        if raw_comment['custom_json'].get('deleted'):
+            client_comment['mode'] = 4
 
     def on_comment_collection_preserialize(self, comment_seq, collection_obj,
                                            **extras):
@@ -91,7 +82,7 @@ class IssoClientShim(AppExtBase, OnCommentPreSerialize,
         # as it is non-empty.
         cookie = functools.partial(dump_cookie,
             value='.',
-            max_age=self.max_age,
+            max_age=self.app.config['COOKIE_MAX_AGE'],
         )
 
         comment_id = raw_comment['id']
@@ -126,7 +117,6 @@ def build_comment_tree(comment_seq, parent_id=None):
         c['replies'] = build_comment_tree(comment_seq, c['id'])
         c['total_replies'] = len(c['replies'])
     return children
-
 
 def hash(val):
     salt = b"Eech7co8Ohloopo9Ol6baimi"
