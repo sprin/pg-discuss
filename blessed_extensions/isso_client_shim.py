@@ -6,10 +6,11 @@ this extension.
 import datetime
 import functools
 from flask import request
-from pg_discuss import ext
 import codecs
 from werkzeug.security import pbkdf2_bin as pbkdf2
 from werkzeug.http import dump_cookie
+
+from pg_discuss import ext
 
 class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
                      ext.OnCommentCollectionPreSerialize, ext.OnPreInsert,
@@ -23,6 +24,11 @@ class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
         app.config.setdefault('COOKIE_MAX_AGE', 900)
 
         views = app.view_functions
+
+        # Exempt public read-only views from IdentityPolicy
+        app.identity_policy_mgr.exempt(self.fetch_)
+        app.identity_policy_mgr.exempt(self.count)
+
         app.route('/', methods=['GET'])(self.fetch_)
         app.route('/new', methods=['POST'])(self.new_)
         app.route('/id/<int:comment_id>', methods=['GET'])( views['view'])
@@ -79,7 +85,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
         """
         # Set a cookie with a non-empty string value.
         # It does not matter to the client what the value is, just so long
-        # as it is non-empty.
+        # as it is non-empty. Identitys are authenticated through another means.
         cookie = functools.partial(dump_cookie,
             value='.',
             max_age=self.app.config['COOKIE_MAX_AGE'],
