@@ -27,11 +27,20 @@ def app_factory():
     app.migrate = Migrate(app, db)
 
     ## Use stevedore to load JSON encoder driver
-    app.json_encoder_mgr = driver.DriverManager(
+    app.json_encoder_loader = driver.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_JSON_ENCODER'],
     )
-    app.json_encoder = app.json_encoder_mgr.driver
+    app.json_encoder = app.json_encoder_loader.driver
+
+    ## Use stevedore to load the IdentityPolicy
+    app.identity_policy_loader = driver.DriverManager(
+        namespace='pg_discuss.ext',
+        name=app.config['DRIVER_IDENTITY_POLICY'],
+    )
+    app.identity_policy = app.identity_policy_loader.driver
+    # Iniatialize IdentityPolicyManager with configured IdentityManager
+    app.identity_policy_mgr = ext.IdentityPolicyManager(app)
 
     ## Use stevedore to load extensions.
     # Discover all extensions, but do not load any.
@@ -39,6 +48,10 @@ def app_factory():
     app.ext_mgr_all = extension.ExtensionManager(
         namespace='pg_discuss.ext'
     )
+
+    # Exempt public read-only views from IdentityPolicy
+    app.identity_policy_mgr.exempt(views.fetch)
+    app.identity_policy_mgr.exempt(views.view)
 
     # Default routes. Other routes must be added through App extensions.
     # Default routes are set up before app extensions are loaded so extensions

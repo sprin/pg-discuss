@@ -15,6 +15,9 @@ class CommentNotFoundError(Exception):
 class ThreadNotFoundError(Exception):
     pass
 
+class IdentityNotFoundError(Exception):
+    pass
+
 def fetch_thread_by_client_id(thread_client_id):
     t = tables.thread
     stmt = t.select().where(t.c.client_id == thread_client_id)
@@ -106,15 +109,50 @@ def insert_thread(new_thread):
 
     return thread
 
-def update_comment(comment_id, comment_edit, update_modified=False):
+def insert_identity(new_identity=None):
+    """Insert the `new_thread` object in to the database."""
+    t = tables.identity
+    stmt = (
+        t.insert()
+        .returning(*list(t.c))
+    )
+    if new_identity:
+        stmt = stmt.values(**new_identity)
+
+    # TODO: Run on_pre_insert hooks
+    #stmt = ext.exec_query_hooks(ext.OnThreadPreInsert, stmt, new_identity)
+
+    result = db.engine.execute(stmt).first()
+    identity= dict(result.items())
+
+    # TODO: Run on_post_insert hooks
+    #ext.exec_hooks(ext.OnPostInsert, identity)
+
+    return identity
+
+def fetch_identity(identity_id):
+    t = tables.identity
+    stmt = t.select().where(t.c.id == identity_id)
+
+    # TODO: Run on_thread_pre_fetch hooks
+    #stmt = ext.exec_query_hooks(ext.OnThreadPreFetch, stmt)
+
+    result = db.engine.execute(stmt).first()
+    if not result:
+        raise IdentityNotFoundError(
+            'Identity {0} not found'.format(identity_id)
+        )
+    identity = dict(result.items())
+
+    return identity
+
+def update_comment(comment_id, comment_edit, old_comment, update_modified=False):
     """Update the comment in the database in response to a request
     from the author. The `modified` timestamp will be set to the current time.
 
     Update requests should be validated before being passed to this function.
     """
     t = tables.comment
-    # Fetch the "old" comment
-    old_comment = fetch_comment_by_id(comment_id)
 
     if 'custom_json' in comment_edit:
         comment_edit['custom_json'] = dict(

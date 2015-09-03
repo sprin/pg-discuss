@@ -49,6 +49,7 @@ EXT_ORDER = ''
 
 ## Driver settings
 DRIVER_JSON_ENCODER = 'blessed_smart_unix_time_json_encoder'
+DRIVER_IDENTITY_POLICY = 'blessed_auth_tkt_identity_policy'
 
 ## Log settings
 LOGLEVEL = 'INFO'

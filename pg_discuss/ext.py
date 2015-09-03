@@ -17,7 +17,11 @@ the future, all Hook methods must take a `**extras` argument.
 import abc
 import six
 
-from flask import current_app
+from flask import (
+    current_app,
+    g,
+    request,
+)
 
 class PluginLoadError(Exception):
     pass
@@ -46,6 +50,24 @@ class AppExtBase(GenericExtBase):
     def init_app(self, app):
         """Perform app initialization."""
 
+
+@six.add_metaclass(abc.ABCMeta)
+class IdentityPolicy(GenericExtBase):
+
+    @abc.abstractmethod
+    def get_identity(self, request, **extras):
+        """Get the identity record associated with the request.
+        """
+
+    @abc.abstractmethod
+    def forget(self, request, **extras):
+        """Forget the identity, if remembered, on subsequent requests.
+        """
+
+    @abc.abstractmethod
+    def remember(self, request, **extras):
+        """Remember the identity for subsequent requests.
+        """
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPreInsert(GenericExtBase):
@@ -239,3 +261,55 @@ def exec_query_hooks(ext_class, stmt, *args, **kwargs):
     stmt_wrapper = StatementWrapper(stmt)
     exec_hooks(ext_class, stmt_wrapper, *args, **kwargs)
     return stmt_wrapper.stmt
+
+class IdentityPolicyManager(AppExtBase):
+    """Middleware to execute the configured IdentityPolicy.
+    """
+
+    def init_app(self, app):
+        self._app = app
+        self._exempt_views = []
+        self.identity_policy = app.identity_policy()
+
+        app.config.setdefault('IDENTITY_POLICY_EXEMPT_METHODS', ['OPTIONS'])
+
+        @app.before_request
+        def _auth_before_request():
+            if request.method in app.config['IDENTITY_POLICY_EXEMPT_METHODS']:
+                return
+            if self._exempt_views:
+                if not request.endpoint:
+                    return
+
+                view = app.view_functions.get(request.endpoint)
+                if not view:
+                    return
+
+                dest = '%s.%s' % (view.__module__, view.__name__)
+                if dest in self._exempt_views:
+                    return
+            return self.auth_before_request()
+
+    def auth_before_request(self):
+        # Get the identity object.
+        identity = self.identity_policy.get_identity(request)
+
+        if identity:
+            # Store the identity object on the `g` request global.
+            g.identity = identity
+
+            # Remember the identity.
+            self.identity_policy.remember(request, identity['id'])
+
+    def exempt(self, view):
+        """A decorator that can exclude a view from JSON mimetype checking.
+        Remember to put the decorator above the `route`::
+            identity_policy_mgr = IdentityPolicyManager(app)
+            @identity_policy_mgr.exempt
+            @app.route('/some-view', methods=['GET'])
+            def some_view():
+                return
+        """
+        view_location = '%s.%s' % (view.__module__, view.__name__)
+        self._exempt_views.append(view_location)
+        return view

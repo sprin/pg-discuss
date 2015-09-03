@@ -19,7 +19,10 @@ else:
         '\n'.join([e.name for e in app.ext_mgr_all.extensions])))
 
     app.logger.info('Enabled JSON encoder driver:\n{}'.format(
-        app.json_encoder_mgr.extensions[0].name))
+        app.json_encoder_loader.extensions[0].name))
+
+    app.logger.info('Enabled IdentityPolicy driver:\n{}'.format(
+        app.identity_policy_loader.extensions[0].name))
 
     app.logger.info('Enabled extensions:\n{}'.format(
         '\n'.join([e.name for e in app.ext_mgr.extensions])))

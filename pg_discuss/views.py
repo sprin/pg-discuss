@@ -21,8 +21,10 @@ clients are web clients.
 """
 
 from flask import (
+    abort,
     jsonify,
     request,
+    g,
 )
 
 from . import queries
@@ -47,6 +49,9 @@ def new(thread_client_id):
 
     # Create empty `custom_json`, for extensions to populate.
     new_comment['custom_json'] = {}
+
+    # Associate comment with identity
+    new_comment['identity_id'] = g.identity['id']
 
     # Validate required, type, text length
     new_comment = forms.validate_new_comment(new_comment)
@@ -89,10 +94,17 @@ def edit(comment_id):
     # Use the id given in the URL path, ignoring any in the request JSON
     comment_edit = forms.validate_comment_edit(comment_edit)
 
+    # Fetch the "old" comment
+    old_comment = queries.fetch_comment_by_id(comment_id)
+    if old_comment['identity_id'] != g.identity['id']:
+        abort(400,
+              'Cannot edit comment: this comment belongs to another identity')
+
     # Update the comment
     result = queries.update_comment(
         comment_id,
         comment_edit,
+        old_comment,
         update_modified=True
     )
     return jsonify(result)
@@ -114,10 +126,17 @@ def delete(comment_id):
         }
     }
 
+    # Fetch the "old" comment
+    old_comment = queries.fetch_comment_by_id(comment_id)
+    if old_comment['identity_id'] != g.identity['id']:
+        abort(400,
+              'Cannot delete comment: this comment belongs to another identity')
+
     # Mark the comment as deleted
     result = queries.update_comment(
         comment_id,
         comment_edit,
+        old_comment,
         update_modified=True
     )
     return jsonify(result)

@@ -52,6 +52,7 @@ setup(
             'blessed_capture_website = blessed_extensions.capture_website:CaptureWebsite',
             'blessed_capture_email = blessed_extensions.capture_email:CaptureEmail',
             'blessed_capture_remote_addr = blessed_extensions.capture_remote_addr:CaptureRemoteAddr',
+            'blessed_auth_tkt_identity_policy = blessed_extensions.auth_tkt_identity_policy:AuthTktIdentityPolicy',
         ],
     },
 

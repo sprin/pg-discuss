@@ -68,15 +68,23 @@ db = PgAlchemy()
 class Thread(db.Model):
     id = Column(Integer, primary_key=True)
     client_id = Column(String, unique=True)
+    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)
 
 
 class Comment(db.Model):
     id = Column(Integer, primary_key=True, nullable=False)
+    identity_id = Column(Integer, ForeignKey('identity.id'), nullable=True)
     thread_id = Column(Integer, ForeignKey('thread.id'), nullable=False)
     parent_id = Column(Integer, ForeignKey('comment.id'))
     version_of_id = Column(Integer, ForeignKey('comment.id'), nullable=True)
     created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     modified = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     text = Column(String, nullable=False)
+    custom_json = Column(JSONB, server_default='{}', nullable=False)
+
+
+class Identity(db.Model):
+    id = Column(Integer, primary_key=True, nullable=False)
+    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)

@@ -38,6 +38,7 @@ def validate_new_comment(new_comment):
             'parent_id': All(Any(int, None), validate_parent),
             Required('text'): unicode,
             Required('custom_json'): dict,
+            Required('identity_id'): Any(int, None),
         }),
         exec_comment_validators(action='new'),
     )
