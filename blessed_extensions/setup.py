@@ -36,7 +36,6 @@ setup(
 
     entry_points={
         'pg_discuss.ext': [
-            'blessed_delete_view = blessed_extensions.delete_view:DeleteViewExt',
             'blessed_csrf_token = blessed_extensions.csrf_token:CsrfTokenExt',
             'blessed_csrf_header = blessed_extensions.csrf_header:CsrfHeaderExt',
             'blessed_json_mimetype = blessed_extensions.json_mimetype:JsonMimetypeExt',

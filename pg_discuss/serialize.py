@@ -23,6 +23,10 @@ def to_client_comment(raw_comment):
     """
     client_comment = {k: raw_comment[k] for k in DEFAULT_COMMENT_WHITELIST}
 
+    # Extract `deleted` attribute from custom json as well.
+    if 'deleted' in raw_comment['custom_json']:
+        client_comment['deleted'] = raw_comment['custom_json']['deleted']
+
     # Run on_comment_serialize hooks
     ext.exec_hooks(ext.OnCommentPreSerialize, raw_comment, client_comment)
 
