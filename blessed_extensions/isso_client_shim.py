@@ -60,7 +60,7 @@ class IssoClientShim(AppExtBase, OnCommentPreSerialize,
         # Hash email, or remote_addr
         custom_json = new_comment['custom_json']
         custom_json['hash'] = hash(
-            custom_json['email'] or custom_json['remote_addr']
+            custom_json.get('email') or custom_json['remote_addr']
         )
         stmt_wrapper.stmt = stmt_wrapper.stmt.values(custom_json=custom_json)
 
@@ -76,7 +76,7 @@ class IssoClientShim(AppExtBase, OnCommentPreSerialize,
 
         # Set `parent_id` to parent.
         json = request.get_json()
-        json['parent_id'] = json['parent']
+        json['parent_id'] = json.get('parent')
 
         # Return response. Response will be further processed by
         # `on_new_comment_response` to set cookies.
