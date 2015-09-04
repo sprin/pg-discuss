@@ -6,8 +6,8 @@ Warning: Mikasa 2 API is currently unstable. This module will need to be
 updated upon the next release of Mikasa.
 """
 import operator
+import markupsafe
 from pg_discuss import ext
-from pg_discuss import _compat
 from misaka import (
     Markdown,
     HtmlRenderer,
@@ -54,4 +54,4 @@ class EscapingRenderer(ext.CommentRenderer):
     def render(self, text, **extras):
         """Render to HMTL entity-encoded text.
         """
-        return _compat.escape(text)
+        return markupsafe.escape(text)

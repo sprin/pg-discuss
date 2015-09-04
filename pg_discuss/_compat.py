@@ -17,12 +17,10 @@ if PY3: # pragma: no cover
     text_type = str
     string_types = (str,)
     unquote = urllib.parse.unquote
-    from html import escape
 else: # pragma: no cover
     text_type = unicode
     string_types = (str, unicode)
     unquote = urllib.unquote
-    from cgi import escape
 
 def to_bytes(text):
     """Transform string to bytes."""
