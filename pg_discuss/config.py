@@ -39,7 +39,6 @@ ENABLE_EXT_BLESSED_CAPTURE_AUTHOR = True
 ENABLE_EXT_BLESSED_CAPTURE_EMAIL = True
 ENABLE_EXT_BLESSED_CAPTURE_WEBSITE = True
 ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
-ENABLE_EXT_BLESSED_MARKDOWN = True
 
 # Optional: Order extensions using comma-separated list of extension names.
 # It is generally discouraged to write order-dependent extensions, but it may
@@ -49,6 +48,7 @@ ENABLE_EXT_BLESSED_MARKDOWN = True
 EXT_ORDER = ''
 
 ## Driver settings
+DRIVER_COMMENT_RENDERER = 'blessed_markdown_renderer'
 DRIVER_JSON_ENCODER = 'blessed_unix_time_json_encoder'
 DRIVER_IDENTITY_POLICY = 'blessed_auth_tkt_identity_policy'
 

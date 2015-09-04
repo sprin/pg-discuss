@@ -26,13 +26,6 @@ def app_factory():
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
 
-    ## Use stevedore to load JSON encoder driver
-    app.json_encoder_loader = driver.DriverManager(
-        namespace='pg_discuss.ext',
-        name=app.config['DRIVER_JSON_ENCODER'],
-    )
-    app.json_encoder = app.json_encoder_loader.driver
-
     ## Use stevedore to load the IdentityPolicy
     app.identity_policy_loader = driver.DriverManager(
         namespace='pg_discuss.ext',
@@ -41,6 +34,21 @@ def app_factory():
     app.identity_policy = app.identity_policy_loader.driver
     # Iniatialize IdentityPolicyManager with configured IdentityManager
     app.identity_policy_mgr = ext.IdentityPolicyManager(app)
+
+    ## Use stevedore to load comment renderer driver
+    app.comment_renderer_loader = driver.DriverManager(
+        namespace='pg_discuss.ext',
+        name=app.config['DRIVER_COMMENT_RENDERER'],
+    )
+    app.comment_renderer = app.comment_renderer_loader.driver()
+
+    ## Use stevedore to load JSON encoder driver
+    app.json_encoder_loader = driver.DriverManager(
+        namespace='pg_discuss.ext',
+        name=app.config['DRIVER_JSON_ENCODER'],
+    )
+    app.json_encoder = app.json_encoder_loader.driver
+
 
     ## Use stevedore to load extensions.
     # Discover all extensions, but do not load any.

@@ -313,3 +313,13 @@ class IdentityPolicyManager(AppExtBase):
         view_location = '%s.%s' % (view.__module__, view.__name__)
         self._exempt_views.append(view_location)
         return view
+
+@six.add_metaclass(abc.ABCMeta)
+class CommentRenderer(object):
+    """Driver to render comment text.
+    """
+
+    @abc.abstractmethod
+    def render(self, text, **extras):
+        """Render raw text into another format for display.
+        """

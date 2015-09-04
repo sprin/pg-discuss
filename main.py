@@ -18,11 +18,15 @@ else:
     app.logger.info('Found extensions/drivers:\n{}'.format(
         '\n'.join([e.name for e in app.ext_mgr_all.extensions])))
 
-    app.logger.info('Enabled JSON encoder driver:\n{}'.format(
-        app.json_encoder_loader.extensions[0].name))
-
     app.logger.info('Enabled IdentityPolicy driver:\n{}'.format(
         app.identity_policy_loader.extensions[0].name))
+
+    app.logger.info('Enabled CommentRenderer driver:\n{}'.format(
+        app.comment_renderer_loader.extensions[0].name))
+
+    app.logger.info('Enabled JSONEncoder driver:\n{}'.format(
+        app.json_encoder_loader.extensions[0].name))
+
 
     app.logger.info('Enabled extensions:\n{}'.format(
         '\n'.join([e.name for e in app.ext_mgr.extensions])))

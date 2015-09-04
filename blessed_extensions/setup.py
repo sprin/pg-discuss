@@ -44,8 +44,6 @@ setup(
             'blessed_validate_comment_len = blessed_extensions.validate_comment_len:ValidateCommentLen',
             'blessed_unix_time_json_encoder = blessed_extensions.json_encoder:UnixTimeJSONEncoder',
             'blessed_iso_date_json_encoder = blessed_extensions.json_encoder:IsoDateJSONEncoder',
-            'blessed_smart_unix_time_json_encoder = blessed_extensions.json_encoder:SmartUnixTimeJSONEncoder',
-            'blessed_smart_iso_date_json_encoder = blessed_extensions.json_encoder:SmartIsoDateJSONEncoder',
             'blessed_isso_client_shim = blessed_extensions.isso_client_shim:IssoClientShim',
             'blessed_cors = blessed_extensions.cors:CorsExt',
             'blessed_capture_author = blessed_extensions.capture_author:CaptureAuthor',
@@ -53,7 +51,8 @@ setup(
             'blessed_capture_email = blessed_extensions.capture_email:CaptureEmail',
             'blessed_capture_remote_addr = blessed_extensions.capture_remote_addr:CaptureRemoteAddr',
             'blessed_auth_tkt_identity_policy = blessed_extensions.auth_tkt_identity_policy:AuthTktIdentityPolicy',
-            'blessed_markdown = blessed_extensions.markdown:MarkdownComments',
+            'blessed_markdown_renderer = blessed_extensions.renderers:MarkdownRenderer',
+            'blessed_escaping_renderer = blessed_extensions.renderers:EscapingRenderer',
         ],
     },
 

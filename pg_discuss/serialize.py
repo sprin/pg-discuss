@@ -1,4 +1,6 @@
 from . import ext
+from . import _compat
+from flask import current_app
 
 # Fields which will be serialized by default when sent to client.
 DEFAULT_COMMENT_WHITELIST = [
@@ -19,7 +21,7 @@ def to_client_comment(raw_comment):
     """Prepare comments for serialization to JSON.
 
     Only preserves whitelisted attributes. Calls any `OnCommentPreSerialize`
-    extensions.
+    extensions, and the CommentRenderer driver.
     """
     client_comment = {k: raw_comment[k] for k in DEFAULT_COMMENT_WHITELIST}
 
@@ -29,6 +31,17 @@ def to_client_comment(raw_comment):
 
     # Run on_comment_serialize hooks
     ext.exec_hooks(ext.OnCommentPreSerialize, raw_comment, client_comment)
+
+    # Escape string fields, besides `text`, which may be rendered into DOM.
+    for k, v in client_comment.items():
+        if isinstance(v, _compat.text_type) and k != 'text':
+            client_comment[k] = _compat.escape(v)
+
+    # Render comment text using configured CommentRenderer. Th renderer should
+    # handle escaping of the comment text.
+    client_comment['text'] = (
+        current_app.comment_renderer.render(client_comment['text'])
+    )
 
     return client_comment
 
