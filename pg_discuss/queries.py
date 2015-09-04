@@ -22,8 +22,8 @@ def fetch_thread_by_client_id(thread_client_id):
     t = tables.thread
     stmt = t.select().where(t.c.client_id == thread_client_id)
 
-    # TODO: Run on_thread_pre_fetch hooks
-    #stmt = ext.exec_query_hooks(ext.OnThreadPreFetch, stmt)
+    # TODO: Run on_pre_thread_fetch hooks
+    #stmt = ext.exec_query_hooks(ext.OnPreThreadFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -41,7 +41,7 @@ def fetch_comment_by_id(comment_id):
     stmt = t.select().where(t.c.id == comment_id)
 
     # Run on_pre_fetch hooks
-    stmt = ext.exec_query_hooks(ext.OnPreFetch, stmt)
+    stmt = ext.exec_query_hooks(ext.OnPreCommentFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -62,7 +62,7 @@ def fetch_comments_by_thread_client_id(thread_client_id):
     )
 
     # Run on_pre_fetch hooks
-    stmt = ext.exec_query_hooks(ext.OnPreFetch, stmt)
+    stmt = ext.exec_query_hooks(ext.OnPreCommentFetch, stmt)
 
     result = db.engine.execute(stmt)
     comments_seq = [dict(x) for x in result]
@@ -79,13 +79,13 @@ def insert_comment(new_comment):
     )
 
     # Run on_pre_insert hooks
-    stmt = ext.exec_query_hooks(ext.OnPreInsert, stmt, new_comment)
+    stmt = ext.exec_query_hooks(ext.OnPreCommentInsert, stmt, new_comment)
 
     result = db.engine.execute(stmt).first()
     comment = dict(result.items())
 
     # Run on_post_insert hooks
-    ext.exec_hooks(ext.OnPostInsert, comment)
+    ext.exec_hooks(ext.OnPostCommentInsert, comment)
 
     return comment
 
@@ -98,14 +98,14 @@ def insert_thread(new_thread):
         .returning(*list(t.c))
     )
 
-    # TODO: Run on_pre_insert hooks
-    #stmt = ext.exec_query_hooks(ext.OnThreadPreInsert, stmt, new_thread)
+    # TODO: Run on_pre_thread_insert hooks
+    #stmt = ext.exec_query_hooks(ext.OnPreThreadInsert, stmt, new_thread)
 
     result = db.engine.execute(stmt).first()
     thread = dict(result.items())
 
-    # TODO: Run on_post_insert hooks
-    #ext.exec_hooks(ext.OnPostInsert, comment)
+    # TODO: Run on_post_thread_insert hooks
+    #ext.exec_hooks(ext.OnPostThreadInsert, thread)
 
     return thread
 
@@ -119,14 +119,14 @@ def insert_identity(new_identity=None):
     if new_identity:
         stmt = stmt.values(**new_identity)
 
-    # TODO: Run on_pre_insert hooks
-    #stmt = ext.exec_query_hooks(ext.OnThreadPreInsert, stmt, new_identity)
+    # TODO: Run on_pre_identity_insert hooks
+    #stmt = ext.exec_query_hooks(ext.OnPreIdentityInsert, stmt, new_identity)
 
     result = db.engine.execute(stmt).first()
     identity= dict(result.items())
 
-    # TODO: Run on_post_insert hooks
-    #ext.exec_hooks(ext.OnPostInsert, identity)
+    # TODO: Run on_post_identity_insert hooks
+    #ext.exec_hooks(ext.OnPostIdentityInsert, identity)
 
     return identity
 
@@ -134,8 +134,8 @@ def fetch_identity(identity_id):
     t = tables.identity
     stmt = t.select().where(t.c.id == identity_id)
 
-    # TODO: Run on_thread_pre_fetch hooks
-    #stmt = ext.exec_query_hooks(ext.OnThreadPreFetch, stmt)
+    # TODO: Run on_pre_identity_fetch hooks
+    #stmt = ext.exec_query_hooks(ext.OnPreIdentityFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -174,7 +174,7 @@ def update_comment(comment_id, comment_edit, old_comment, update_modified=False)
 
     # Run on_pre_update hooks
     stmt = ext.exec_query_hooks(
-        ext.OnPreUpdate,
+        ext.OnPreCommentUpdate,
         stmt,
         old_comment,
         comment_edit,
@@ -187,7 +187,7 @@ def update_comment(comment_id, comment_edit, old_comment, update_modified=False)
     comment = dict(result.items())
 
     # Run on_post_update hooks
-    ext.exec_hooks(ext.OnPostUpdate, old_comment, comment)
+    ext.exec_hooks(ext.OnPostCommentUpdate, old_comment, comment)
 
     return comment
 

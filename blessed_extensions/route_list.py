@@ -5,7 +5,7 @@ from flask.ext.script import Command
 
 from pg_discuss._compat import unquote
 
-from pg_discuss.ext import AppExtBase
+from pg_discuss import ext
 
 class ListRoutes(Command):
     """List all routes configured on application.
@@ -27,7 +27,7 @@ class ListRoutes(Command):
         for line in sorted(output):
             print(line)
 
-class RouteListExt(AppExtBase):
+class RouteListExt(ext.AppExtBase):
     """Middleware to verify the request has Content-Type set to
     application/json for data-modifying views.
     This assumes that all, or most, data-modifying views are intended to handle

@@ -20,7 +20,7 @@ DEFAULT_THREAD_WHITELIST = [
 def to_client_comment(raw_comment, plain=False):
     """Prepare comments for serialization to JSON.
 
-    Only preserves whitelisted attributes. Calls any `OnCommentPreSerialize`
+    Only preserves whitelisted attributes. Calls any `OnPreCommentSerialize`
     extensions, and the CommentRenderer driver.
     """
     client_comment = {k: raw_comment[k] for k in DEFAULT_COMMENT_WHITELIST}
@@ -30,7 +30,7 @@ def to_client_comment(raw_comment, plain=False):
         client_comment['deleted'] = raw_comment['custom_json']['deleted']
 
     # Run on_comment_serialize hooks
-    ext.exec_hooks(ext.OnCommentPreSerialize, raw_comment, client_comment)
+    ext.exec_hooks(ext.OnPreCommentSerialize, raw_comment, client_comment)
 
     # Escape string fields, besides `text`, which may be rendered into DOM.
     for k, v in client_comment.items():
@@ -46,31 +46,20 @@ def to_client_comment(raw_comment, plain=False):
 
     return client_comment
 
-def to_client_comment_collection_obj(comment_seq):
-    """Prepare collection of comments for serialization to JSON.
+def to_client_thread(raw_thread, comment_seq):
+    """Prepare thread and it's comment collection for serialization to JSON.
+
+    Only preserves whitelisted attributes. Calls any `OnPreThreadSerialize`
+    extensions.
 
     Return value is an object whose JSON representation is the response.
     """
-    collection_obj = {
-        'comments': comment_seq
-    }
-
-    # Run on_comment_serialize hooks
-    ext.exec_hooks(ext.OnCommentCollectionPreSerialize, comment_seq,
-                   collection_obj)
-
-    return collection_obj
-
-
-def to_client_thread(raw_thread):
-    """Prepare threads for serialization to JSON.
-
-    Only preserves whitelisted attributes. Calls any `OnThreadPreSerialize`
-    extensions.
-    """
     client_thread = {k: raw_thread[k] for k in DEFAULT_THREAD_WHITELIST}
 
-    # Run on_comment_serialize hooks
-    ext.exec_hooks(ext.OnPreThreadSerialize, raw_thread, client_thread)
+    client_thread['comments'] = comment_seq
+
+    # Run on_pre_thread_serialize hooks
+    ext.exec_hooks(ext.OnPreThreadSerialize, raw_thread, comment_seq,
+                   client_thread)
 
     return client_thread

@@ -3,9 +3,9 @@ from flask import (
     request,
 )
 
-from pg_discuss.ext import AppExtBase
+from pg_discuss import ext
 
-class JsonMimetypeExt(AppExtBase):
+class JsonMimetypeExt(ext.AppExtBase):
     """Middleware to verify the request has Content-Type set to
     application/json for data-modifying views.
     This assumes that all, or most, data-modifying views are intended to handle

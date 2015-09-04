@@ -89,6 +89,4 @@ pg-discuss hooks
  - on_new_comment_response: modify the response returned from the new comment
    view, with the "raw comment" and "client comment" in the context.
 
-TOOD: merge on_thread_preserialize with on_comment_collection_preserialize
-
 TODO: link to Sphinx API docs.

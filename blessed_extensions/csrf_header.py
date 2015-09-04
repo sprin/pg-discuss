@@ -3,9 +3,9 @@ from flask import (
     request,
 )
 
-from pg_discuss.ext import AppExtBase
+from pg_discuss import ext
 
-class CsrfHeaderExt(AppExtBase):
+class CsrfHeaderExt(ext.AppExtBase):
     """Middleware to verify the request is an XHR request.
     This assumes that all, or most, data-modifying views are intended to handle
     XHR requests.

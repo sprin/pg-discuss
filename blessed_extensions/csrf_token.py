@@ -15,7 +15,7 @@ from pg_discuss._compat import (
     to_bytes,
     urlparse,
 )
-from pg_discuss.ext import AppExtBase
+from pg_discuss import ext
 
 __all__ = ('generate_csrf', 'validate_csrf', 'CsrfProtect')
 
@@ -99,7 +99,7 @@ def validate_csrf(data, secret_key=None, time_limit=None):
 def get_csrf_token():
     return generate_csrf()
 
-class CsrfTokenExt(AppExtBase):
+class CsrfTokenExt(ext.AppExtBase):
     """Enable csrf protect for Flask.
     Register it with::
         app = Flask(__name__)

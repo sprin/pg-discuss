@@ -1,15 +1,12 @@
-from sqlalchemy import (
-    Boolean,
-    or_,
-)
+from sqlalchemy import Boolean
 
 from pg_discuss import ext
 from pg_discuss.models import db
 from pg_discuss import tables
 
-class ArchiveUpdatesExt(ext.OnPostUpdate, ext.OnPreFetch):
+class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.OnPreCommentFetch):
 
-    def on_post_update(self, old_comment, new_comment, **extras):
+    def on_post_comment_update(self, old_comment, new_comment, **extras):
         # "Archive" the old comment by re-inserting it, with a new pk.
         # Set `archived` to False.
         t = tables.comment
@@ -22,7 +19,7 @@ class ArchiveUpdatesExt(ext.OnPostUpdate, ext.OnPreFetch):
         )
         db.engine.execute(stmt)
 
-    def on_pre_fetch(self, stmt_wrapper, **extras):
+    def on_pre_comment_fetch(self, stmt_wrapper, **extras):
         """Exclude archived comments from the default fetch.
         """
         t = tables.comment

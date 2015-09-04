@@ -12,8 +12,8 @@ from werkzeug.http import dump_cookie
 
 from pg_discuss import ext
 
-class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
-                     ext.OnCommentCollectionPreSerialize, ext.OnPreInsert,
+class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
+                     ext.OnPreThreadSerialize, ext.OnPreCommentInsert,
                      ext.OnNewCommentResponse):
     def init_app(self, app):
         self.app = app
@@ -36,7 +36,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
         app.route('/id/<int:comment_id>', methods=['PUT'])( views['edit'])
         app.route('/id/<int:comment_id>', methods=['DELETE'])(views['delete'])
 
-    def on_comment_preserialize(self, raw_comment, client_comment, **extras):
+    def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         client_comment['parent'] = raw_comment['parent_id']
         client_comment['hash'] = raw_comment['custom_json'].get('hash')
 
@@ -44,40 +44,22 @@ class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
         if raw_comment['custom_json'].get('deleted'):
             client_comment['mode'] = 4
 
-    def on_comment_collection_preserialize(self, comment_seq, collection_obj,
-                                           **extras):
+    def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread,
+                                **extras):
         # Change key to comment collection from "comments" to "replies"
-        collection_obj['replies'] = build_comment_tree(comment_seq)
-        del collection_obj['comments']
+        client_thread['replies'] = build_comment_tree(comment_seq)
+        del client_thread['comments']
 
         # Add the count of top-level comments under key `total_replies'
-        collection_obj['total_replies'] = len(collection_obj['replies'])
+        client_thread['total_replies'] = len(client_thread['replies'])
 
-    def on_pre_insert(self, stmt_wrapper, new_comment, **extras):
+    def on_pre_comment_insert(self, stmt_wrapper, new_comment, **extras):
         # Hash email, or remote_addr
         custom_json = new_comment['custom_json']
         custom_json['hash'] = hash(
             custom_json.get('email') or custom_json['remote_addr']
         )
         stmt_wrapper.stmt = stmt_wrapper.stmt.values(custom_json=custom_json)
-
-
-    def new_(self):
-        """Create a new comments.
-        Use the `uri` paramters as the thread `client_id`. Note that
-        the client should configure the `uri` parameter to be a unique client
-        id, not a uri.
-        """
-        # Use the `uri` parameter as the thread `client_id`.
-        thread_client_id = request.args.get('uri')
-
-        # Set `parent_id` to parent.
-        json = request.get_json()
-        json['parent_id'] = json.get('parent')
-
-        # Return response. Response will be further processed by
-        # `on_new_comment_response` to set cookies.
-        return self.app.view_functions['new'](thread_client_id)
 
     def on_new_comment_response(self, resp, raw_comment, client_comment,
                                 **extras):
@@ -97,6 +79,23 @@ class IssoClientShim(ext.AppExtBase, ext.OnCommentPreSerialize,
         resp.headers.add("X-Set-Cookie", cookie("isso-%i" % comment_id))
 
         return resp
+
+    def new_(self):
+        """Create a new comments.
+        Use the `uri` paramters as the thread `client_id`. Note that
+        the client should configure the `uri` parameter to be a unique client
+        id, not a uri.
+        """
+        # Use the `uri` parameter as the thread `client_id`.
+        thread_client_id = request.args.get('uri')
+
+        # Set `parent_id` to parent.
+        json = request.get_json()
+        json['parent_id'] = json.get('parent')
+
+        # Return response. Response will be further processed by
+        # `on_new_comment_response` to set cookies.
+        return self.app.view_functions['new'](thread_client_id)
 
     def fetch_(self):
         """Fetch the list of comments associated with the thread.

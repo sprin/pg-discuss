@@ -70,130 +70,110 @@ class IdentityPolicy(GenericExtBase):
         """
 
 @six.add_metaclass(abc.ABCMeta)
-class OnPreInsert(GenericExtBase):
+class OnPreCommentInsert(GenericExtBase):
     """Mixin class for extensions that modify the insert statement for new
     comments.
     """
-    hook_name = 'on_pre_insert'
-
     @abc.abstractmethod
-    def on_pre_insert(self, stmt_wrapper, new_comment, **extras):
+    def on_pre_comment_insert(self, stmt_wrapper, new_comment, **extras):
         """Modify the insert statement for comment updates.
 
         The SQL Alchemy statement can be modified with
         `stmt_wrapper.stmt = ...`.
         """
-
+    hook_method=on_pre_comment_insert.__name__
 
 @six.add_metaclass(abc.ABCMeta)
-class OnPostInsert(GenericExtBase):
+class OnPostCommentInsert(GenericExtBase):
     """Mixin class for extensions that perform some action with the result of an
     insert.
     """
-    hook_name = 'on_post_insert'
-
     @abc.abstractmethod
-    def on_post_insert(self, new_comment, **extras):
+    def on_post_comment_insert(self, new_comment, **extras):
         """Perform some action with the result of an insert.
         """
+    hook_method=on_post_comment_insert.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
-class OnPreUpdate(GenericExtBase):
+class OnPreCommentUpdate(GenericExtBase):
     """Mixin class for extensions that modify the update statement for comment
     updates.
     """
-    hook_name = 'on_pre_update'
-
     @abc.abstractmethod
-    def on_pre_update(self, stmt_wrapper, old_comment, comment_edit, **extras):
+    def on_pre_comment_update(self, stmt_wrapper, old_comment, comment_edit, **extras):
         """Modify the update statement for comment updates.
 
         The SQL Alchemy statement can be modified with
         `stmt_wrapper.stmt = ...`.
         """
+    hook_method=on_pre_comment_update.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
-class OnPostUpdate(GenericExtBase):
+class OnPostCommentUpdate(GenericExtBase):
     """Mixin class for extensions that perform some action with the result of an
     update.
     """
-    hook_name = 'on_post_update'
-
     @abc.abstractmethod
-    def on_post_update(self, old_comment, new_comment, **extras):
+    def on_post_comment_update(self, old_comment, new_comment, **extras):
         """Perform some action with the result of an insert.
         """
+    hook_method=on_post_comment_update.__name__
+
 
 @six.add_metaclass(abc.ABCMeta)
 class ValidateComment(GenericExtBase):
     """Mixin class for extensions that validate comment data. Validators
     may mutate the comment data into a valid form.
     """
-    hook_name = 'validate_comment'
-
     @abc.abstractmethod
     def validate_comment(self, comment, action, **extras):
         """Validate a comment dictionary.
         """
+    hook_method=validate_comment.__name__
 
 @six.add_metaclass(abc.ABCMeta)
-class OnPreFetch(GenericExtBase):
+class OnPreCommentFetch(GenericExtBase):
     """Mixin class for extensions that modify the select statement for
     comment fetches.
     """
-    hook_name = 'on_pre_fetch'
-
     @abc.abstractmethod
-    def on_pre_fetch(self, stmt_wrapper, **extras):
+    def on_pre_comment_fetch(self, stmt_wrapper, **extras):
         """Modify the select statement for comment fetches.
 
         The SQL Alchemy statement can be modified with
         `stmt_wrapper.stmt = ...`.
         """
+    hook_method=on_pre_comment_fetch.__name__
 
 @six.add_metaclass(abc.ABCMeta)
-class OnCommentPreSerialize(GenericExtBase):
+class OnPreCommentSerialize(GenericExtBase):
     """Mixin class for extensions that want to add fields to the serialized
     comment.
     """
-    hook_name = 'on_comment_preserialize'
-
     @abc.abstractmethod
-    def on_comment_preserialize(self, raw_comment, client_comment, **extras):
+    def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         """Add fields to the comment representation to be serialized,
         `client_comment`, from the dictionary representing the raw database row,
         `raw_comment`.
         """
+    hook_method=on_pre_comment_serialize.__name__
+
 
 @six.add_metaclass(abc.ABCMeta)
-class OnThreadPreSerialize(GenericExtBase):
+class OnPreThreadSerialize(GenericExtBase):
     """Mixin class for extensions that want to add fields to the serialized
     thread.
     """
-    hook_name = 'on_thread_preserialize'
-
     @abc.abstractmethod
-    def on_comment_preserialize(self, raw_thread, client_thread, **extras):
+    def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread, **extras):
         """Add fields to the thread representation to be serialized,
         `client_thread`, from the dictionary representing the raw database row,
         `raw_thread`.
         """
+    hook_method=on_pre_thread_serialize.__name__
 
-@six.add_metaclass(abc.ABCMeta)
-class OnCommentCollectionPreSerialize(GenericExtBase):
-    """Mixin class for extensions that want to add fields to the serialized
-    thread.
-    """
-    hook_name = 'on_comment_collection_preserialize'
-
-    @abc.abstractmethod
-    def on_comment_collection_preserialize(self, comment_seq, collection_obj,
-                                           **extras):
-        """Add to or modify the comment collection object, whose JSON
-        representation is the response.
-        """
 
 @six.add_metaclass(abc.ABCMeta)
 class OnNewCommentResponse(GenericExtBase):
@@ -203,14 +183,13 @@ class OnNewCommentResponse(GenericExtBase):
     A common case is to set cookies or other headers using the value of the
     newly created comment.
     """
-    hook_name = 'on_new_comment_response'
-
     @abc.abstractmethod
     def on_new_comment_response(self, resp, raw_comment, client_comment,
                                 **extras):
         """Process the response of the new comment view. Both the 'raw' comment
         and the comment formatted for the client are given as arguments.
         """
+    hook_method=on_new_comment_response.__name__
 
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
@@ -223,7 +202,7 @@ def exec_hooks(ext_class, *args, **kwargs):
     """
 
     def execute_hook(ext, ext_class, *args, **kwargs):
-        return getattr(ext.obj, ext_class.hook_name)(*args, **kwargs)
+        return getattr(ext.obj, ext_class.hook_method)(*args, **kwargs)
 
     results = []
     for ext in current_app.ext_mgr.extensions:

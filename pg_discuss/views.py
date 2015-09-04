@@ -21,10 +21,13 @@ from . import serialize
 from . import ext
 
 def fetch(thread_client_id):
+    """Fetch the thread and it's comment collection as JSON.
+    """
+    raw_thread = queries.fetch_thread_by_client_id(thread_client_id)
     comments_seq = queries.fetch_comments_by_thread_client_id(thread_client_id)
     comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
-    collection_obj = serialize.to_client_comment_collection_obj(comments_seq)
-    return jsonify(collection_obj)
+    client_thread = serialize.to_client_thread(raw_thread, comments_seq)
+    return jsonify(client_thread)
 
 def new(thread_client_id):
     # Extract whitelisted attributes from request JSON
