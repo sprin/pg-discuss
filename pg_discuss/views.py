@@ -66,8 +66,12 @@ def new(thread_client_id):
 
 def view(comment_id):
     # Fetch the comment
-    comment = queries.fetch_comment_by_id(comment_id)
-    comment = serialize.to_client_comment(comment)
+    raw_comment = queries.fetch_comment_by_id(comment_id)
+
+    # Check if client has request plain (not marked-up) text
+    plain = request.args.get('plain') == '1'
+
+    comment = serialize.to_client_comment(raw_comment, plain)
     return jsonify(comment)
 
 def edit(comment_id):
@@ -96,13 +100,14 @@ def edit(comment_id):
               'Cannot edit comment: comment has been deleted')
 
     # Update the comment
-    result = queries.update_comment(
+    raw_comment = queries.update_comment(
         comment_id,
         comment_edit,
         old_comment,
         update_modified=True
     )
-    return jsonify(result)
+    comment = serialize.to_client_comment(raw_comment)
+    return jsonify(comment)
 
 def delete(comment_id):
     """Mark a comment as deleted. The comment will still show up in API results,

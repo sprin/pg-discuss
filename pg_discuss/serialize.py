@@ -17,7 +17,7 @@ DEFAULT_THREAD_WHITELIST = [
     'client_id',
 ]
 
-def to_client_comment(raw_comment):
+def to_client_comment(raw_comment, plain=False):
     """Prepare comments for serialization to JSON.
 
     Only preserves whitelisted attributes. Calls any `OnCommentPreSerialize`
@@ -39,9 +39,10 @@ def to_client_comment(raw_comment):
 
     # Render comment text using configured CommentRenderer. Th renderer should
     # handle escaping of the comment text.
-    client_comment['text'] = (
-        current_app.comment_renderer.render(client_comment['text'])
-    )
+    if not plain:
+        client_comment['text'] = (
+            current_app.comment_renderer.render(client_comment['text'])
+        )
 
     return client_comment
 
