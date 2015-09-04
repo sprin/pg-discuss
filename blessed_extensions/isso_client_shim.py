@@ -37,7 +37,10 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         app.route('/id/<int:comment_id>', methods=['DELETE'])(views['delete'])
 
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
+        # Change `parent_id` key to `parent`
         client_comment['parent'] = raw_comment['parent_id']
+        del client_comment['parent_id']
+
         client_comment['hash'] = raw_comment['custom_json'].get('hash')
 
         # Set "mode" to 4 for deleted comments
@@ -117,7 +120,7 @@ def build_comment_tree(comment_seq, parent_id=None):
     """Build the nested tree of comments, counting the number of replies to
     each comment along the way.
     """
-    children = [c for c in comment_seq if c['parent_id'] == parent_id]
+    children = [c for c in comment_seq if c['parent'] == parent_id]
     for c in children:
         c['replies'] = build_comment_tree(comment_seq, c['id'])
         c['total_replies'] = len(c['replies'])
