@@ -1,23 +1,11 @@
 """
-Minimal comment CRUD views, compatible with Isso client:
-https://github.com/posativ/isso/blob/master/isso/js/app/api.js
+Minimal comment CRUD views.
 
  - fetch: fetch the list of comments for a thread
  - new: create a new comment
  - view: fetch a single comment
  - edit: update an existing comment
  - delete: delete a comment
-
-Important: XSS Prevention
-By defualt, the JSON returned by these views is not HTML-escaped. Any data
-rendered in to the DOM must be HTML-escaped on the client-side. If you cannot
-trust web clients to properly escape JSON data before rendering to HTML, it is
-recommended to set `DRIVER_JSON_ENCODER` to a subclass of simplejson's
-`JSONEncoderForHTML`, such as one of those in blessed_extensions.json_encoder.
-
-JSON is not HTML-escaped by default because it is not presumed that all
-clients are web clients.
-
 """
 
 from flask import (
@@ -96,9 +84,16 @@ def edit(comment_id):
 
     # Fetch the "old" comment
     old_comment = queries.fetch_comment_by_id(comment_id)
+
+    # Check if does not belong to requesting identity
     if old_comment['identity_id'] != g.identity['id']:
         abort(400,
-              'Cannot edit comment: this comment belongs to another identity')
+              'Cannot edit comment: comment belongs to another identity')
+
+    # Check if deleted
+    if old_comment['custom_json'].get('deleted'):
+        abort(400,
+              'Cannot edit comment: comment has been deleted')
 
     # Update the comment
     result = queries.update_comment(
@@ -128,9 +123,16 @@ def delete(comment_id):
 
     # Fetch the "old" comment
     old_comment = queries.fetch_comment_by_id(comment_id)
+
+    # Check if does not belong to requesting identity
     if old_comment['identity_id'] != g.identity['id']:
         abort(400,
               'Cannot delete comment: this comment belongs to another identity')
+
+    # Check if already deleted
+    if old_comment['custom_json'].get('deleted'):
+        abort(400,
+              'Cannot delete comment: comment has already been deleted')
 
     # Mark the comment as deleted
     result = queries.update_comment(
