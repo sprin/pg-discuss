@@ -17,39 +17,22 @@ the future, all Hook methods must take a `**extras` argument.
 import abc
 import six
 
-from flask import (
-    current_app,
-    g,
-    request,
-)
+from flask import current_app
 
 class PluginLoadError(Exception):
     pass
 
-
 class GenericExtBase(object):
     """
     Provide a default class with an __init__ that accepts an app argument.
+
+    To be subclassed by both extension and driver ABCs. This allows
+    all plugins to read the configuration from the app.
     """
     def __init__(self, app=None):
         self.app = app
 
-@six.add_metaclass(abc.ABCMeta)
-class AppExtBase(GenericExtBase):
-    """Base class for generic Flask app extensions.
-
-    Such extensions will perform app initialization, possibly
-    adding new views.
-    """
-    def __init__(self, app=None):
-        self.app = app
-        if app is not None:
-            self.init_app(app)
-
-    @abc.abstractmethod
-    def init_app(self, app):
-        """Perform app initialization."""
-
+## Driver ABCs
 
 @six.add_metaclass(abc.ABCMeta)
 class IdentityPolicy(GenericExtBase):
@@ -68,6 +51,34 @@ class IdentityPolicy(GenericExtBase):
     def remember(self, request, **extras):
         """Remember the identity for subsequent requests.
         """
+
+@six.add_metaclass(abc.ABCMeta)
+class CommentRenderer(GenericExtBase):
+    """Driver to render comment text.
+    """
+
+    @abc.abstractmethod
+    def render(self, text, **extras):
+        """Render raw text into another format for display.
+        """
+
+## Extension ABCs
+
+@six.add_metaclass(abc.ABCMeta)
+class AppExtBase(GenericExtBase):
+    """Base class for generic Flask app extensions.
+
+    Such extensions will perform app initialization, possibly
+    adding new views.
+    """
+    def __init__(self, app=None):
+        self.app = app
+        if app is not None:
+            self.init_app(app)
+
+    @abc.abstractmethod
+    def init_app(self, app):
+        """Perform app initialization."""
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPreCommentInsert(GenericExtBase):
@@ -191,6 +202,8 @@ class OnNewCommentResponse(GenericExtBase):
         """
     hook_method=on_new_comment_response.__name__
 
+# Extension utility functions
+
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
     Note that this allows for extensions to subclass multiple hook mixins.
@@ -241,64 +254,3 @@ def exec_query_hooks(ext_class, stmt, *args, **kwargs):
     exec_hooks(ext_class, stmt_wrapper, *args, **kwargs)
     return stmt_wrapper.stmt
 
-class IdentityPolicyManager(AppExtBase):
-    """Middleware to execute the configured IdentityPolicy.
-    """
-
-    def init_app(self, app):
-        self._app = app
-        self._exempt_views = []
-        self.identity_policy = app.identity_policy()
-
-        app.config.setdefault('IDENTITY_POLICY_EXEMPT_METHODS', ['OPTIONS'])
-
-        @app.before_request
-        def _auth_before_request():
-            if request.method in app.config['IDENTITY_POLICY_EXEMPT_METHODS']:
-                return
-            if self._exempt_views:
-                if not request.endpoint:
-                    return
-
-                view = app.view_functions.get(request.endpoint)
-                if not view:
-                    return
-
-                dest = '%s.%s' % (view.__module__, view.__name__)
-                if dest in self._exempt_views:
-                    return
-            return self.auth_before_request()
-
-    def auth_before_request(self):
-        # Get the identity object.
-        identity = self.identity_policy.get_identity(request)
-
-        if identity:
-            # Store the identity object on the `g` request global.
-            g.identity = identity
-
-            # Remember the identity.
-            self.identity_policy.remember(request, identity['id'])
-
-    def exempt(self, view):
-        """A decorator that can exclude a view from JSON mimetype checking.
-        Remember to put the decorator above the `route`::
-            identity_policy_mgr = IdentityPolicyManager(app)
-            @identity_policy_mgr.exempt
-            @app.route('/some-view', methods=['GET'])
-            def some_view():
-                return
-        """
-        view_location = '%s.%s' % (view.__module__, view.__name__)
-        self._exempt_views.append(view_location)
-        return view
-
-@six.add_metaclass(abc.ABCMeta)
-class CommentRenderer(object):
-    """Driver to render comment text.
-    """
-
-    @abc.abstractmethod
-    def render(self, text, **extras):
-        """Render raw text into another format for display.
-        """

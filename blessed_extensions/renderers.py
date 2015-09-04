@@ -26,7 +26,8 @@ class MarkdownRenderer(ext.CommentRenderer):
     Markup syntax.
     """
 
-    def __init__(self):
+    def __init__(self, app=None):
+        self.app = app
         # TODO: Allow flags to be given as a list in a configuration
         # variable. Need to wait until Mikasa 2 releases with stable API.
         render_flags = [HTML_ESCAPE]

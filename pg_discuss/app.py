@@ -13,6 +13,7 @@ from  . import config
 from .models import db
 from  . import views
 from . import ext
+from . import identity
 
 def app_factory():
     app = Flask('pg-discuss', static_folder=None)
@@ -26,36 +27,35 @@ def app_factory():
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
 
-    ## Use stevedore to load the IdentityPolicy
+    ## Use stevedore to load drivers/extensions.
+    # Discover all drivers/extensions, but do not load any.
+    # Used for logging found extensions.
+    app.ext_mgr_all = extension.ExtensionManager(namespace='pg_discuss.ext')
+
+    ## Load configured IdentityPolicy driver
     app.identity_policy_loader = driver.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_IDENTITY_POLICY'],
     )
-    app.identity_policy = app.identity_policy_loader.driver
     # Iniatialize IdentityPolicyManager with configured IdentityManager
-    app.identity_policy_mgr = ext.IdentityPolicyManager(app)
+    app.identity_policy_mgr = identity.IdentityPolicyManager(
+        app,
+        app.identity_policy_loader.driver,
+    )
 
-    ## Use stevedore to load comment renderer driver
+    ## Load configured CommentRenderer driver
     app.comment_renderer_loader = driver.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_COMMENT_RENDERER'],
     )
     app.comment_renderer = app.comment_renderer_loader.driver()
 
-    ## Use stevedore to load JSON encoder driver
+    ## Load configured JSONEncoder driver
     app.json_encoder_loader = driver.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_JSON_ENCODER'],
     )
     app.json_encoder = app.json_encoder_loader.driver
-
-
-    ## Use stevedore to load extensions.
-    # Discover all extensions, but do not load any.
-    # Used for logging found extensions.
-    app.ext_mgr_all = extension.ExtensionManager(
-        namespace='pg_discuss.ext'
-    )
 
     # Exempt public read-only views from IdentityPolicy
     app.identity_policy_mgr.exempt(views.fetch)
