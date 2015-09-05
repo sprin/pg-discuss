@@ -39,13 +39,14 @@ ENABLE_EXT_BLESSED_CAPTURE_AUTHOR = True
 ENABLE_EXT_BLESSED_CAPTURE_EMAIL = True
 ENABLE_EXT_BLESSED_CAPTURE_WEBSITE = True
 ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
+ENABLE_EXT_BLESSED_VOTING = True
 
 # Optional: Order extensions using comma-separated list of extension names.
 # It is generally discouraged to write order-dependent extensions, but it may
 # be required in some cases.
 # It is not necessary to list all extensions, only those that are required
 # to be ordered. See `config:sorted_ext_names` for sort logic details.
-EXT_ORDER = ''
+EXT_ORDER = 'blessed_voting,blessed_isso_client_shim'
 
 ## Driver settings
 DRIVER_COMMENT_RENDERER = 'blessed_markdown_renderer'

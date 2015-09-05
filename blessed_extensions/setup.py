@@ -53,6 +53,7 @@ setup(
             'blessed_auth_tkt_identity_policy = blessed_extensions.auth_tkt_identity_policy:AuthTktIdentityPolicy',
             'blessed_markdown_renderer = blessed_extensions.renderers:MarkdownRenderer',
             'blessed_escaping_renderer = blessed_extensions.renderers:EscapingRenderer',
+            'blessed_voting = blessed_extensions.voting:Voting',
         ],
     },
 

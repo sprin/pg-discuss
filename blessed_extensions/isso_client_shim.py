@@ -9,6 +9,7 @@ from flask import request
 import codecs
 from werkzeug.security import pbkdf2_bin as pbkdf2
 from werkzeug.http import dump_cookie
+import simplejson as json
 
 from pg_discuss import ext
 
@@ -16,7 +17,6 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
                      ext.OnPreThreadSerialize, ext.OnPreCommentInsert,
                      ext.OnNewCommentResponse):
     def init_app(self, app):
-        self.app = app
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
@@ -35,11 +35,16 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         app.route('/count', methods=['POST'])(self.count)
         app.route('/id/<int:comment_id>', methods=['PUT'])( views['edit'])
         app.route('/id/<int:comment_id>', methods=['DELETE'])(views['delete'])
+        app.route('/id/<int:comment_id>/like', methods=['POST'])(self.like_)
+        app.route('/id/<int:comment_id>/dislike', methods=['POST'])(self.dislike_)
 
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         # Change `parent_id` key to `parent`
-        client_comment['parent'] = raw_comment['parent_id']
-        del client_comment['parent_id']
+        client_comment['parent'] = raw_comment.pop('parent_id')
+
+        # Change `upvotes` to `likes`, `downvotes` to `dislikes`
+        client_comment['likes'] = client_comment.pop('upvotes')
+        client_comment['dislikes'] = client_comment.pop('downvotes')
 
         client_comment['hash'] = raw_comment['custom_json'].get('hash')
 
@@ -114,6 +119,21 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         """Not implemented, stubbed to satisfy client.
         """
         return '[]'
+
+    def like_(self, comment_id):
+        resp = self.app.view_functions['upvote'](comment_id)
+        return rename_voting_keys(resp)
+
+    def dislike_(self, comment_id):
+        resp = self.app.view_functions['downvote'](comment_id)
+        return rename_voting_keys(resp)
+
+def rename_voting_keys(resp):
+    d = json.loads(resp.get_data())
+    d['likes'] = d.pop('upvotes')
+    d['dislikes'] = d.pop('downvotes')
+    resp.set_data(json.dumps(d))
+    return resp
 
 def build_comment_tree(comment_seq, parent_id=None):
     """Build the nested tree of comments, counting the number of replies to
