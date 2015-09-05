@@ -4,7 +4,7 @@ from pg_discuss import ext
 from pg_discuss.models import db
 from pg_discuss import tables
 
-class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.OnPreCommentFetch):
+class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.AddCommentFilterPredicate):
 
     def on_post_comment_update(self, old_comment, new_comment, **extras):
         # "Archive" the old comment by re-inserting it, with a new pk.
@@ -19,11 +19,9 @@ class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.OnPreCommentFetch):
         )
         db.engine.execute(stmt)
 
-    def on_pre_comment_fetch(self, stmt_wrapper, **extras):
-        """Exclude archived comments from the default fetch.
+    def add_comment_filter_predicate(self, **extras):
+        """Return a filter clause to exclude archived comments from the default
+        fetch.
         """
         t = tables.comment
-        stmt_wrapper.stmt = (
-            stmt_wrapper.stmt
-            .where(t.c.custom_json['archived'].cast(Boolean).isnot(True))
-        )
+        return t.c.custom_json['archived'].cast(Boolean).isnot(True)

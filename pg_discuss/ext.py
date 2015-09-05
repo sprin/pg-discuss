@@ -22,6 +22,8 @@ from flask import current_app
 class PluginLoadError(Exception):
     pass
 
+import sqlalchemy as sa
+
 class GenericExtBase(object):
     """
     Provide a default class with an __init__ that accepts an app argument.
@@ -86,11 +88,8 @@ class OnPreCommentInsert(GenericExtBase):
     comments.
     """
     @abc.abstractmethod
-    def on_pre_comment_insert(self, stmt_wrapper, new_comment, **extras):
-        """Modify the insert statement for comment updates.
-
-        The SQL Alchemy statement can be modified with
-        `stmt_wrapper.stmt = ...`.
+    def on_pre_comment_insert(self, new_comment, **extras):
+        """Modify the comment object before inserting.
         """
     hook_method=on_pre_comment_insert.__name__
 
@@ -112,11 +111,8 @@ class OnPreCommentUpdate(GenericExtBase):
     updates.
     """
     @abc.abstractmethod
-    def on_pre_comment_update(self, stmt_wrapper, old_comment, comment_edit, **extras):
+    def on_pre_comment_update(self, old_comment, comment_edit, **extras):
         """Modify the update statement for comment updates.
-
-        The SQL Alchemy statement can be modified with
-        `stmt_wrapper.stmt = ...`.
         """
     hook_method=on_pre_comment_update.__name__
 
@@ -145,18 +141,16 @@ class ValidateComment(GenericExtBase):
     hook_method=validate_comment.__name__
 
 @six.add_metaclass(abc.ABCMeta)
-class OnPreCommentFetch(GenericExtBase):
-    """Mixin class for extensions that modify the select statement for
-    comment fetches.
+class AddCommentFilterPredicate(GenericExtBase):
+    """Mixin class for extensions that add a filter predicate to the comment
+    fetch.
     """
     @abc.abstractmethod
-    def on_pre_comment_fetch(self, stmt_wrapper, **extras):
-        """Modify the select statement for comment fetches.
-
-        The SQL Alchemy statement can be modified with
-        `stmt_wrapper.stmt = ...`.
+    def add_comment_filter_predicate(self, **extras):
+        """Returns a predicate for the where clause for comment fetches.
+        Will be joined with other predicates using AND.
         """
-    hook_method=on_pre_comment_fetch.__name__
+    hook_method=add_comment_filter_predicate.__name__
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPreCommentSerialize(GenericExtBase):
@@ -238,19 +232,10 @@ def fail_on_ext_load(manager, entrypoint, exception):
         ))
     raise PluginLoadError(msg)
 
-class StatementWrapper(object):
-    """Wrapper for SQL Alchemy statements to allow statements to be passed to
-    functions that can mutate them.
+def exec_filter_hooks(ext_class, stmt, *args, **kwargs):
+    """Execute query filter hooks and collect all the returned predicates
+    in an AND expression to be used in the WHERE clause.
     """
-
-    def __init__(self, stmt):
-        self.stmt = stmt
-
-def exec_query_hooks(ext_class, stmt, *args, **kwargs):
-    """Execute query hooks. Wraps the SQL Alchemy statement in a container
-    object to allow hooks to mutate the statement.
-    """
-    stmt_wrapper = StatementWrapper(stmt)
-    exec_hooks(ext_class, stmt_wrapper, *args, **kwargs)
-    return stmt_wrapper.stmt
-
+    predicates = exec_hooks(ext_class, *args, **kwargs)
+    stmt = stmt.where(sa.and_(*predicates))
+    return stmt

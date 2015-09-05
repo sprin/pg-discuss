@@ -1,12 +1,8 @@
 from . import tables
 from .models import db
 
-from sqlalchemy.sql import (
-    select,
-    exists,
-    text,
-    join,
-)
+import sqlalchemy as sa
+
 from . import ext
 
 class CommentNotFoundError(Exception):
@@ -23,7 +19,7 @@ def fetch_thread_by_client_id(thread_client_id):
     stmt = t.select().where(t.c.client_id == thread_client_id)
 
     # TODO: Run on_pre_thread_fetch hooks
-    #stmt = ext.exec_query_hooks(ext.OnPreThreadFetch, stmt)
+    #stmt = ext.exec_filter_hooks(ext.OnPreThreadFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -40,8 +36,8 @@ def fetch_comment_by_id(comment_id):
     t = tables.comment
     stmt = t.select().where(t.c.id == comment_id)
 
-    # Run on_pre_fetch hooks
-    stmt = ext.exec_query_hooks(ext.OnPreCommentFetch, stmt)
+    # Run add_comment_filter_predicate hooks
+    stmt = ext.exec_filter_hooks(ext.AddCommentFilterPredicate, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -56,13 +52,13 @@ def fetch_comments_by_thread_client_id(thread_client_id):
     t_comment = tables.comment
     t_thread = tables.thread
     stmt = (
-        select(t_comment.c)
-        .select_from(join(t_comment, t_thread))
+        sa.select(t_comment.c)
+        .select_from(sa.join(t_comment, t_thread))
         .where(t_thread.c.client_id == thread_client_id)
     )
 
-    # Run on_pre_fetch hooks
-    stmt = ext.exec_query_hooks(ext.OnPreCommentFetch, stmt)
+    # Run add_comment_filter_predicate hooks
+    stmt = ext.exec_filter_hooks(ext.AddCommentFilterPredicate, stmt)
 
     result = db.engine.execute(stmt)
     comments_seq = [dict(x) for x in result]
@@ -79,7 +75,7 @@ def insert_comment(new_comment):
     )
 
     # Run on_pre_insert hooks
-    stmt = ext.exec_query_hooks(ext.OnPreCommentInsert, stmt, new_comment)
+    ext.exec_hooks(ext.OnPreCommentInsert, new_comment)
 
     result = db.engine.execute(stmt).first()
     comment = dict(result.items())
@@ -99,7 +95,7 @@ def insert_thread(new_thread):
     )
 
     # TODO: Run on_pre_thread_insert hooks
-    #stmt = ext.exec_query_hooks(ext.OnPreThreadInsert, stmt, new_thread)
+    #ext.exec_hooks(ext.OnPreThreadInsert, new_thread)
 
     result = db.engine.execute(stmt).first()
     thread = dict(result.items())
@@ -120,7 +116,7 @@ def insert_identity(new_identity=None):
         stmt = stmt.values(**new_identity)
 
     # TODO: Run on_pre_identity_insert hooks
-    #stmt = ext.exec_query_hooks(ext.OnPreIdentityInsert, stmt, new_identity)
+    #ext.exec_hooks(ext.OnPreIdentityInsert, new_identity)
 
     result = db.engine.execute(stmt).first()
     identity= dict(result.items())
@@ -135,7 +131,7 @@ def fetch_identity(identity_id):
     stmt = t.select().where(t.c.id == identity_id)
 
     # TODO: Run on_pre_identity_fetch hooks
-    #stmt = ext.exec_query_hooks(ext.OnPreIdentityFetch, stmt)
+    #stmt = ext.exec_filter_hooks(ext.OnPreIdentityFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -170,15 +166,10 @@ def update_comment(comment_id, comment_edit, old_comment, update_modified=False)
 
     # Update the `modified` timestamp if specified.
     if update_modified:
-        stmt = stmt.values(modified=text('NOW()'))
+        stmt = stmt.values(modified=sa.text('NOW()'))
 
     # Run on_pre_update hooks
-    stmt = ext.exec_query_hooks(
-        ext.OnPreCommentUpdate,
-        stmt,
-        old_comment,
-        comment_edit,
-    )
+    ext.exec_hooks(ext.OnPreCommentUpdate, old_comment, comment_edit)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -194,5 +185,5 @@ def update_comment(comment_id, comment_edit, old_comment, update_modified=False)
 def validate_parent_exists(parent):
     """Validate that the parent exists in the database."""
     t = tables.comment
-    stmt = select([exists([1]).where(t.c.id == parent)])
+    stmt = sa.select([sa.exists([1]).where(t.c.id == parent)])
     return db.engine.execute(stmt).scalar()

@@ -56,13 +56,12 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Add the count of top-level comments under key `total_replies'
         client_thread['total_replies'] = len(client_thread['replies'])
 
-    def on_pre_comment_insert(self, stmt_wrapper, new_comment, **extras):
+    def on_pre_comment_insert(self, new_comment, **extras):
         # Hash email, or remote_addr
         custom_json = new_comment['custom_json']
         custom_json['hash'] = hash(
             custom_json.get('email') or custom_json['remote_addr']
         )
-        stmt_wrapper.stmt = stmt_wrapper.stmt.values(custom_json=custom_json)
 
     def on_new_comment_response(self, resp, raw_comment, client_comment,
                                 **extras):
