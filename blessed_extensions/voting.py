@@ -2,7 +2,9 @@ from flask import jsonify
 
 from pg_discuss import ext
 from pg_discuss import tables
+from pg_discuss import queries
 from pg_discuss.models import db
+from flask import g
 
 import sqlalchemy as sa
 
@@ -13,12 +15,12 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
         app.route('/comments/<int:comment_id>/downvote', methods=['POST'])(self.downvote)
 
     def upvote(self, comment_id):
-        return self.vote(comment_id, keyname='upvotes')
+        return self.vote(comment_id, vote_type='upvote')
 
     def downvote(self, comment_id):
-        return self.vote(comment_id, keyname='downvotes')
+        return self.vote(comment_id, vote_type='downvote')
 
-    def vote(self, comment_id, keyname):
+    def vote(self, comment_id, vote_type):
         """Add a new vote and increase the upvotes counter.
 
         Note: Use`jsonb_set` function in 9.5 to do an in-place increment:
@@ -34,6 +36,14 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
             where id = %id;
         """
 
+        identity_to_comment = {
+            'identity_id': g.identity['id'],
+            'comment_id': comment_id,
+            'rel_type': vote_type,
+        }
+        queries.insert_identity_to_comment(identity_to_comment)
+
+        keyname = "{0}s".format(vote_type) # add 's' to pluralize vote_type
         t = tables.comment
         incremented = sa.func.jsonb_set(
             sa.text('custom_json'),

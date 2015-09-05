@@ -187,3 +187,19 @@ def validate_parent_exists(parent):
     t = tables.comment
     stmt = sa.select([sa.exists([1]).where(t.c.id == parent)])
     return db.engine.execute(stmt).scalar()
+
+def insert_identity_to_comment(identity_to_comment):
+
+    t = tables.identity_to_comment
+    stmt = (
+        t.insert()
+        .values(**identity_to_comment)
+        .returning(*list(t.c))
+    )
+    result = db.engine.execute(stmt).first()
+    identity_to_comment = dict(result.items())
+
+    # TODO: Run on_post_identity_to_comment_insert hooks
+    #ext.exec_hooks(ext.OnPostIdentityInsert, identity)
+
+    return identity_to_comment

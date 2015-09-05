@@ -88,3 +88,13 @@ class Identity(db.Model):
     id = Column(Integer, primary_key=True, nullable=False)
     created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)
+
+
+class IdentityToComment(db.Model):
+    __tablename__ = 'identity_to_comment'
+    id = Column(Integer, primary_key=True, nullable=False)
+    identity_id = Column(Integer, ForeignKey('identity.id'), nullable=False)
+    comment_id = Column(Integer, ForeignKey('comment.id'), nullable=False)
+    rel_type = Column(String, nullable=False)
+    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
+    custom_json = Column(JSONB, server_default='{}', nullable=False)
