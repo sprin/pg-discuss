@@ -52,6 +52,7 @@ from sqlalchemy import (
     String,
     DateTime,
     text,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -98,3 +99,5 @@ class IdentityToComment(db.Model):
     rel_type = Column(String, nullable=False)
     created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)
+    __table_args__ = (UniqueConstraint('identity_id', 'comment_id', 'rel_type',
+                                       name='_comment_identity_uc'),)
