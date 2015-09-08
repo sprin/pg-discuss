@@ -4,7 +4,10 @@ from pg_discuss import ext
 from pg_discuss import tables
 from pg_discuss import queries
 from pg_discuss.models import db
-from flask import g
+from flask import (
+    g,
+    abort,
+)
 
 import sqlalchemy as sa
 
@@ -41,7 +44,14 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
             'comment_id': comment_id,
             'rel_type': vote_type,
         }
-        queries.insert_identity_to_comment(identity_to_comment)
+        try:
+            queries.insert_identity_to_comment(identity_to_comment)
+        except sa.exc.IntegrityError:
+            abort(400,
+                  'Cannot {0} on comment: identity has already submitted {0}'
+                  .format(vote_type)
+                 )
+
 
         keyname = "{0}s".format(vote_type) # add 's' to pluralize vote_type
         t = tables.comment
