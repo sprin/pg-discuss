@@ -36,7 +36,7 @@ def new(thread_client_id):
     # request and `new_comment` object
     json = request.get_json()
     allowed_keys = ['parent_id', 'text']
-    new_comment = {k: json[k] for k in allowed_keys if json.has_key(k)}
+    new_comment = {k: json[k] for k in allowed_keys if k in json}
 
     # Create empty `custom_json`, for extensions to populate.
     new_comment['custom_json'] = {}
