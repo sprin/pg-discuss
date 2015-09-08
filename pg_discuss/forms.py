@@ -7,6 +7,7 @@ from voluptuous import (
 )
 from .queries import validate_parent_exists
 from . import ext
+from . import _compat
 
 def validate_parent(parent):
     if parent is not None and not validate_parent_exists(parent):
@@ -36,7 +37,7 @@ def validate_new_comment(new_comment):
     new_comment_schema = All(
         Schema({
             'parent_id': All(Any(int, None), validate_parent),
-            Required('text'): unicode,
+            Required('text'): _compat.text_type,
             Required('custom_json'): dict,
             Required('identity_id'): Any(int, None),
         }),
@@ -52,7 +53,7 @@ def validate_comment_edit(comment_edit):
     """
     comment_edit_schema = All(
         Schema({
-            Required('text'): unicode,
+            Required('text'): _compat.text_type,
             Required('custom_json'): dict,
         }),
         exec_comment_validators(action='edit'),

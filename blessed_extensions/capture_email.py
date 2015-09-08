@@ -7,13 +7,14 @@ from voluptuous import (
 )
 
 from pg_discuss import ext
+from pg_discuss import _compat
 
 class CaptureEmail(ext.ValidateComment):
     def validate_comment(self, comment, action, **extras):
         email = request.get_json().get('email')
         if email:
             comment['custom_json']['email'] = Schema(
-                All(unicode, validate_email))(email)
+                All(_compat.text_type, validate_email))(email)
         return comment
 
 def validate_email(v):

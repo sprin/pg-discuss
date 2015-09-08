@@ -6,12 +6,13 @@ from voluptuous import (
 )
 
 from pg_discuss import ext
+from pg_discuss import _compat
 
 class CaptureWebsite(ext.ValidateComment, ext.OnPreCommentSerialize):
     def validate_comment(self, comment, action, **extras):
         website = request.get_json().get('website')
         if website:
-            url = Schema(All(unicode, Url()))(website)
+            url = Schema(All(_compat.text_type, Url()))(website)
             comment['custom_json']['website'] = normalize_url(url)
         return comment
 

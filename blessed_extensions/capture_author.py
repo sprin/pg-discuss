@@ -2,6 +2,7 @@ from flask import request
 from voluptuous import Schema
 
 from pg_discuss import ext
+from pg_discuss import _compat
 
 class CaptureAuthor(ext.AppExtBase, ext.ValidateComment,
                     ext.OnPreCommentSerialize):
@@ -15,7 +16,9 @@ class CaptureAuthor(ext.AppExtBase, ext.ValidateComment,
         if action == 'new' or allow_edit:
             author = request.get_json().get('author')
             if author:
-                comment['custom_json']['author'] = Schema(unicode)(author)
+                comment['custom_json']['author'] = (
+                    Schema(_compat.text_type)(author)
+                )
         return comment
 
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
