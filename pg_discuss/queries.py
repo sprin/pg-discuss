@@ -2,6 +2,7 @@ from . import tables
 from .models import db
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from . import ext
 
@@ -203,3 +204,33 @@ def insert_identity_to_comment(identity_to_comment):
     #ext.exec_hooks(ext.OnPostIdentityInsert, identity)
 
     return identity_to_comment
+
+def cte_chain(statements):
+    """Chain a sequence of statements using a CTE. The result of the last
+    statement will be returned when RETURNING is used."""
+    parts = []
+    bindparams = {}
+    for i, stmt in enumerate(statements):
+        compiled = stmt.compile(dialect=postgresql.dialect())
+        if i == 0:
+            part = "WITH t{0} AS ( {1} )".format(i, compiled)
+        elif i == (len(statements) - 1):
+            part = "{0}".format(compiled)
+        else:
+            part = ", t{0} AS ( {1} )".format(i, compiled)
+        bindparams = merge_fail_on_conflict(bindparams, compiled.params)
+        parts.append(part)
+
+    stmt = '\n'.join(parts)
+    return stmt, bindparams
+
+class MergeConflict(Exception):
+    pass
+
+def merge_fail_on_conflict(dict1, dict2):
+    """Merge two dictionaries, failing on conflict."""
+    for key in dict2.keys():
+        if key in dict1:
+            raise MergeConflict("key {} already exists".format(key))
+        else:
+            return dict(dict1, **dict2)
