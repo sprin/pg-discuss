@@ -44,15 +44,12 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
             'comment_id': comment_id,
             'rel_type': vote_type,
         }
-        try:
-            queries.insert_identity_to_comment(identity_to_comment)
-        except sa.exc.IntegrityError:
-            abort(400,
-                  'Cannot {0} on comment: identity has already submitted {0}'
-                  .format(vote_type)
-                 )
-
-
+        t = tables.identity_to_comment
+        ins = (
+            t.insert()
+            .values(**identity_to_comment)
+            .returning(*list(t.c))
+        )
         keyname = "{0}s".format(vote_type) # add 's' to pluralize vote_type
         t = tables.comment
         incremented = sa.func.jsonb_set(
@@ -63,13 +60,23 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
                 .format(keyname)
             )
         )
-        stmt = (
+        upd = (
             t.update()
             .where(t.c.id == comment_id)
             .values(custom_json=incremented)
             .returning(t.c.custom_json['upvotes'], t.c.custom_json['downvotes'])
         )
-        results = db.engine.execute(stmt).first()
+        statements = [ins, upd]
+        stmt, bindparams = queries.cte_chain(statements)
+        try:
+            results = db.engine.execute(stmt, **bindparams).first()
+        except sa.exc.IntegrityError:
+            abort(400,
+                  'Cannot {0} on comment: identity has already submitted {0}'
+                  .format(vote_type)
+                 )
+
+
         resp_obj = {
             'upvotes': results[0],
             'downvotes': results[1]
