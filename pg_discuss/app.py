@@ -15,7 +15,13 @@ from  . import views
 from . import ext
 from . import identity
 
+from . import _compat
+if _compat.PYPY: # pragma: no cover
+    from psycopg2cffi import compat as pg2cfficompat
+
 def app_factory():
+    if _compat.PYPY: # pragma: no cover
+        pg2cfficompat.register()
     app = Flask('pg-discuss', static_folder=None)
 
     # Load default config values from pg_discuss.config module

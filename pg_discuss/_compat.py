@@ -13,6 +13,8 @@ except ImportError: # pragma: no cover
     from urllib.parse import urlparse
 
 PY3 = sys.version_info[0] == 3
+PYPY = hasattr(sys, 'pypy_version_info')
+
 if PY3: # pragma: no cover
     text_type = str
     string_types = (str,)
