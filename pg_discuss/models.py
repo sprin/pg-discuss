@@ -54,6 +54,7 @@ from sqlalchemy import (
     text,
     UniqueConstraint,
 )
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.postgresql import JSONB
 
 class PgAlchemy(SQLAlchemy):
@@ -73,6 +74,10 @@ class Thread(db.Model):
     created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)
 
+    def __unicode__(self):
+        return self.client_id
+    __str__ = __unicode__
+
 
 class Comment(db.Model):
     id = Column(Integer, primary_key=True, nullable=False)
@@ -84,6 +89,17 @@ class Comment(db.Model):
     modified = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     text = Column(String, nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)
+    identity = db.relationship('Identity', backref=backref(
+        'comments',
+        cascade='all, delete-orphan',
+    ))
+    thread = db.relationship('Thread', backref=backref(
+        'comments',
+        cascade='all, delete-orphan',
+    ))
+    def __unicode__(self):
+        return '<{}> {}'.format(self.identity, self.text[:40])
+    __str__ = __unicode__
 
 
 class Identity(db.Model):
@@ -91,8 +107,12 @@ class Identity(db.Model):
     created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
     custom_json = Column(JSONB, server_default='{}', nullable=False)
 
+    def __unicode__(self):
+        return '({}) {}'.format(self.id, self.custom_json)
+    __str__ = __unicode__
 
-class IdentityToComment(db.Model):
+
+class IdentityToCommentAssociation(db.Model):
     __tablename__ = 'identity_to_comment'
     id = Column(Integer, primary_key=True, nullable=False)
     identity_id = Column(Integer, ForeignKey('identity.id'), nullable=False)
@@ -102,3 +122,15 @@ class IdentityToComment(db.Model):
     custom_json = Column(JSONB, server_default='{}', nullable=False)
     __table_args__ = (UniqueConstraint('identity_id', 'comment_id', 'rel_type',
                                        name='_comment_identity_uc'),)
+    identity = relationship("Identity", backref=backref(
+        'identity_to_comments_association',
+        cascade='all, delete-orphan',
+    ))
+    comment = relationship("Comment", backref=backref(
+        'identity_to_comments_association',
+        cascade='all, delete-orphan',
+    ))
+
+    def __unicode__(self):
+        return '<{}> {} <{}>'.format(self.identity, self.rel_type, self.comment)
+    __str__ = __unicode__

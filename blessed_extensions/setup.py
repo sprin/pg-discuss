@@ -1,5 +1,9 @@
 from setuptools import setup, find_packages
 
+requires = [
+    'Flask-Admin',
+]
+
 setup(
     name='pg-discuss-blessed-extensions',
     version='1.0',
@@ -55,8 +59,11 @@ setup(
             'blessed_markdown_renderer = blessed_extensions.renderers:MarkdownRenderer',
             'blessed_escaping_renderer = blessed_extensions.renderers:EscapingRenderer',
             'blessed_voting = blessed_extensions.voting:Voting',
+            'blessed_admin = blessed_extensions.admin:AdminExt',
         ],
     },
 
     zip_safe=False,
+
+    install_requires=requires,
 )

@@ -31,17 +31,20 @@ class JsonMimetypeExt(ext.AppExtBase):
         def _check_mimetype():
             if request.method in app.config['JSON_MIMETYPE_EXEMPT_METHODS']:
                 return
-            if self._exempt_views:
-                if not request.endpoint:
-                    return
+            if not request.endpoint:
+                return
 
-                view = app.view_functions.get(request.endpoint)
-                if not view:
-                    return
+            view = app.view_functions.get(request.endpoint)
+            if not view:
+                return
 
-                dest = '%s.%s' % (view.__module__, view.__name__)
-                if dest in self._exempt_views:
-                    return
+            # Exempt all blueprints (admin blueprients, etc)
+            if request.blueprint:
+                return
+
+            dest = '%s.%s' % (view.__module__, view.__name__)
+            if dest in self._exempt_views:
+                return
             self.check_mimetype()
 
     def check_mimetype(self):
