@@ -5,6 +5,7 @@ setup(
     version='1.0',
 
     description='Blessed extensions for pg-discuss',
+    license='MIT',
 
     author='Steffen Prince',
     author_email='steffen@sprin.io',
