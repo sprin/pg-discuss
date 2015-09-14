@@ -30,3 +30,6 @@ else:
 
     app.logger.info('Enabled extensions:\n{}'.format(
         '\n'.join([e.name for e in app.ext_mgr.extensions])))
+    # Make `application` alias for uwsgi/pypy
+    # See https://github.com/unbit/uwsgi/issues/900
+    application = app
