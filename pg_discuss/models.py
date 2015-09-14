@@ -63,6 +63,7 @@ class PgAlchemy(SQLAlchemy):
     """
     def apply_driver_hacks(self, app, info, options):
         options['connect_args'] = {"options": "-c timezone=utc"}
+        options['isolation_level'] = 'AUTOCOMMIT'
 
 db = PgAlchemy()
 
