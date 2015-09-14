@@ -7,3 +7,4 @@ dist
 .coverage
 env
 local_settings.py
+__pycache__
