@@ -3,26 +3,29 @@ import os
 from flask import Flask
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
+from flask_login import LoginManager
 from stevedore import (
     extension,
     driver,
     named,
 )
 
-from  . import config
-from .models import db
-from  . import views
+from . import config
+from . import views
 from . import ext
 from . import identity
-
+from . import models
 from . import _compat
+from . import auth_forms
+from .models import db
 if _compat.PYPY: # pragma: no cover
     from psycopg2cffi import compat as pg2cfficompat
 
 def app_factory():
     if _compat.PYPY: # pragma: no cover
         pg2cfficompat.register()
-    app = Flask('pg-discuss', static_folder=None)
+    app = Flask('pg-discuss', static_folder=None,
+                template_folder='pg_discuss/templates')
 
     # Load default config values from pg_discuss.config module
     app.config.from_object(config)
@@ -32,6 +35,12 @@ def app_factory():
     db.init_app(app)
     app.manager = Manager(app)
     app.migrate = Migrate(app, db)
+    # Login manager for Admin users.
+    app.admin_login_manager = LoginManager(app)
+
+    def load_user(user_id):
+        return db.session.query(models.AdminUser).get(user_id)
+    app.admin_login_manager.user_loader(load_user)
 
     ## Use stevedore to load drivers/extensions.
     # Discover all drivers/extensions, but do not load any.
@@ -75,6 +84,8 @@ def app_factory():
     app.route('/comments/<int:comment_id>', methods=['GET'])(views.view)
     app.route('/comments/<int:comment_id>', methods=['PATCH'])(views.edit)
     app.route('/comments/<int:comment_id>', methods=['DELETE'])(views.delete)
+    app.route('/login', methods=['GET', 'POST'])(views.admin_login)
+    app.route('/logout', methods=['GET'])(views.admin_logout)
 
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = named.NamedExtensionManager(
@@ -88,5 +99,6 @@ def app_factory():
     )
 
     app.manager.add_command('db', MigrateCommand)
+    app.manager.add_command('createadminuser', auth_forms.CreateAdminUser)
 
     return app

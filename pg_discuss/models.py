@@ -53,6 +53,7 @@ from sqlalchemy import (
     DateTime,
     text,
     UniqueConstraint,
+    Boolean,
 )
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.postgresql import JSONB
@@ -133,4 +134,36 @@ class IdentityToCommentAssociation(db.Model):
 
     def __unicode__(self):
         return '<{}> {} <{}>'.format(self.identity, self.rel_type, self.comment)
+    __str__ = __unicode__
+
+class AdminUser(db.Model):
+    """Model for managing admin user authentication.
+
+    This model is not for general user authentication. If traditional
+    username/password authentication is desired, it must be implemented as
+    an `IdentityPolicy` with its own model.
+    """
+    __tablename__ = 'admin_user'
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    login = db.Column(String, unique=True, nullable=False)
+    email = db.Column(String, nullable=False)
+    active = db.Column(Boolean, nullable=False)
+    password = db.Column(String, nullable=False)
+
+    # Flask-Login integration
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return self.active
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+    # Required for administrative interface
+    def __unicode__(self):
+        return self.username
     __str__ = __unicode__

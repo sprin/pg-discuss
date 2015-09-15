@@ -13,12 +13,21 @@ from flask import (
     jsonify,
     request,
     g,
+    url_for,
+    redirect,
+    render_template,
+    flash,
 )
+import flask_login
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import queries
 from . import forms
 from . import serialize
 from . import ext
+from . import auth_forms
+from . import models
+from .models import db
 
 def fetch(thread_client_id):
     """Fetch the thread and it's comment collection as JSON.
@@ -150,3 +159,17 @@ def delete(comment_id):
         update_modified=True
     )
     return jsonify(result)
+
+def admin_login():
+    # handle user login
+    form = auth_forms.LoginForm(request.form)
+    if form.validate_on_submit():
+        # Login and validate the user.
+        user = form.get_user()
+        flask_login.login_user(user)
+        return 'Logged in successfully.'
+    return render_template('login.html', form=form)
+
+def admin_logout():
+    flask_login.logout_user()
+    return 'Logged out successfully'
