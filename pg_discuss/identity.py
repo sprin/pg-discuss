@@ -8,7 +8,7 @@ class IdentityPolicyManager(object):
     """
 
     def __init__(self, app, identity_policy_cls):
-        self.identity_policy = identity_policy_cls()
+        self.identity_policy = identity_policy_cls(app)
         self._exempt_views = []
 
         app.config.setdefault('IDENTITY_POLICY_EXEMPT_METHODS', ['OPTIONS'])

@@ -127,6 +127,41 @@ def insert_identity(new_identity=None):
 
     return identity
 
+def update_identity(identity_id, identity_edit, old_identity):
+    """Update the identity in the database.
+
+    Update requests should be validated before being passed to this function.
+    """
+    t = tables.identity
+
+    if 'custom_json' in identity_edit:
+        identity_edit['custom_json'] = dict(
+            old_identity['custom_json'],
+            **identity_edit['custom_json']
+        )
+
+    # Update the "old" identity in place.
+    stmt = (
+        t.update()
+        .where(t.c.id == identity_id)
+        .values(**identity_edit)
+        .returning(*list(t.c))
+    )
+
+    # Run on_pre_update hooks
+    #ext.exec_hooks(ext.OnPreIdentityUpdate, old_identity, identity_edit)
+
+    result = db.engine.execute(stmt).first()
+    if not result:
+        raise IdentityNotFoundError('Identity {0} not found'.format(identity_id))
+
+    identity = dict(result.items())
+
+    # Run on_post_update hooks
+    #ext.exec_hooks(ext.OnPostIdentityUpdate, old_identity, identity)
+
+    return identity
+
 def fetch_identity(identity_id):
     t = tables.identity
     stmt = t.select().where(t.c.id == identity_id)

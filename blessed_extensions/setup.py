@@ -56,6 +56,7 @@ setup(
             'blessed_capture_email = blessed_extensions.capture_email:CaptureEmail',
             'blessed_capture_remote_addr = blessed_extensions.capture_remote_addr:CaptureRemoteAddr',
             'blessed_auth_tkt_identity_policy = blessed_extensions.auth_tkt_identity_policy:AuthTktIdentityPolicy',
+            'blessed_persist_comment_info_on_id = blessed_extensions.auth_tkt_identity_policy:PersistCommentInfoOnIdentity',
             'blessed_markdown_renderer = blessed_extensions.renderers:MarkdownRenderer',
             'blessed_escaping_renderer = blessed_extensions.renderers:EscapingRenderer',
             'blessed_voting = blessed_extensions.voting:Voting',
