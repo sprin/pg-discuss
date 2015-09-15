@@ -18,6 +18,7 @@ class AdminExt(ext.AppExtBase):
         admin.add_view(CommentAdmin(models.Comment, models.db.session))
         admin.add_view(ThreadAdmin(models.Thread, models.db.session))
         admin.add_view(IdentityAdmin(models.Identity, models.db.session))
+        admin.add_view(AdminUserAdmin(models.AdminUser, models.db.session))
 
 class AuthenticatedModelView(sqla.ModelView):
     def is_accessible(self):
@@ -30,6 +31,9 @@ class ThreadAdmin(AuthenticatedModelView):
     pass
 
 class IdentityAdmin(AuthenticatedModelView):
+    pass
+
+class AdminUserAdmin(AuthenticatedModelView):
     pass
 
 class MyAdminIndexView(flask_admin.AdminIndexView):
