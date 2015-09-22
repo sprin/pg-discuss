@@ -1,10 +1,13 @@
 import flask_admin
 import flask_login
-from flask_admin.contrib import sqla
+import flask_admin.contrib.sqla
+import flask_admin.contrib.sqla.form
 from flask import (
     redirect,
     url_for,
 )
+import json
+import wtforms.fields
 
 from pg_discuss import ext
 from pg_discuss import models
@@ -43,18 +46,46 @@ class PrettyComment(models.Comment):
     identity = relationship('PrettyIdentity')
 
 
-class AuthenticatedModelView(sqla.ModelView):
+class AuthenticatedModelView(flask_admin.contrib.sqla.ModelView):
     def is_accessible(self):
         return flask_login.current_user.is_authenticated()
 
+class DictToJSONField(wtforms.fields.TextAreaField):
+    def process_data(self, value):
+        if value is None:
+            value = {}
+
+        self.data = json.dumps(value, sort_keys=True,
+                               indent=4, separators=(',', ': '))
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = json.loads(valuelist[0])
+        else:
+            self.data = '{}'
+
+class CustomAdminConverter(flask_admin.contrib.sqla.form.AdminModelConverter):
+    @flask_admin.contrib.sqla.form.converts('JSON')
+    def conv_JSON(self, field_args, **extra):
+        return DictToJSONField(**field_args)
+
 class CommentAdmin(AuthenticatedModelView):
-    pass
+    model_form_converter=CustomAdminConverter
+    form_widget_args = {
+        'custom_json': {'rows': 10}
+    }
 
 class ThreadAdmin(AuthenticatedModelView):
-    pass
+    model_form_converter=CustomAdminConverter
+    form_widget_args = {
+        'custom_json': {'rows': 10}
+    }
 
 class IdentityAdmin(AuthenticatedModelView):
-    pass
+    model_form_converter=CustomAdminConverter
+    form_widget_args = {
+        'custom_json': {'rows': 10}
+    }
 
 class AdminUserAdmin(AuthenticatedModelView):
     pass
