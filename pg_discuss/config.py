@@ -42,6 +42,7 @@ ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
 ENABLE_EXT_BLESSED_VOTING = True
 ENABLE_EXT_BLESSED_ADMIN = True
 ENABLE_EXT_BLESSED_MODERATION = True
+ENABLE_EXT_BLESSED_MOD_EMAIL = True
 
 # Optional: Order extensions using comma-separated list of extension names.
 # It is generally discouraged to write order-dependent extensions, but it may
@@ -69,6 +70,9 @@ DO_NOT_LOG_VARS = [
 ## Connection parameters and secrets
 SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 SECRET_KEY = os.environ['SECRET_KEY']
+# SERVER_NAME is required by some extensions that need to build absolute urls
+# in the context of emails, etc.
+SERVER_NAME = os.environ.get('SERVER_NAME')
 
 # Comment defaults
 MIN_COMMENT_LENGTH = 3

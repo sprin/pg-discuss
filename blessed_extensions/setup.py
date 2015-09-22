@@ -4,6 +4,7 @@ requires = [
     'Flask-Admin',
     'Flask-Login',
     'Flask-WTF',
+    'Flask-Mail',
 ]
 
 setup(
@@ -64,6 +65,7 @@ setup(
             'blessed_voting = blessed_extensions.voting:Voting',
             'blessed_admin = blessed_extensions.admin:AdminExt',
             'blessed_moderation = blessed_extensions.moderation:ModerationExt',
+            'blessed_mod_email = blessed_extensions.mod_email:ModerationEmail',
         ],
     },
 

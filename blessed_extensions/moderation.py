@@ -23,9 +23,12 @@ class Moderate(admin.PrettyComment):
 class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate):
 
     def init_app(self, app):
-        app.admin.add_view(CommentAdminWithModeration(Moderate,
-                                                  models.db.session,
-                                                  name='Moderation'))
+        app.admin.add_view(CommentAdminWithModeration(
+            Moderate,
+            models.db.session,
+            name='Moderation',
+            endpoint='moderation',
+        ))
 
     def add_comment_filter_predicate(self, **extras):
         """Return a filter clause to exclude unapproved comments from the
