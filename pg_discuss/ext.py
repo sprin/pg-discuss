@@ -73,11 +73,6 @@ class AppExtBase(GenericExtBase):
     Such extensions will perform app initialization, possibly
     adding new views.
     """
-    def __init__(self, app=None):
-        self.app = app
-        if app is not None:
-            self.init_app(app)
-
     @abc.abstractmethod
     def init_app(self, app):
         """Perform app initialization."""
@@ -217,6 +212,14 @@ def exec_hooks(ext_class, *args, **kwargs):
             results.append(execute_hook(ext, ext_class, *args, **kwargs))
 
     return results
+
+def exec_init_app(app):
+    """Execute the init_app for any instance of AppExtBase.
+    """
+
+    for ext in app.ext_mgr.extensions:
+        if isinstance(ext.obj, AppExtBase):
+            ext.obj.init_app(app)
 
 def fail_on_ext_load(manager, entrypoint, exception):
     """Function to be used as `on_load_failure_callback` for stevedore.

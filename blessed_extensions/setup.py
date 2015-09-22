@@ -2,6 +2,8 @@ from setuptools import setup, find_packages
 
 requires = [
     'Flask-Admin',
+    'Flask-Login',
+    'Flask-WTF',
 ]
 
 setup(
@@ -61,6 +63,7 @@ setup(
             'blessed_escaping_renderer = blessed_extensions.renderers:EscapingRenderer',
             'blessed_voting = blessed_extensions.voting:Voting',
             'blessed_admin = blessed_extensions.admin:AdminExt',
+            'blessed_moderation = blessed_extensions.moderation:ModerationExt',
         ],
     },
 

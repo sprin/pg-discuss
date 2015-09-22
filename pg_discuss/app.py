@@ -97,6 +97,8 @@ def app_factory():
         on_load_failure_callback=ext.fail_on_ext_load,
         propagate_map_exceptions=True,
     )
+    # Run the `init_app` hooks.
+    ext.exec_init_app(app)
 
     app.manager.add_command('db', MigrateCommand)
     app.manager.add_command('createadminuser', auth_forms.CreateAdminUser)

@@ -15,6 +15,7 @@ class AdminExt(ext.AppExtBase):
         admin = flask_admin.Admin(app, 'pg-discuss Administration',
                                   template_mode='bootstrap3',
                                   index_view=MyAdminIndexView())
+        app.admin = admin
         # Add views
         admin.add_view(CommentAdmin(PrettyComment, models.db.session,
                                     name='Comment'))
