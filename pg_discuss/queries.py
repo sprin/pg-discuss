@@ -1,9 +1,11 @@
+"""Queries used by pg-discuss core and available to extensions."""
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql
 
 from . import db
 from . import ext
 from . import tables
+from . import utils
 
 class CommentNotFoundError(Exception):
     pass
@@ -15,6 +17,7 @@ class IdentityNotFoundError(Exception):
     pass
 
 def fetch_thread_by_client_id(thread_client_id):
+    """Fetch a thread object by thread_client_id from the database."""
     t = tables.thread
     stmt = t.select().where(t.c.client_id == thread_client_id)
 
@@ -32,7 +35,7 @@ def fetch_thread_by_client_id(thread_client_id):
 
 
 def fetch_comment_by_id(comment_id):
-    """Fetch a single comment by id from the database."""
+    """Fetch a single comment object by id from the database."""
     t = tables.comment
     stmt = t.select().where(t.c.id == comment_id)
 
@@ -106,7 +109,7 @@ def insert_thread(new_thread):
     return thread
 
 def insert_identity(new_identity=None):
-    """Insert the `new_thread` object in to the database."""
+    """Insert the a new identity object in to the database."""
     t = tables.identity
     stmt = (
         t.insert()
@@ -162,6 +165,7 @@ def update_identity(identity_id, identity_edit, old_identity):
     return identity
 
 def fetch_identity(identity_id):
+    """Fetch an identity object by id from the database."""
     t = tables.identity
     stmt = t.select().where(t.c.id == identity_id)
 
@@ -224,7 +228,7 @@ def validate_parent_exists(parent):
     return db.engine.execute(stmt).scalar()
 
 def insert_identity_to_comment(identity_to_comment):
-
+    """Insert the a new identity-to-comment object in to the database."""
     t = tables.identity_to_comment
     stmt = (
         t.insert()
@@ -247,25 +251,18 @@ def cte_chain(statements):
     for i, stmt in enumerate(statements):
         compiled = stmt.compile(
             dialect=sqlalchemy.dialects.postgresql.dialect())
+        # If first statement, open the WITH statement and use an alias.
         if i == 0:
             part = "WITH t{0} AS ( {1} )".format(i, compiled)
+        # If last statement, do not prefix with comma and do not use an alias.
         elif i == (len(statements) - 1):
             part = "{0}".format(compiled)
+        # Otherwise, if not first or last, prefix with a comma and use an alias.
         else:
             part = ", t{0} AS ( {1} )".format(i, compiled)
-        bindparams = merge_fail_on_conflict(bindparams, compiled.params)
+
+        bindparams = utils.merge_fail_on_conflict(bindparams, compiled.params)
         parts.append(part)
 
     stmt = '\n'.join(parts)
     return stmt, bindparams
-
-class MergeConflict(Exception):
-    pass
-
-def merge_fail_on_conflict(dict1, dict2):
-    """Merge two dictionaries, failing on conflict."""
-    for key in dict2.keys():
-        if key in dict1:
-            raise MergeConflict("key {} already exists".format(key))
-        else:
-            return dict(dict1, **dict2)
