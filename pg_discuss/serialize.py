@@ -1,7 +1,8 @@
+import flask
+import markupsafe
+
 from . import ext
 from . import _compat
-from flask import current_app
-import markupsafe
 
 # Fields which will be serialized by default when sent to client.
 DEFAULT_COMMENT_WHITELIST = [
@@ -42,7 +43,7 @@ def to_client_comment(raw_comment, plain=False):
     # handle escaping of the comment text.
     if not plain:
         client_comment['text'] = (
-            current_app.comment_renderer.render(client_comment['text'])
+            flask.current_app.comment_renderer.render(client_comment['text'])
         )
 
     return client_comment

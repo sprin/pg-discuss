@@ -1,18 +1,19 @@
-from flask import request
+import flask
 from voluptuous import (
     All,
     Schema,
     Url,
 )
 
-from pg_discuss import ext
 from pg_discuss import _compat
+from pg_discuss import ext
 
 class CaptureWebsite(ext.ValidateComment, ext.OnPreCommentSerialize):
     def validate_comment(self, comment, action, **extras):
-        website = request.get_json().get('website')
+        website = flask.request.get_json().get('website')
         if website:
-            url = Schema(All(_compat.text_type, Url()))(website)
+            form = Schema(All(_compat.text_type, Url()))
+            url = form(website)
             comment['custom_json']['website'] = normalize_url(url)
         return comment
 

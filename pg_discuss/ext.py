@@ -18,11 +18,11 @@ import abc
 import six
 
 from flask import current_app
+import sqlalchemy as sa
 
 class PluginLoadError(Exception):
     pass
 
-import sqlalchemy as sa
 
 class GenericExtBase(object):
     """

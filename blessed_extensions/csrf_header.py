@@ -1,7 +1,4 @@
-from flask import (
-    abort,
-    request,
-)
+import flask
 
 from pg_discuss import ext
 
@@ -42,14 +39,14 @@ class CsrfHeaderExt(ext.AppExtBase):
         @app.before_request
         def _csrf_protect():
             # many things come from django.middleware.csrf
-            if request.method in app.config['CSRF_HEADER_EXEMPT_METHODS']:
+            if flask.request.method in app.config['CSRF_HEADER_EXEMPT_METHODS']:
                 return
 
             if self._exempt_views:
-                if not request.endpoint:
+                if not flask.request.endpoint:
                     return
 
-                view = app.view_functions.get(request.endpoint)
+                view = app.view_functions.get(flask.request.endpoint)
                 if not view:
                     return
 
@@ -61,13 +58,13 @@ class CsrfHeaderExt(ext.AppExtBase):
 
     def protect(self):
         if self._app.config['CSRF_HEADER_ENABLED']:
-            if not request.is_xhr:
+            if not flask.request.is_xhr:
                 reason = (
                     'XHR checking failed - X-Requested-With not set '
                     'to XMLHttpRequest'
                 )
                 return self._error_response(reason)
-        request.csrf_header_valid = True
+        flask.request.csrf_header_valid = True
 
     def exempt(self, view):
         """A decorator that can exclude a view from XHR checking.
@@ -83,4 +80,4 @@ class CsrfHeaderExt(ext.AppExtBase):
         return view
 
     def _error_response(self, reason):
-        return abort(403, reason)
+        return flask.abort(403, reason)

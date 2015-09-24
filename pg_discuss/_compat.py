@@ -6,11 +6,17 @@ https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
 """
 import sys
 import urllib
+
 try:
     from urlparse import urlparse
 except ImportError: # pragma: no cover
     # python 3
     from urllib.parse import urlparse
+
+try:
+    reduce
+except NameError: # pragma: no cover
+    from functools import reduce
 
 PY3 = sys.version_info[0] == 3
 PYPY = hasattr(sys, 'pypy_version_info')

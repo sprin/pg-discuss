@@ -4,17 +4,15 @@ CSRF token generation, validation, and middleware.
 Forked from flask_wtf.csrf:
 https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
 """
-
-import os
-import hmac
 import hashlib
+import hmac
+import os
 import time
-from flask import current_app, session, request, abort
-from werkzeug.security import safe_str_cmp
-from pg_discuss._compat import (
-    to_bytes,
-    urlparse,
-)
+
+import flask
+import werkzeug.security
+
+from pg_discuss import _compat
 from pg_discuss import ext
 
 __all__ = ('generate_csrf', 'validate_csrf', 'CsrfProtect')
@@ -28,26 +26,26 @@ def generate_csrf(secret_key=None, time_limit=None):
                        default is 3600s.
     """
     if not secret_key:
-        secret_key = current_app.config['SECRET_KEY']
+        secret_key = flask.current_app.config['SECRET_KEY']
         if not secret_key:
             raise ValueError('Must provide secret_key to use csrf.')
 
     if time_limit is None:
-        time_limit = current_app.config['CSRF_TOKEN_TIME_LIMIT']
+        time_limit = flask.current_app.config['CSRF_TOKEN_TIME_LIMIT']
 
-    if 'csrf_token' not in session:
-        session['csrf_token'] = hashlib.sha1(os.urandom(64)).hexdigest()
+    if 'csrf_token' not in flask.session:
+        flask.session['csrf_token'] = hashlib.sha1(os.urandom(64)).hexdigest()
 
     if time_limit:
         expires = int(time.time() + time_limit)
-        csrf_build = '%s%s' % (session['csrf_token'], expires)
+        csrf_build = '%s%s' % (flask.session['csrf_token'], expires)
     else:
         expires = ''
-        csrf_build = session['csrf_token']
+        csrf_build = flask.session['csrf_token']
 
     hmac_csrf = hmac.new(
-        to_bytes(secret_key),
-        to_bytes(csrf_build),
+        _compat.to_bytes(secret_key),
+        _compat.to_bytes(csrf_build),
         digestmod=hashlib.sha1
     ).hexdigest()
     return '%s##%s' % (expires, hmac_csrf)
@@ -67,7 +65,7 @@ def validate_csrf(data, secret_key=None, time_limit=None):
     expires, hmac_csrf = data.split('##', 1)
 
     if time_limit is None:
-        time_limit = current_app.config['CSRF_TOKEN_TIME_LIMIT']
+        time_limit = flask.current_app.config['CSRF_TOKEN_TIME_LIMIT']
 
     if time_limit:
         try:
@@ -80,21 +78,21 @@ def validate_csrf(data, secret_key=None, time_limit=None):
             return False
 
     if not secret_key:
-        secret_key = current_app.config['SECRET_KEY']
+        secret_key = flask.current_app.config['SECRET_KEY']
         if not secret_key:
             raise ValueError('Must provide secret_key to use csrf.')
 
-    if 'csrf_token' not in session:
+    if 'csrf_token' not in flask.session:
         return False
 
-    csrf_build = '%s%s' % (session['csrf_token'], expires)
+    csrf_build = '%s%s' % (flask.session['csrf_token'], expires)
     hmac_compare = hmac.new(
-        to_bytes(secret_key),
-        to_bytes(csrf_build),
+        _compat.to_bytes(secret_key),
+        _compat.to_bytes(csrf_build),
         digestmod=hashlib.sha1
     ).hexdigest()
 
-    return safe_str_cmp(hmac_compare, hmac_csrf)
+    return werkzeug.security.safe_str_cmp(hmac_compare, hmac_csrf)
 
 def get_csrf_token():
     return generate_csrf()
@@ -129,14 +127,14 @@ class CsrfTokenExt(ext.AppExtBase):
         @app.before_request
         def _csrf_protect():
             # many things come from django.middleware.csrf
-            if request.method in app.config['CSRF_TOKEN_EXEMPT_METHODS']:
+            if flask.request.method in app.config['CSRF_TOKEN_EXEMPT_METHODS']:
                 return
 
             if self._exempt_views:
-                if not request.endpoint:
+                if not flask.request.endpoint:
                     return
 
-                view = app.view_functions.get(request.endpoint)
+                view = app.view_functions.get(flask.request.endpoint)
                 if not view:
                     return
 
@@ -150,30 +148,30 @@ class CsrfTokenExt(ext.AppExtBase):
         """Extract CSRF token from headers.
         """
         for header_name in self._app.config['CSRF_TOKEN_HEADERS']:
-            csrf_token = request.headers.get(header_name)
+            csrf_token = flask.request.headers.get(header_name)
             if csrf_token:
                 return csrf_token
         return None
 
     def protect(self):
-        if request.method in self._app.config['CSRF_TOKEN_EXEMPT_METHODS']:
+        if flask.request.method in self._app.config['CSRF_TOKEN_EXEMPT_METHODS']:
             return
 
         if not validate_csrf(self._get_csrf_token()):
             reason = 'CSRF token missing or incorrect.'
             return self._error_response(reason)
 
-        if request.is_secure and self._app.config['CSRF_SSL_STRICT']:
-            if not request.referrer:
+        if flask.request.is_secure and self._app.config['CSRF_SSL_STRICT']:
+            if not flask.request.referrer:
                 reason = 'Referrer checking failed - no Referrer.'
                 return self._error_response(reason)
 
-            good_referrer = 'https://%s/' % request.host
-            if not same_origin(request.referrer, good_referrer):
+            good_referrer = 'https://%s/' % flask.request.host
+            if not same_origin(flask.request.referrer, good_referrer):
                 reason = 'Referrer checking failed - origin does not match.'
                 return self._error_response(reason)
 
-        request.csrf_token_valid = True  # mark this request is csrf valid
+        flask.request.csrf_token_valid = True  # mark this request is csrf valid
 
     def exempt(self, view):
         """A decorator that can exclude a view from csrf protection.
@@ -189,12 +187,12 @@ class CsrfTokenExt(ext.AppExtBase):
         return view
 
     def _error_response(self, reason):
-        return abort(403, reason)
+        return flask.abort(403, reason)
 
 
 def same_origin(current_uri, compare_uri):
-    parsed_uri = urlparse(current_uri)
-    parsed_compare = urlparse(compare_uri)
+    parsed_uri = _compat.urlparse(current_uri)
+    parsed_compare = _compat.urlparse(compare_uri)
 
     if parsed_uri.scheme != parsed_compare.scheme:
         return False

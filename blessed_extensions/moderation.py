@@ -1,21 +1,15 @@
-from sqlalchemy import Boolean
+import flask
+from flask_admin.actions import action
+from flask_admin.babel import gettext, ngettext, lazy_gettext
+from flask_admin.base import expose
+from flask_admin.contrib.sqla import filters
+import sqlalchemy as sa
 
+from . import admin
+from pg_discuss import db
 from pg_discuss import ext
 from pg_discuss import models
 from pg_discuss import tables
-from . import admin
-from flask import (
-    flash,
-    redirect,
-    request,
-)
-from flask_admin.babel import gettext, ngettext, lazy_gettext
-from flask_admin.actions import action
-from flask_admin.contrib.sqla import filters
-from pg_discuss.models import db
-from flask_admin.base import expose
-
-import sqlalchemy as sa
 
 class Moderate(admin.PrettyComment):
     pass
@@ -35,7 +29,7 @@ class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate):
         default fetch.
         """
         t = tables.comment
-        return t.c.custom_json['approved'].cast(Boolean).is_(True)
+        return t.c.custom_json['approved'].cast(sa.Boolean).is_(True)
 
 class PendingApprovalFilter(filters.BaseSQLAFilter):
     def apply(self, query, value, alias=None):
@@ -62,8 +56,8 @@ class CommentAdminWithModeration(admin.CommentAdmin):
     @expose('/')
     def index_view(self):
         """Redirect to default 'Pending' filter if no query args."""
-        if not request.args:
-            return redirect(request.url + '?flt1_0=')
+        if not flask.request.args:
+            return flask.redirect(flask.request.url + '?flt1_0=')
         else:
             return super(CommentAdminWithModeration, self).index_view()
 
@@ -103,7 +97,7 @@ class CommentAdminWithModeration(admin.CommentAdmin):
             result = db.engine.execute(stmt).fetchall()
             count = len(result)
 
-            flash(ngettext(
+            flask.flash(ngettext(
                 'Comment was successfully {}.'
                 .format(action_text),
                 '%(count)s comments were successfully {}.'
@@ -114,6 +108,6 @@ class CommentAdminWithModeration(admin.CommentAdmin):
             if not self.handle_view_exception(ex):
                 raise
 
-            flash(gettext('Failed to {} records. %(error)s'
+            flask.flash(gettext('Failed to {} records. %(error)s'
                           .format(action_text),
                           error=str(ex)), 'error')

@@ -44,36 +44,39 @@ the core code. Some possible uses:
  - moderated flag
  - likes/dislikes
 """
-from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import (
+    Boolean,
     Column,
+    DateTime,
     ForeignKey,
     Integer,
     String,
-    DateTime,
-    text,
     UniqueConstraint,
-    Boolean,
+    text,
 )
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import (
+    backref,
+    relationship,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 
-class PgAlchemy(SQLAlchemy):
-    """Custom subclass of the SQLAlchemy extension that sets the
-    connection timezone to UTC. The backend should handle timestamps entirely
-    in UTC, with timezone adjustment performed on the client side.
-    """
-    def apply_driver_hacks(self, app, info, options):
-        options['connect_args'] = {"options": "-c timezone=utc"}
-        options['isolation_level'] = 'AUTOCOMMIT'
-
-db = PgAlchemy()
+from . import db
 
 class Thread(db.Model):
-    id = Column(Integer, primary_key=True)
-    client_id = Column(String, unique=True)
-    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
-    custom_json = Column(JSONB, server_default='{}', nullable=False)
+    id = Column(
+        Integer,
+        primary_key=True)
+    client_id = Column(
+        String,
+        unique=True)
+    created = Column(
+        DateTime(timezone=True),
+        server_default=text('NOW()'),
+        nullable=False)
+    custom_json = Column(
+        JSONB,
+        server_default='{}',
+        nullable=False)
 
     def __unicode__(self):
         return self.client_id
@@ -81,32 +84,65 @@ class Thread(db.Model):
 
 
 class Comment(db.Model):
-    id = Column(Integer, primary_key=True, nullable=False)
-    identity_id = Column(Integer, ForeignKey('identity.id'), nullable=True)
-    thread_id = Column(Integer, ForeignKey('thread.id'), nullable=False)
-    parent_id = Column(Integer, ForeignKey('comment.id'))
-    version_of_id = Column(Integer, ForeignKey('comment.id'), nullable=True)
-    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
-    modified = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
-    text = Column(String, nullable=False)
-    custom_json = Column(JSONB, server_default='{}', nullable=False)
-    identity = db.relationship('Identity', backref=backref(
-        'comments',
-        cascade='all, delete-orphan',
-    ))
-    thread = db.relationship('Thread', backref=backref(
-        'comments',
-        cascade='all, delete-orphan',
-    ))
+    id = Column(
+        Integer,
+        primary_key=True,
+        nullable=False)
+    identity_id = Column(
+        Integer,
+        ForeignKey('identity.id'),
+        nullable=True)
+    thread_id = Column(
+        Integer,
+        ForeignKey('thread.id'),
+        nullable=False)
+    parent_id = Column(
+        Integer,
+        ForeignKey('comment.id'))
+    version_of_id = Column(
+        Integer,
+        ForeignKey('comment.id'),
+        nullable=True)
+    created = Column(
+        DateTime(timezone=True),
+        server_default=text('NOW()'),
+        nullable=False)
+    modified = Column(
+        DateTime(timezone=True),
+        server_default=text('NOW()'),
+        nullable=False)
+    text = Column(
+        String,
+        nullable=False)
+    custom_json = Column(
+        JSONB,
+        server_default='{}',
+        nullable=False)
+    identity = relationship(
+        'Identity',
+        backref=backref('comments', cascade='all, delete-orphan'))
+    thread = relationship(
+        'Thread',
+        backref=backref('comments', cascade='all, delete-orphan'))
+
     def __unicode__(self):
         return '<{}> {}'.format(self.identity, self.text[:40])
     __str__ = __unicode__
 
 
 class Identity(db.Model):
-    id = Column(Integer, primary_key=True, nullable=False)
-    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
-    custom_json = Column(JSONB, server_default='{}', nullable=False)
+    id = Column(
+        Integer,
+        primary_key=True,
+        nullable=False)
+    created = Column(
+        DateTime(timezone=True),
+        server_default=text('NOW()'),
+        nullable=False)
+    custom_json = Column(
+        JSONB,
+        server_default='{}',
+        nullable=False)
 
     def __unicode__(self):
         return '({}) {}'.format(self.id, self.custom_json)
@@ -115,22 +151,46 @@ class Identity(db.Model):
 
 class IdentityToCommentAssociation(db.Model):
     __tablename__ = 'identity_to_comment'
-    id = Column(Integer, primary_key=True, nullable=False)
-    identity_id = Column(Integer, ForeignKey('identity.id'), nullable=False)
-    comment_id = Column(Integer, ForeignKey('comment.id'), nullable=False)
-    rel_type = Column(String, nullable=False)
-    created = Column(DateTime(timezone=True), server_default=text('NOW()'), nullable=False)
-    custom_json = Column(JSONB, server_default='{}', nullable=False)
-    __table_args__ = (UniqueConstraint('identity_id', 'comment_id', 'rel_type',
-                                       name='_comment_identity_uc'),)
-    identity = relationship("Identity", backref=backref(
-        'identity_to_comments_association',
-        cascade='all, delete-orphan',
-    ))
-    comment = relationship("Comment", backref=backref(
-        'identity_to_comments_association',
-        cascade='all, delete-orphan',
-    ))
+    id = Column(
+        Integer,
+        primary_key=True,
+        nullable=False)
+    identity_id = Column(
+        Integer,
+        ForeignKey('identity.id'),
+        nullable=False)
+    comment_id = Column(
+        Integer,
+        ForeignKey('comment.id'),
+        nullable=False)
+    rel_type = Column(
+        String,
+        nullable=False)
+    created = Column(
+        DateTime(timezone=True),
+        server_default=text('NOW()'),
+        nullable=False)
+    custom_json = Column(
+        JSONB,
+        server_default='{}',
+        nullable=False)
+    __table_args__ = (
+        UniqueConstraint(
+            'identity_id',
+            'comment_id',
+            'rel_type',
+            name='_comment_identity_uc'),
+    )
+    identity = relationship(
+        "Identity",
+        backref=backref(
+            'identity_to_comments_association',
+            cascade='all, delete-orphan'))
+    comment = relationship(
+        "Comment",
+        backref=backref(
+            'identity_to_comments_association',
+            cascade='all, delete-orphan'))
 
     def __unicode__(self):
         return '<{}> {} <{}>'.format(self.identity, self.rel_type, self.comment)
@@ -144,11 +204,23 @@ class AdminUser(db.Model):
     an `IdentityPolicy` with its own model.
     """
     __tablename__ = 'admin_user'
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    login = db.Column(String, unique=True, nullable=False)
-    email = db.Column(String, nullable=False)
-    active = db.Column(Boolean, nullable=False)
-    password = db.Column(String, nullable=False)
+    id = Column(
+        Integer,
+        primary_key=True,
+        nullable=False)
+    login = Column(
+        String,
+        unique=True,
+        nullable=False)
+    email = Column(
+        String,
+        nullable=False)
+    active = Column(
+        Boolean,
+        nullable=False)
+    password = Column(
+        String,
+        nullable=False)
 
     # Flask-Login integration
     def is_authenticated(self):

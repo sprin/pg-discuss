@@ -1,20 +1,21 @@
 import re
-from flask import request
+
+import flask
 from voluptuous import (
     All,
-    Schema,
     Invalid,
+    Schema,
 )
 
-from pg_discuss import ext
 from pg_discuss import _compat
+from pg_discuss import ext
 
 class CaptureEmail(ext.ValidateComment):
     def validate_comment(self, comment, action, **extras):
-        email = request.get_json().get('email')
+        email = flask.request.get_json().get('email')
         if email:
-            comment['custom_json']['email'] = Schema(
-                All(_compat.text_type, validate_email))(email)
+            form = Schema(All(_compat.text_type, validate_email))
+            comment['custom_json']['email'] = form(email)
         return comment
 
 def validate_email(v):

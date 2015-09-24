@@ -1,30 +1,28 @@
 import os
 
-from flask import Flask
-from flask.ext.script import Manager
-from flask.ext.migrate import Migrate, MigrateCommand
-from flask_login import LoginManager
-from stevedore import (
-    extension,
-    driver,
-    named,
-)
+import flask
+import flask_login
+import flask_migrate
+import flask_script
+import stevedore
 
+from . import _compat
+from . import auth_forms
 from . import config
-from . import views
+from . import db
 from . import ext
 from . import identity
 from . import models
-from . import _compat
-from . import auth_forms
-from .models import db
+from . import views
+
+# Use psycopg2cffi if PYPY
 if _compat.PYPY: # pragma: no cover
     from psycopg2cffi import compat as pg2cfficompat
 
 def app_factory():
     if _compat.PYPY: # pragma: no cover
         pg2cfficompat.register()
-    app = Flask('pg-discuss', static_folder=None,
+    app = flask.Flask('pg-discuss', static_folder=None,
                 template_folder='pg_discuss/templates')
 
     # Load default config values from pg_discuss.config module
@@ -33,10 +31,10 @@ def app_factory():
     app.config.from_pyfile(os.environ['PG_DISCUSS_SETTINGS_FILE'])
 
     db.init_app(app)
-    app.manager = Manager(app)
-    app.migrate = Migrate(app, db)
+    app.manager = flask_script.Manager(app)
+    app.migrate = flask_migrate.Migrate(app, db)
     # Login manager for Admin users.
-    app.admin_login_manager = LoginManager(app)
+    app.admin_login_manager = flask_login.LoginManager(app)
 
     def load_user(user_id):
         return db.session.query(models.AdminUser).get(user_id)
@@ -45,10 +43,11 @@ def app_factory():
     ## Use stevedore to load drivers/extensions.
     # Discover all drivers/extensions, but do not load any.
     # Used for logging found extensions.
-    app.ext_mgr_all = extension.ExtensionManager(namespace='pg_discuss.ext')
+    app.ext_mgr_all = stevedore.ExtensionManager(
+        namespace='pg_discuss.ext')
 
     ## Load configured IdentityPolicy driver
-    app.identity_policy_loader = driver.DriverManager(
+    app.identity_policy_loader = stevedore.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_IDENTITY_POLICY'],
     )
@@ -59,14 +58,14 @@ def app_factory():
     )
 
     ## Load configured CommentRenderer driver
-    app.comment_renderer_loader = driver.DriverManager(
+    app.comment_renderer_loader = stevedore.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_COMMENT_RENDERER'],
     )
     app.comment_renderer = app.comment_renderer_loader.driver()
 
     ## Load configured JSONEncoder driver
-    app.json_encoder_loader = driver.DriverManager(
+    app.json_encoder_loader = stevedore.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_JSON_ENCODER'],
     )
@@ -88,7 +87,7 @@ def app_factory():
     app.route('/logout', methods=['GET'])(views.admin_logout)
 
     # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
-    app.ext_mgr = named.NamedExtensionManager(
+    app.ext_mgr = stevedore.NamedExtensionManager(
         namespace='pg_discuss.ext',
         names=config.get_enabled_extensions(app.config),
         name_order=True,
@@ -100,7 +99,7 @@ def app_factory():
     # Run the `init_app` hooks.
     ext.exec_init_app(app)
 
-    app.manager.add_command('db', MigrateCommand)
+    app.manager.add_command('db', flask_migrate.MigrateCommand)
     app.manager.add_command('createadminuser', auth_forms.CreateAdminUser)
 
     return app

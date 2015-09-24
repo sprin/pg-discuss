@@ -1,13 +1,9 @@
-from flask import jsonify
+import flask
 
+from pg_discuss import db
 from pg_discuss import ext
-from pg_discuss import tables
 from pg_discuss import queries
-from pg_discuss.models import db
-from flask import (
-    g,
-    abort,
-)
+from pg_discuss import tables
 
 import sqlalchemy as sa
 
@@ -40,7 +36,7 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
         """
 
         identity_to_comment = {
-            'identity_id': g.identity['id'],
+            'identity_id': flask.g.identity['id'],
             'comment_id': comment_id,
             'rel_type': vote_type,
         }
@@ -71,7 +67,7 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
         try:
             results = db.engine.execute(stmt, **bindparams).first()
         except sa.exc.IntegrityError:
-            abort(400,
+            flask.abort(400,
                   'Cannot {0} on comment: identity has already submitted {0}'
                   .format(vote_type)
                  )
@@ -81,7 +77,7 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
             'upvotes': results[0],
             'downvotes': results[1]
         }
-        return jsonify(resp_obj)
+        return flask.jsonify(resp_obj)
 
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         client_comment['upvotes'] = raw_comment['custom_json'].get('upvotes', 0)

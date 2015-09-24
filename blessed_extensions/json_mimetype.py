@@ -1,7 +1,4 @@
-from flask import (
-    abort,
-    request,
-)
+import flask
 
 from pg_discuss import ext
 
@@ -29,17 +26,17 @@ class JsonMimetypeExt(ext.AppExtBase):
 
         @app.before_request
         def _check_mimetype():
-            if request.method in app.config['JSON_MIMETYPE_EXEMPT_METHODS']:
+            if flask.request.method in app.config['JSON_MIMETYPE_EXEMPT_METHODS']:
                 return
-            if not request.endpoint:
+            if not flask.request.endpoint:
                 return
 
-            view = app.view_functions.get(request.endpoint)
+            view = app.view_functions.get(flask.request.endpoint)
             if not view:
                 return
 
             # Exempt all blueprints (admin blueprients, etc)
-            if request.blueprint:
+            if flask.request.blueprint:
                 return
 
             dest = '%s.%s' % (view.__module__, view.__name__)
@@ -48,13 +45,13 @@ class JsonMimetypeExt(ext.AppExtBase):
             self.check_mimetype()
 
     def check_mimetype(self):
-        if request.mimetype != 'application/json':
+        if flask.request.mimetype != 'application/json':
             reason = (
                 'Mimetype checking failed - Content-Type not set '
                 'to application/json'
             )
             return self._error_response(reason)
-        request.json_mimetype_valid = True
+        flask.request.json_mimetype_valid = True
 
     def exempt(self, view):
         """A decorator that can exclude a view from JSON mimetype checking.
@@ -70,4 +67,4 @@ class JsonMimetypeExt(ext.AppExtBase):
         return view
 
     def _error_response(self, reason):
-        return abort(400, reason)
+        return flask.abort(400, reason)

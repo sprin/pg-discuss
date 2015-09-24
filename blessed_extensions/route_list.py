@@ -1,13 +1,10 @@
-from flask import (
-    current_app,
-)
-from flask.ext.script import Command
+import flask
+import flask_script
 
-from pg_discuss._compat import unquote
-
+from pg_discuss import _compat
 from pg_discuss import ext
 
-class ListRoutes(Command):
+class ListRoutes(flask_script.Command):
     """List all routes configured on application.
     """
 
@@ -15,9 +12,9 @@ class ListRoutes(Command):
         """List all routes configured on application.
         """
         output = []
-        for rule in current_app.url_map.iter_rules():
+        for rule in flask.current_app.url_map.iter_rules():
             methods = ','.join(rule.methods)
-            line = unquote("{:50s} {:20s} {}".format(
+            line = _compat.unquote("{:50s} {:20s} {}".format(
                 rule.endpoint,
                 methods,
                 rule,

@@ -1,7 +1,7 @@
-from sqlalchemy import Boolean
+import sqlalchemy as sa
 
+from pg_discuss import db
 from pg_discuss import ext
-from pg_discuss.models import db
 from pg_discuss import tables
 
 class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.AddCommentFilterPredicate):
@@ -24,4 +24,4 @@ class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.AddCommentFilterPredicate):
         fetch.
         """
         t = tables.comment
-        return t.c.custom_json['archived'].cast(Boolean).isnot(True)
+        return t.c.custom_json['archived'].cast(sa.Boolean).isnot(True)

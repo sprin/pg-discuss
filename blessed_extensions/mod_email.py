@@ -1,6 +1,8 @@
 import os
+
 import flask
 import flask_mail
+
 from pg_discuss import ext
 
 class ModerationEmail(ext.AppExtBase, ext.OnPostCommentInsert):

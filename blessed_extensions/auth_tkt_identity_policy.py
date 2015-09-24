@@ -1,9 +1,7 @@
-from flask import (
-    session,
-    g,
-)
-from pg_discuss import queries
+import flask
+
 from pg_discuss import ext
+from pg_discuss import queries
 
 class AuthTktIdentityPolicy(ext.IdentityPolicy):
     """An IdentityPolicy tied to a browser session via a cookie.
@@ -26,10 +24,10 @@ class AuthTktIdentityPolicy(ext.IdentityPolicy):
 
     def remember(self, request, identity_id, **extras):
         # Update cookie
-        session['identity_id'] = identity_id
+        flask.session['identity_id'] = identity_id
 
     def get_identity(self, request, **extras):
-        identity_id = session.get('identity_id')
+        identity_id = flask.session.get('identity_id')
         from flask import current_app
         if identity_id:
             try:
@@ -43,7 +41,7 @@ class AuthTktIdentityPolicy(ext.IdentityPolicy):
             return queries.insert_identity()
 
     def forget(self, request, **extras):
-        session.pop('identity_id')
+        flask.session.pop('identity_id')
 
 class PersistCommentInfoOnIdentity(ext.OnPostCommentInsert):
 
@@ -56,27 +54,28 @@ class PersistCommentInfoOnIdentity(ext.OnPostCommentInsert):
         If name/email are not captured, then this is a NOP.
         """
         new_name = comment['custom_json'].get('author')
-        known_names = g.identity['custom_json'].get('names', [])
+        known_names = flask.g.identity['custom_json'].get('names', [])
         identity_edit = {'custom_json': {}}
         if new_name and new_name not in known_names:
             known_names.append(new_name)
             identity_edit['custom_json']['names'] = known_names
 
         new_remote_addr = comment['custom_json'].get('remote_addr')
-        known_remote_addrs = g.identity['custom_json'].get('remote_addrs', [])
+        known_remote_addrs = flask.g.identity['custom_json'].get(
+            'remote_addrs', [])
         if new_remote_addr and new_remote_addr not in known_remote_addrs:
             known_remote_addrs.append(new_remote_addr)
             identity_edit['custom_json']['remote_addrs'] = known_remote_addrs
 
         new_email = comment['custom_json'].get('email')
-        known_emails = g.identity['custom_json'].get('emails', [])
+        known_emails = flask.g.identity['custom_json'].get('emails', [])
         if new_email and new_email not in known_emails:
             known_emails.append(new_email)
             identity_edit['custom_json']['emails'] = known_emails
 
         if identity_edit['custom_json']:
-            g.identity = queries.update_identity(
-                g.identity['id'],
+            flask.g.identity = queries.update_identity(
+                flask.g.identity['id'],
                 identity_edit,
-                g.identity,
+                flask.g.identity,
             )

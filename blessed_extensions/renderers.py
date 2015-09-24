@@ -6,18 +6,12 @@ Warning: Mikasa 2 API is currently unstable. This module will need to be
 updated upon the next release of Mikasa.
 """
 import operator
+
 import markupsafe
+import misaka
+
+from pg_discuss import _compat
 from pg_discuss import ext
-from misaka import (
-    Markdown,
-    HtmlRenderer,
-    EXT_FENCED_CODE,
-    HTML_ESCAPE,
-)
-try:
-    reduce
-except NameError:
-    from functools import reduce
 
 class MarkdownRenderer(ext.CommentRenderer):
     """Renderer driver to render comment text as Markdown.
@@ -30,15 +24,15 @@ class MarkdownRenderer(ext.CommentRenderer):
         self.app = app
         # TODO: Allow flags to be given as a list in a configuration
         # variable. Need to wait until Mikasa 2 releases with stable API.
-        render_flags = [HTML_ESCAPE]
-        extensions = [EXT_FENCED_CODE]
+        render_flags = [misaka.HTML_ESCAPE]
+        extensions = [misaka.EXT_FENCED_CODE]
 
         # Flags/extensions must be OR'd together to get an integer.
-        render_flags_int = reduce(operator.or_, render_flags)
-        extensions_int = reduce(operator.or_, extensions)
+        render_flags_int = _compat.reduce(operator.or_, render_flags)
+        extensions_int = _compat.reduce(operator.or_, extensions)
 
-        renderer = HtmlRenderer(flags=render_flags_int)
-        self.markdown = Markdown(renderer, extensions=extensions_int)
+        renderer = misaka.HtmlRenderer(flags=render_flags_int)
+        self.markdown = misaka.Markdown(renderer, extensions=extensions_int)
 
     def render(self, text, **extras):
         """Render Markdown to HTML.

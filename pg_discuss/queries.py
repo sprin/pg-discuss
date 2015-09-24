@@ -1,10 +1,9 @@
-from . import tables
-from .models import db
-
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+import sqlalchemy.dialects.postgresql
 
+from . import db
 from . import ext
+from . import tables
 
 class CommentNotFoundError(Exception):
     pass
@@ -246,7 +245,8 @@ def cte_chain(statements):
     parts = []
     bindparams = {}
     for i, stmt in enumerate(statements):
-        compiled = stmt.compile(dialect=postgresql.dialect())
+        compiled = stmt.compile(
+            dialect=sqlalchemy.dialects.postgresql.dialect())
         if i == 0:
             part = "WITH t{0} AS ( {1} )".format(i, compiled)
         elif i == (len(statements) - 1):

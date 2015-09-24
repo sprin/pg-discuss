@@ -1,5 +1,6 @@
+import voluptuous
+
 from pg_discuss import ext
-from voluptuous import Length
 
 class ValidateCommentLen(ext.ValidateComment):
 
@@ -7,5 +8,6 @@ class ValidateCommentLen(ext.ValidateComment):
         text = comment['text']
         min_comment_length = self.app.config['MIN_COMMENT_LENGTH']
         max_comment_length = self.app.config['MAX_COMMENT_LENGTH']
-        Length(min=min_comment_length, max=max_comment_length)(text.rstrip())
+        voluptuous.Length(min=min_comment_length, max=max_comment_length)(
+            text.rstrip())
         return comment

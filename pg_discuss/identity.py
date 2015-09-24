@@ -1,7 +1,4 @@
-from flask import (
-    request,
-    g,
-)
+import flask
 
 class IdentityPolicyManager(object):
     """Middleware to execute the configured IdentityPolicy.
@@ -15,13 +12,16 @@ class IdentityPolicyManager(object):
 
         @app.before_request
         def _auth_before_request():
-            if request.method in app.config['IDENTITY_POLICY_EXEMPT_METHODS']:
+            if (
+                flask.request.method in
+                app.config['IDENTITY_POLICY_EXEMPT_METHODS']
+            ):
                 return
             if self._exempt_views:
-                if not request.endpoint:
+                if not flask.request.endpoint:
                     return
 
-                view = app.view_functions.get(request.endpoint)
+                view = app.view_functions.get(flask.request.endpoint)
                 if not view:
                     return
 
@@ -32,14 +32,14 @@ class IdentityPolicyManager(object):
 
     def auth_before_request(self):
         # Get the identity object.
-        identity = self.identity_policy.get_identity(request)
+        identity = self.identity_policy.get_identity(flask.request)
 
         if identity:
             # Store the identity object on the `g` request global.
-            g.identity = identity
+            flask.g.identity = identity
 
             # Remember the identity.
-            self.identity_policy.remember(request, identity['id'])
+            self.identity_policy.remember(flask.request, identity['id'])
 
     def exempt(self, view):
         """A decorator that can exclude a view from JSON mimetype checking.

@@ -3,13 +3,14 @@
 If extensions that add edit/delete views are enabled, they must be loaded before
 this extension.
 """
+import codecs
 import datetime
 import functools
+
 from flask import request
-import codecs
-from werkzeug.security import pbkdf2_bin as pbkdf2
-from werkzeug.http import dump_cookie
 import simplejson as json
+import werkzeug
+import werkzeug.security
 
 from pg_discuss import ext
 
@@ -75,7 +76,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Set a cookie with a non-empty string value.
         # It does not matter to the client what the value is, just so long
         # as it is non-empty. Identitys are authenticated through another means.
-        cookie = functools.partial(dump_cookie,
+        cookie = functools.partial(werkzeug.dump_cookie,
             value='.',
             max_age=self.app.config['COOKIE_MAX_AGE'],
         )
@@ -147,5 +148,6 @@ def build_comment_tree(comment_seq, parent_id=None):
 
 def hash(val):
     salt = b"Eech7co8Ohloopo9Ol6baimi"
-    hashed = pbkdf2(val.encode('utf-8'), salt, 1000, 6, "sha1")
+    hashed = werkzeug.security.pbkdf2_bin(
+        val.encode('utf-8'), salt, 1000, 6, "sha1")
     return codecs.encode(hashed, "hex_codec").decode("utf-8")

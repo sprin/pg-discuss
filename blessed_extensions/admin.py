@@ -1,17 +1,14 @@
+import flask
 import flask_admin
-import flask_login
 import flask_admin.contrib.sqla
 import flask_admin.contrib.sqla.form
-from flask import (
-    redirect,
-    url_for,
-)
-import json
+import flask_login
+import simplejson as json
+import sqlalchemy.orm
 import wtforms.fields
 
 from pg_discuss import ext
 from pg_discuss import models
-from sqlalchemy.orm import relationship
 
 class AdminExt(ext.AppExtBase):
     def init_app(self, app):
@@ -43,7 +40,7 @@ class PrettyIdentity(models.Identity):
 
 class PrettyComment(models.Comment):
     """Subclass the Identity model to provide a nicer string represention."""
-    identity = relationship('PrettyIdentity')
+    identity = sqlalchemy.orm.relationship('PrettyIdentity')
 
 
 class AuthenticatedModelView(flask_admin.contrib.sqla.ModelView):
@@ -95,5 +92,5 @@ class MyAdminIndexView(flask_admin.AdminIndexView):
     @flask_admin.expose('/')
     def index(self):
         if not flask_login.current_user.is_authenticated:
-            return redirect(url_for('admin_login'))
+            return flask.redirect(flask.url_for('admin_login'))
         return super(MyAdminIndexView, self).index()

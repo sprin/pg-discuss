@@ -1,43 +1,53 @@
 import getpass
-from wtforms import fields, validators
-import wtforms
-import flask_wtf
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask.ext.script import Command
 
+import flask_script
+import flask_wtf
+import werkzeug
+import wtforms
+
+from . import db
 from . import models
-from .models import db
 
 # Define login and registration forms (for flask-login)
 class LoginForm(flask_wtf.Form):
-    login = fields.TextField(validators=[validators.required()])
-    password = fields.PasswordField(validators=[validators.required()])
+    login = wtforms.fields.TextField(
+        validators=[wtforms.validators.required()])
+    password = wtforms.fields.PasswordField(
+        validators=[wtforms.validators.required()])
 
     def validate_login(self, field):
         user = self.get_user()
 
         if user is None:
-            raise validators.ValidationError('Invalid user')
+            raise wtforms.validators.ValidationError('Invalid user')
 
         # we're comparing the plaintext pw with the the hash from the db
-        if not check_password_hash(user.password, self.password.data):
+        if not werkzeug.check_password_hash(user.password, self.password.data):
         # to compare plain text passwords use
         # if user.password != self.password.data:
-            raise validators.ValidationError('Invalid password')
+            raise wtforms.validators.ValidationError('Invalid password')
 
     def get_user(self):
-        return models.db.session.query(models.AdminUser).filter_by(login=self.login.data).first()
+        return (
+            db.session.query(models.AdminUser)
+            .filter_by(login=self.login.data).first()
+        )
 
 class RegistrationForm(wtforms.Form):
-    login = fields.TextField(validators=[validators.required()])
-    email = fields.TextField()
-    password = fields.PasswordField(validators=[validators.required()])
+    login = wtforms.fields.TextField(
+        validators=[wtforms.validators.required()])
+    email = wtforms.fields.TextField()
+    password = wtforms.fields.PasswordField(
+        validators=[wtforms.validators.required()])
 
     def validate_login(self, field):
-        if models.db.session.query(models.AdminUser).filter_by(login=self.login.data).count() > 0:
-            raise validators.ValidationError('Duplicate username')
+        if (
+            db.session.query(models.AdminUser)
+            .filter_by(login=self.login.data).count() > 0
+        ):
+            raise wtforms.validators.ValidationError('Duplicate username')
 
-class CreateAdminUser(Command):
+class CreateAdminUser(flask_script.Command):
 
     def run(self):
         login = None
@@ -71,9 +81,9 @@ class CreateAdminUser(Command):
             user = models.AdminUser()
 
             form.populate_obj(user)
-            # we hash the users password to avoid saving it as plaintext in the db,
-            # remove to use plain text:
-            user.password = generate_password_hash(form.password.data)
+            # we hash the users password to avoid saving it as plaintext in the
+            # db.
+            user.password = werkzeug.generate_password_hash(form.password.data)
             user.active = True
 
             db.session.add(user)

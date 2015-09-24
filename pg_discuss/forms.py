@@ -5,12 +5,13 @@ from voluptuous import (
     Any,
     Invalid,
 )
-from .queries import validate_parent_exists
-from . import ext
+
 from . import _compat
+from . import ext
+from . import queries
 
 def validate_parent(parent):
-    if parent is not None and not validate_parent_exists(parent):
+    if parent is not None and not queries.validate_parent_exists(parent):
         raise Invalid('parent does not exist')
     return parent
 

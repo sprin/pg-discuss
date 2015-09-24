@@ -42,7 +42,7 @@ ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
 ENABLE_EXT_BLESSED_VOTING = True
 ENABLE_EXT_BLESSED_ADMIN = True
 ENABLE_EXT_BLESSED_MODERATION = True
-ENABLE_EXT_BLESSED_MOD_EMAIL = True
+ENABLE_EXT_BLESSED_MOD_EMAIL = False
 
 # Optional: Order extensions using comma-separated list of extension names.
 # It is generally discouraged to write order-dependent extensions, but it may
