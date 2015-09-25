@@ -32,7 +32,7 @@ def exec_comment_validators(action):
     will be returned.
 
     The `action` string is supplied to each extension. Possible actions are:
-    'new', 'edit'.
+    'create', 'edit'.
     """
 
     def validator(comment):
@@ -53,7 +53,7 @@ def validate_new_comment(new_comment):
             Required('custom_json'): dict,
             Required('identity_id'): Any(int, None),
         }),
-        exec_comment_validators(action='new'),
+        exec_comment_validators(action='create'),
     )
 
     return new_comment_schema(new_comment)

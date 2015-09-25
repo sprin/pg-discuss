@@ -13,7 +13,7 @@ class CaptureAuthor(ext.AppExtBase, ext.ValidateComment,
 
     def validate_comment(self, comment, action, **extras):
         allow_edit = self._app.config['CAPTURE_AUTHOR_ALLOW_EDIT']
-        if action == 'new' or allow_edit:
+        if action == 'create' or allow_edit:
             author = flask.request.get_json().get('author')
             if author:
                 comment['custom_json']['author'] = (

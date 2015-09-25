@@ -83,6 +83,21 @@ class AppExtBase(GenericExtBase):
     def init_app(self, app):
         """Perform app initialization."""
 
+
+@six.add_metaclass(abc.ABCMeta)
+class ValidateComment(GenericExtBase):
+    """Mixin class for extensions that validate comment data. Validators
+    may mutate the comment data into a valid form.
+
+    Receives an `action` parameter which is either `create` or `edit`.
+    """
+    @abc.abstractmethod
+    def validate_comment(self, comment, action, **extras):
+        """Validate a comment dictionary.
+        """
+    hook_method=validate_comment.__name__
+
+
 @six.add_metaclass(abc.ABCMeta)
 class OnPreCommentInsert(GenericExtBase):
     """Mixin class for extensions that modify the insert statement for new
@@ -129,17 +144,6 @@ class OnPostCommentUpdate(GenericExtBase):
         """
     hook_method=on_post_comment_update.__name__
 
-
-@six.add_metaclass(abc.ABCMeta)
-class ValidateComment(GenericExtBase):
-    """Mixin class for extensions that validate comment data. Validators
-    may mutate the comment data into a valid form.
-    """
-    @abc.abstractmethod
-    def validate_comment(self, comment, action, **extras):
-        """Validate a comment dictionary.
-        """
-    hook_method=validate_comment.__name__
 
 @six.add_metaclass(abc.ABCMeta)
 class AddCommentFilterPredicate(GenericExtBase):
