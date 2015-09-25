@@ -65,11 +65,14 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         client_thread['total_replies'] = len(client_thread['replies'])
 
     def on_pre_comment_insert(self, new_comment, **extras):
-        # Hash email, or remote_addr
+        """Hash email, or remote_addr.
+
+        If neither available, just skip hashing.
+        """
         custom_json = new_comment['custom_json']
-        custom_json['hash'] = hash(
-            custom_json.get('email') or custom_json['remote_addr']
-        )
+        val_to_hash = custom_json.get('email') or custom_json.get('remote_addr')
+        if val_to_hash:
+            custom_json['hash'] = hash(val_to_hash)
 
     def on_new_comment_response(self, resp, raw_comment, client_comment,
                                 **extras):
