@@ -1,7 +1,9 @@
 """Generic utility functions for pg-discuss."""
 
+
 class MergeConflict(Exception):
     pass
+
 
 def merge_fail_on_conflict(dict1, dict2):
     """Merge two dictionaries, failing on conflict."""

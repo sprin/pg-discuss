@@ -20,6 +20,7 @@ DEFAULT_THREAD_WHITELIST = [
     'client_id',
 ]
 
+
 def to_client_comment(raw_comment, plain=False):
     """Prepare comments for serialization to JSON.
 
@@ -48,6 +49,7 @@ def to_client_comment(raw_comment, plain=False):
         )
 
     return client_comment
+
 
 def to_client_thread(raw_thread, comment_seq):
     """Prepare thread and it's comment collection for serialization to JSON.

@@ -4,6 +4,7 @@ import sys
 
 import flask_sqlalchemy
 
+
 class PgAlchemy(flask_sqlalchemy.SQLAlchemy):
     """Custom subclass of the SQLAlchemy extension that sets the
     connection timezone to UTC. The backend should handle timestamps entirely

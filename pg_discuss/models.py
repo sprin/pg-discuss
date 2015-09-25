@@ -34,8 +34,8 @@ Comment schema:
  - custom_json
 
 custom_json is intended for custom attributes. As a JSON blob, the schema is
-flexible and can be extended without requiring database migrations or changes to
-the core code. Some possible uses:
+flexible and can be extended without requiring database migrations or changes
+to the core code. Some possible uses:
 
  - email
  - website
@@ -60,6 +60,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.dialects.postgresql import JSONB
 
 from . import db
+
 
 class Thread(db.Model):
     """Thread model."""
@@ -201,8 +202,10 @@ class IdentityToCommentAssociation(db.Model):
             cascade='all, delete-orphan'))
 
     def __unicode__(self):
-        return '<{}> {} <{}>'.format(self.identity, self.rel_type, self.comment)
+        return '<{}> {} <{}>'.format(self.identity, self.rel_type,
+                                     self.comment)
     __str__ = __unicode__
+
 
 class AdminUser(db.Model):
     """Model for managing admin user authentication.

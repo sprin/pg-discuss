@@ -11,6 +11,7 @@ import wtforms
 from . import db
 from . import models
 
+
 class LoginForm(flask_wtf.Form):
     """Login form for Admin users."""
     login = wtforms.fields.TextField(
@@ -27,8 +28,8 @@ class LoginForm(flask_wtf.Form):
 
         # we're comparing the plaintext pw with the the hash from the db
         if not werkzeug.check_password_hash(user.password, self.password.data):
-        # to compare plain text passwords use
-        # if user.password != self.password.data:
+            # to compare plain text passwords use
+            # if user.password != self.password.data:
             raise wtforms.validators.ValidationError('Invalid password')
 
     def get_user(self):
@@ -37,6 +38,7 @@ class LoginForm(flask_wtf.Form):
             db.session.query(models.AdminUser)
             .filter_by(login=self.login.data).first()
         )
+
 
 class RegistrationForm(wtforms.Form):
     """Registration form to validate new Admin user data."""
@@ -53,6 +55,7 @@ class RegistrationForm(wtforms.Form):
             .filter_by(login=self.login.data).count() > 0
         ):
             raise wtforms.validators.ValidationError('Duplicate username')
+
 
 class CreateAdminUser(flask_script.Command):
     """Flask-Script command to create a new Admin user."""

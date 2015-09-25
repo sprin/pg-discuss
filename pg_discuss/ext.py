@@ -2,23 +2,25 @@
 
 There are two types of extensions base clases: the Application Extension base
 and Hook bases. Base classes can be used as mixins, so that it is possible for
-an extensions to implement more than one behavior defined by a base class. As an
-extreme example, it is possible to make an extension that implements the
-Application Extension base and all Hook bases by subclassing all of the bases in
-this module.
+an extensions to implement more than one behavior defined by a base class. As
+an extreme example, it is possible to make an extension that implements the
+Application Extension base and all Hook bases by subclassing all of the bases
+in this module.
 
-The Application Extension base class allows an extension to modify the Flask app
-upon initialization, for example, to add routes or request/response middleware.
+The Application Extension base class allows an extension to modify the Flask
+app upon initialization, for example, to add routes or request/response
+middleware.
 
 The Hook base classes allow an extension to implement a method that is called
-when a certain event occurs. To allow Hook APIs to send additional parameters in
-the future, all Hook methods must take a `**extras` argument.
+when a certain event occurs. To allow Hook APIs to send additional parameters
+in the future, all Hook methods must take a `**extras` argument.
 """
 import abc
 import six
 
 from flask import current_app
 import sqlalchemy as sa
+
 
 class PluginLoadError(Exception):
     pass
@@ -34,8 +36,8 @@ class GenericExtBase(object):
     def __init__(self, app=None):
         self.app = app
 
-## Driver ABCs
 
+# Driver ABCs
 @six.add_metaclass(abc.ABCMeta)
 class IdentityPolicy(GenericExtBase):
     """Policy to retrieve an Identity from an identity store, and
@@ -60,6 +62,7 @@ class IdentityPolicy(GenericExtBase):
         """Remember the identity for subsequent requests.
         """
 
+
 @six.add_metaclass(abc.ABCMeta)
 class CommentRenderer(GenericExtBase):
     """Driver to render comment text.
@@ -70,8 +73,8 @@ class CommentRenderer(GenericExtBase):
         """Render raw text into another format for display.
         """
 
-## Extension ABCs
 
+# Extension ABCs
 @six.add_metaclass(abc.ABCMeta)
 class AppExtBase(GenericExtBase):
     """Base class for generic Flask app extensions.
@@ -95,7 +98,7 @@ class ValidateComment(GenericExtBase):
     def validate_comment(self, comment, action, **extras):
         """Validate a comment dictionary.
         """
-    hook_method=validate_comment.__name__
+    hook_method = validate_comment.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -107,7 +110,8 @@ class OnPreCommentInsert(GenericExtBase):
     def on_pre_comment_insert(self, new_comment, **extras):
         """Modify the comment object before inserting.
         """
-    hook_method=on_pre_comment_insert.__name__
+    hook_method = on_pre_comment_insert.__name__
+
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPostCommentInsert(GenericExtBase):
@@ -118,7 +122,7 @@ class OnPostCommentInsert(GenericExtBase):
     def on_post_comment_insert(self, new_comment, **extras):
         """Perform some action with the result of an insert.
         """
-    hook_method=on_post_comment_insert.__name__
+    hook_method = on_post_comment_insert.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -130,7 +134,7 @@ class OnPreCommentUpdate(GenericExtBase):
     def on_pre_comment_update(self, old_comment, comment_edit, **extras):
         """Modify the update statement for comment updates.
         """
-    hook_method=on_pre_comment_update.__name__
+    hook_method = on_pre_comment_update.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -142,7 +146,7 @@ class OnPostCommentUpdate(GenericExtBase):
     def on_post_comment_update(self, old_comment, new_comment, **extras):
         """Perform some action with the result of an insert.
         """
-    hook_method=on_post_comment_update.__name__
+    hook_method = on_post_comment_update.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -155,7 +159,8 @@ class AddCommentFilterPredicate(GenericExtBase):
         """Returns a predicate for the where clause for comment fetches.
         Will be joined with other predicates using AND.
         """
-    hook_method=add_comment_filter_predicate.__name__
+    hook_method = add_comment_filter_predicate.__name__
+
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPreCommentSerialize(GenericExtBase):
@@ -165,10 +170,10 @@ class OnPreCommentSerialize(GenericExtBase):
     @abc.abstractmethod
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         """Add fields to the comment representation to be serialized,
-        `client_comment`, from the dictionary representing the raw database row,
-        `raw_comment`.
+        `client_comment`, from the dictionary representing the raw database
+        row, `raw_comment`.
         """
-    hook_method=on_pre_comment_serialize.__name__
+    hook_method = on_pre_comment_serialize.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -177,12 +182,13 @@ class OnPreThreadSerialize(GenericExtBase):
     thread.
     """
     @abc.abstractmethod
-    def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread, **extras):
+    def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread,
+                                **extras):
         """Add fields to the thread representation to be serialized,
         `client_thread`, from the dictionary representing the raw database row,
         `raw_thread`.
         """
-    hook_method=on_pre_thread_serialize.__name__
+    hook_method = on_pre_thread_serialize.__name__
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -199,10 +205,10 @@ class OnNewCommentResponse(GenericExtBase):
         """Process the response of the new comment view. Both the 'raw' comment
         and the comment formatted for the client are given as arguments.
         """
-    hook_method=on_new_comment_response.__name__
+    hook_method = on_new_comment_response.__name__
+
 
 # Extension utility functions
-
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
     Note that this allows for extensions to subclass multiple hook mixins.
@@ -225,6 +231,7 @@ def exec_hooks(ext_class, *args, **kwargs):
 
     return results
 
+
 def exec_init_app(app):
     """Execute the init_app for any instance of AppExtBase.
     """
@@ -232,6 +239,7 @@ def exec_init_app(app):
     for ext in app.ext_mgr.extensions:
         if isinstance(ext.obj, AppExtBase):
             ext.obj.init_app(app)
+
 
 def fail_on_ext_load(manager, entrypoint, exception):
     """Function to be used as `on_load_failure_callback` for stevedore.
@@ -242,10 +250,10 @@ def fail_on_ext_load(manager, entrypoint, exception):
     import traceback
     msg = (
         'Error loading plugin {0}\n'
-        'Plugin load error traceback:\n{1}'.format( entrypoint,
-            traceback.format_exc()
-        ))
+        'Plugin load error traceback:\n{1}'
+        .format(entrypoint, traceback.format_exc()))
     raise PluginLoadError(msg)
+
 
 def exec_filter_hooks(ext_class, stmt, *args, **kwargs):
     """Execute query filter hooks and collect all the returned predicates

@@ -8,32 +8,34 @@ import urllib
 
 try:
     from urlparse import urlparse
-except ImportError: # pragma: no cover
+except ImportError:  # pragma: no cover
     # python 3
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse  # NOQA
 
 try:
     reduce
-except NameError: # pragma: no cover
-    from functools import reduce
+except NameError:  # pragma: no cover
+    from functools import reduce  # NOQA
 
 PY3 = sys.version_info[0] == 3
 PYPY = hasattr(sys, 'pypy_version_info')
 
-if PY3: # pragma: no cover
+if PY3:  # pragma: no cover
     text_type = str
     string_types = (str,)
     unquote = urllib.parse.unquote
-else: # pragma: no cover
-    text_type = unicode
-    string_types = (str, unicode)
+else:  # pragma: no cover
+    text_type = unicode  # NOQA
+    string_types = (str, unicode)  # NOQA
     unquote = urllib.unquote
+
 
 def to_bytes(text):
     """Transform string to bytes."""
     if isinstance(text, text_type):
         text = text.encode('utf-8')
     return text
+
 
 def to_unicode(input_bytes, encoding='utf-8'):
     """Decodes input_bytes to text if needed."""

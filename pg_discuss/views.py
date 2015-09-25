@@ -16,6 +16,7 @@ from . import serialize
 from . import ext
 from . import auth_forms
 
+
 def check_mimetype(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
@@ -29,6 +30,7 @@ def check_mimetype(f):
             return f(*args, **kwargs)
     return wrapper
 
+
 def fetch(thread_cid):
     """View to fetch the thread and it's comment collection as JSON."""
     raw_thread = queries.fetch_thread_by_client_id(thread_cid)
@@ -36,6 +38,7 @@ def fetch(thread_cid):
     comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
     client_thread = serialize.to_client_thread(raw_thread, comments_seq)
     return flask.jsonify(client_thread)
+
 
 @check_mimetype
 def new(thread_cid):
@@ -81,6 +84,7 @@ def new(thread_cid):
 
     return resp
 
+
 def view(comment_id):
     """View to fetch a single comment."""
     # Fetch the comment
@@ -91,6 +95,7 @@ def view(comment_id):
 
     comment = serialize.to_client_comment(raw_comment, plain)
     return flask.jsonify(comment)
+
 
 @check_mimetype
 def edit(comment_id):
@@ -115,12 +120,11 @@ def edit(comment_id):
         or old_comment['identity_id'] != flask.g.identity['id']
     ):
         flask.abort(400,
-              'Cannot edit comment: comment belongs to another identity')
+                    'Cannot edit comment: comment belongs to another identity')
 
     # Check if deleted
     if old_comment['custom_json'].get('deleted'):
-        flask.abort(400,
-              'Cannot edit comment: comment has been deleted')
+        flask.abort(400, 'Cannot edit comment: comment has been deleted')
 
     # Update the comment
     raw_comment = queries.update_comment(
@@ -131,6 +135,7 @@ def edit(comment_id):
     )
     comment = serialize.to_client_comment(raw_comment)
     return flask.jsonify(comment)
+
 
 @check_mimetype
 def delete(comment_id):
@@ -158,13 +163,14 @@ def delete(comment_id):
         not hasattr(flask.g, 'identity')
         or old_comment['identity_id'] != flask.g.identity['id']
     ):
-        flask.abort(400,
-              'Cannot delete comment: this comment belongs to another identity')
+        flask.abort(
+            400,
+            'Cannot delete comment: this comment belongs to another identity')
 
     # Check if already deleted
     if old_comment['custom_json'].get('deleted'):
-        flask.abort(400,
-              'Cannot delete comment: comment has already been deleted')
+        flask.abort(
+            400, 'Cannot delete comment: comment has already been deleted')
 
     # Mark the comment as deleted
     result = queries.update_comment(
@@ -175,6 +181,7 @@ def delete(comment_id):
     )
     return flask.jsonify(result)
 
+
 def admin_login():
     """View to handle Admin logins."""
     form = auth_forms.LoginForm(flask.request.form)
@@ -184,6 +191,7 @@ def admin_login():
         flask_login.login_user(user)
         return 'Logged in successfully.'
     return flask.render_template('login.html', form=form)
+
 
 def admin_logout():
     """View to handle Admin logouts."""

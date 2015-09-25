@@ -2,6 +2,7 @@
 """
 import flask
 
+
 class IdentityPolicyManager(object):
     """Middleware to execute the configured IdentityPolicy.
 

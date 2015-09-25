@@ -7,14 +7,18 @@ from . import ext
 from . import tables
 from . import utils
 
+
 class CommentNotFoundError(Exception):
     pass
+
 
 class ThreadNotFoundError(Exception):
     pass
 
+
 class IdentityNotFoundError(Exception):
     pass
+
 
 def fetch_thread_by_client_id(thread_client_id):
     """Fetch a thread object by thread_client_id from the database."""
@@ -22,7 +26,7 @@ def fetch_thread_by_client_id(thread_client_id):
     stmt = t.select().where(t.c.client_id == thread_client_id)
 
     # TODO: Run on_pre_thread_fetch hooks
-    #stmt = ext.exec_filter_hooks(ext.OnPreThreadFetch, stmt)
+    # stmt = ext.exec_filter_hooks(ext.OnPreThreadFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -49,6 +53,7 @@ def fetch_comment_by_id(comment_id):
 
     return comment
 
+
 def fetch_comments_by_thread_client_id(thread_client_id):
     """Fetch a list of comments for the given thread's client_id from the
     database."""
@@ -67,6 +72,7 @@ def fetch_comments_by_thread_client_id(thread_client_id):
     comments_seq = [dict(x) for x in result]
 
     return comments_seq
+
 
 def insert_comment(new_comment):
     """Insert the `new_comment` object in to the database."""
@@ -88,6 +94,7 @@ def insert_comment(new_comment):
 
     return comment
 
+
 def insert_thread(new_thread):
     """Insert the `new_thread` object in to the database."""
     t = tables.thread
@@ -98,15 +105,16 @@ def insert_thread(new_thread):
     )
 
     # TODO: Run on_pre_thread_insert hooks
-    #ext.exec_hooks(ext.OnPreThreadInsert, new_thread)
+    # ext.exec_hooks(ext.OnPreThreadInsert, new_thread)
 
     result = db.engine.execute(stmt).first()
     thread = dict(result.items())
 
     # TODO: Run on_post_thread_insert hooks
-    #ext.exec_hooks(ext.OnPostThreadInsert, thread)
+    # ext.exec_hooks(ext.OnPostThreadInsert, thread)
 
     return thread
+
 
 def insert_identity(new_identity=None):
     """Insert the a new identity object in to the database."""
@@ -119,15 +127,16 @@ def insert_identity(new_identity=None):
         stmt = stmt.values(**new_identity)
 
     # TODO: Run on_pre_identity_insert hooks
-    #ext.exec_hooks(ext.OnPreIdentityInsert, new_identity)
+    # ext.exec_hooks(ext.OnPreIdentityInsert, new_identity)
 
     result = db.engine.execute(stmt).first()
-    identity= dict(result.items())
+    identity = dict(result.items())
 
     # TODO: Run on_post_identity_insert hooks
-    #ext.exec_hooks(ext.OnPostIdentityInsert, identity)
+    # ext.exec_hooks(ext.OnPostIdentityInsert, identity)
 
     return identity
+
 
 def update_identity(identity_id, identity_edit, old_identity):
     """Update the identity in the database.
@@ -151,18 +160,20 @@ def update_identity(identity_id, identity_edit, old_identity):
     )
 
     # Run on_pre_update hooks
-    #ext.exec_hooks(ext.OnPreIdentityUpdate, old_identity, identity_edit)
+    # ext.exec_hooks(ext.OnPreIdentityUpdate, old_identity, identity_edit)
 
     result = db.engine.execute(stmt).first()
     if not result:
-        raise IdentityNotFoundError('Identity {0} not found'.format(identity_id))
+        raise IdentityNotFoundError(
+            'Identity {0} not found'.format(identity_id))
 
     identity = dict(result.items())
 
     # Run on_post_update hooks
-    #ext.exec_hooks(ext.OnPostIdentityUpdate, old_identity, identity)
+    # ext.exec_hooks(ext.OnPostIdentityUpdate, old_identity, identity)
 
     return identity
+
 
 def fetch_identity(identity_id):
     """Fetch an identity object by id from the database."""
@@ -170,7 +181,7 @@ def fetch_identity(identity_id):
     stmt = t.select().where(t.c.id == identity_id)
 
     # TODO: Run on_pre_identity_fetch hooks
-    #stmt = ext.exec_filter_hooks(ext.OnPreIdentityFetch, stmt)
+    # stmt = ext.exec_filter_hooks(ext.OnPreIdentityFetch, stmt)
 
     result = db.engine.execute(stmt).first()
     if not result:
@@ -181,7 +192,9 @@ def fetch_identity(identity_id):
 
     return identity
 
-def update_comment(comment_id, comment_edit, old_comment, update_modified=False):
+
+def update_comment(comment_id, comment_edit, old_comment,
+                   update_modified=False):
     """Update the comment in the database in response to a request
     from the author. The `modified` timestamp will be set to the current time.
 
@@ -221,11 +234,13 @@ def update_comment(comment_id, comment_edit, old_comment, update_modified=False)
 
     return comment
 
+
 def validate_parent_exists(parent):
     """Validate that the parent exists in the database."""
     t = tables.comment
     stmt = sa.select([sa.exists([1]).where(t.c.id == parent)])
     return db.engine.execute(stmt).scalar()
+
 
 def insert_identity_to_comment(identity_to_comment):
     """Insert the a new identity-to-comment object in to the database."""
@@ -239,9 +254,10 @@ def insert_identity_to_comment(identity_to_comment):
     identity_to_comment = dict(result.items())
 
     # TODO: Run on_post_identity_to_comment_insert hooks
-    #ext.exec_hooks(ext.OnPostIdentityInsert, identity)
+    # ext.exec_hooks(ext.OnPostIdentityInsert, identity)
 
     return identity_to_comment
+
 
 def cte_chain(statements):
     """Chain a sequence of statements using a CTE. The result of the last
@@ -257,7 +273,7 @@ def cte_chain(statements):
         # If last statement, do not prefix with comma and do not use an alias.
         elif i == (len(statements) - 1):
             part = "{0}".format(compiled)
-        # Otherwise, if not first or last, prefix with a comma and use an alias.
+        # Otherwise, if not first or last, prefix with comma and use an alias.
         else:
             part = ", t{0} AS ( {1} )".format(i, compiled)
 

@@ -14,6 +14,7 @@ from . import _compat
 from . import ext
 from . import queries
 
+
 def validate_parent(parent_id):
     """Validate that the parent_id associated with a new comment corresponds to
     a valid parent comment.
@@ -21,6 +22,7 @@ def validate_parent(parent_id):
     if parent_id is not None and not queries.validate_parent_exists(parent_id):
         raise Invalid('parent does not exist')
     return parent_id
+
 
 def exec_comment_validators(action):
     """Validate comment with all configured validators.
@@ -47,6 +49,7 @@ def exec_comment_validators(action):
             return comment
     return validator
 
+
 def validate_new_comment(new_comment):
     """Validate a new comment."""
     new_comment_schema = All(
@@ -60,6 +63,7 @@ def validate_new_comment(new_comment):
     )
 
     return new_comment_schema(new_comment)
+
 
 def validate_comment_edit(comment_edit):
     """Validate a commment edit. This differs from validating a new comment in
