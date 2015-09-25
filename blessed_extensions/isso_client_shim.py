@@ -44,8 +44,10 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         client_comment['parent'] = raw_comment.pop('parent_id')
 
         # Change `upvotes` to `likes`, `downvotes` to `dislikes`
-        client_comment['likes'] = client_comment.pop('upvotes')
-        client_comment['dislikes'] = client_comment.pop('downvotes')
+        if 'upvotes' in client_comment:
+            client_comment['likes'] = client_comment.pop('upvotes')
+        if 'downvotes' in client_comment:
+            client_comment['dislikes'] = client_comment.pop('downvotes')
 
         client_comment['hash'] = raw_comment['custom_json'].get('hash')
 
