@@ -42,6 +42,9 @@ def exec_comment_validators(action):
         result = ext.exec_hooks(ext.ValidateComment, comment, action)
         if len(result) > 0:
             return result[-1]
+        # If no configured validators, just return original comment.
+        else:
+            return comment
     return validator
 
 def validate_new_comment(new_comment):
