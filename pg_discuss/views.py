@@ -8,12 +8,26 @@
 """
 import flask
 import flask_login
+import functools
 
 from . import queries
 from . import forms
 from . import serialize
 from . import ext
 from . import auth_forms
+
+def check_mimetype(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if flask.request.mimetype != 'application/json':
+            reason = (
+                'Mimetype checking failed - Content-Type not set '
+                'to application/json'
+            )
+            return flask.abort(400, reason)
+        else:
+            return f(*args, **kwargs)
+    return wrapper
 
 def fetch(thread_cid):
     """View to fetch the thread and it's comment collection as JSON."""
@@ -23,6 +37,7 @@ def fetch(thread_cid):
     client_thread = serialize.to_client_thread(raw_thread, comments_seq)
     return flask.jsonify(client_thread)
 
+@check_mimetype
 def new(thread_cid):
     """View to create a new thread."""
     # Extract whitelisted attributes from request JSON
@@ -73,6 +88,7 @@ def view(comment_id):
     comment = serialize.to_client_comment(raw_comment, plain)
     return flask.jsonify(comment)
 
+@check_mimetype
 def edit(comment_id):
     """View to edit an existing comment."""
     json = flask.request.get_json()
@@ -109,6 +125,7 @@ def edit(comment_id):
     comment = serialize.to_client_comment(raw_comment)
     return flask.jsonify(comment)
 
+@check_mimetype
 def delete(comment_id):
     """Mark a comment as deleted. The comment will still show up in API results,
     but only containing values for it's `id`, `thread_id`, and `parent_id`.

@@ -46,7 +46,6 @@ setup(
         'pg_discuss.ext': [
             'blessed_csrf_token = blessed_extensions.csrf_token:CsrfTokenExt',
             'blessed_csrf_header = blessed_extensions.csrf_header:CsrfHeaderExt',
-            'blessed_json_mimetype = blessed_extensions.json_mimetype:JsonMimetypeExt',
             'blessed_route_list = blessed_extensions.route_list:RouteListExt',
             'blessed_archive_updates = blessed_extensions.archive_updates:ArchiveUpdatesExt',
             'blessed_validate_comment_len = blessed_extensions.validate_comment_len:ValidateCommentLen',
