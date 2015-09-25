@@ -1,7 +1,16 @@
+"""Middleware to execute the configured `IdentityPolicy`.
+"""
 import flask
 
 class IdentityPolicyManager(object):
     """Middleware to execute the configured IdentityPolicy.
+
+    Before each request, calls the `get_identity` method of the
+    configured `IdentityPolicy`. The `IdentityPolicy` may return an identity
+    object, which is then assigned to the `flask.g` request global and the
+    `remember` method of the `IdentityPolicy` method is invoked with the
+    identity. If no identity is returned by the `IdentityPolicy`, request
+    processing continues normally without the identity.
     """
 
     def __init__(self, app, identity_policy_cls):
@@ -12,6 +21,9 @@ class IdentityPolicyManager(object):
 
         @app.before_request
         def _auth_before_request():
+            """Check if the request is exempted from the `IdentityPolicy`
+            before invoking it.
+            """
             if (
                 flask.request.method in
                 app.config['IDENTITY_POLICY_EXEMPT_METHODS']
@@ -31,7 +43,9 @@ class IdentityPolicyManager(object):
             return self.auth_before_request()
 
     def auth_before_request(self):
-        # Get the identity object.
+        """Get the identity object from the `IdentityPolicy`. If an identity is
+        returned, set it on the `flask.g` request global and remember it.
+        """
         identity = self.identity_policy.get_identity(flask.request)
 
         if identity:

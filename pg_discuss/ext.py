@@ -38,6 +38,12 @@ class GenericExtBase(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class IdentityPolicy(GenericExtBase):
+    """Policy to retrieve an Identity from an identity store, and
+    remember/forget the identity (eg, in the browser session).
+
+    The identity may be tied only to a browser session, or may be tied
+    to an authenticated user associated with an authentication provider.
+    """
 
     @abc.abstractmethod
     def get_identity(self, request, **extras):
@@ -204,6 +210,8 @@ def exec_hooks(ext_class, *args, **kwargs):
     """
 
     def execute_hook(ext, ext_class, *args, **kwargs):
+        """Invoke the hook associated with a given extension class on the
+        extension object."""
         return getattr(ext.obj, ext_class.hook_method)(*args, **kwargs)
 
     results = []

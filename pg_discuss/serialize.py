@@ -1,3 +1,4 @@
+"""Functions to prepare comments and threads for serialization."""
 import flask
 import markupsafe
 

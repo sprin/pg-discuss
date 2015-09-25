@@ -63,6 +63,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from . import db
 
 class Thread(db.Model):
+    """Thread model."""
     id = Column(
         Integer,
         primary_key=True)
@@ -84,6 +85,7 @@ class Thread(db.Model):
 
 
 class Comment(db.Model):
+    """Comment model."""
     id = Column(
         Integer,
         primary_key=True,
@@ -131,6 +133,7 @@ class Comment(db.Model):
 
 
 class Identity(db.Model):
+    """Identity model."""
     id = Column(
         Integer,
         primary_key=True,
@@ -150,6 +153,12 @@ class Identity(db.Model):
 
 
 class IdentityToCommentAssociation(db.Model):
+    """Association table between Identities and Comments, which may be used to
+    by extensions to represent many-to-many relationships such as
+    "upvotes"/"downvotes".
+
+    This model is not utilized by the pg-discuss core.
+    """
     __tablename__ = 'identity_to_comment'
     id = Column(
         Integer,
@@ -224,12 +233,15 @@ class AdminUser(db.Model):
 
     # Flask-Login integration
     def is_authenticated(self):
+        """Is this user authenticated? Always True."""
         return True
 
     def is_active(self):
+        """Is this user active?"""
         return self.active
 
     def is_anonymous(self):
+        """Is this user anonymous? Always False."""
         return False
 
     def get_id(self):

@@ -1,3 +1,5 @@
+"""Set up the SQLAlchemy database engine.
+"""
 import sys
 
 import flask_sqlalchemy

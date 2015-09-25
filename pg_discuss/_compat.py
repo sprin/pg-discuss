@@ -1,7 +1,6 @@
-"""
-Python 2/3 compatibility helpers.
+"""Python 2/3 compatibility helpers.
 
-From flask_wtf._compat:
+Some parts from flask_wtf._compat:
 https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
 """
 import sys

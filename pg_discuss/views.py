@@ -1,5 +1,4 @@
-"""
-Minimal comment CRUD views.
+"""Minimal comment CRUD views.
 
  - fetch: fetch the list of comments for a thread
  - new: create a new comment
@@ -16,16 +15,16 @@ from . import serialize
 from . import ext
 from . import auth_forms
 
-def fetch(thread_client_id):
-    """Fetch the thread and it's comment collection as JSON.
-    """
-    raw_thread = queries.fetch_thread_by_client_id(thread_client_id)
-    comments_seq = queries.fetch_comments_by_thread_client_id(thread_client_id)
+def fetch(thread_cid):
+    """View to fetch the thread and it's comment collection as JSON."""
+    raw_thread = queries.fetch_thread_by_client_id(thread_cid)
+    comments_seq = queries.fetch_comments_by_thread_client_id(thread_cid)
     comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
     client_thread = serialize.to_client_thread(raw_thread, comments_seq)
     return flask.jsonify(client_thread)
 
-def new(thread_client_id):
+def new(thread_cid):
+    """View to create a new thread."""
     # Extract whitelisted attributes from request JSON
     # Note that extensions have the opportunity to process/persist additional
     # attributes from the request JSON, since they have access to the
@@ -45,10 +44,10 @@ def new(thread_client_id):
 
     # Try to fetch the existing thread record
     try:
-        thread = queries.fetch_thread_by_client_id(thread_client_id)
+        thread = queries.fetch_thread_by_client_id(thread_cid)
     except queries.ThreadNotFoundError:
         # Create a new thread record if one does not exist.
-        thread = queries.insert_thread({'client_id': thread_client_id})
+        thread = queries.insert_thread({'client_id': thread_cid})
 
     new_comment['thread_id'] = thread['id']
 
@@ -64,6 +63,7 @@ def new(thread_client_id):
     return resp
 
 def view(comment_id):
+    """View to fetch a single comment."""
     # Fetch the comment
     raw_comment = queries.fetch_comment_by_id(comment_id)
 
@@ -74,6 +74,7 @@ def view(comment_id):
     return flask.jsonify(comment)
 
 def edit(comment_id):
+    """View to edit an existing comment."""
     json = flask.request.get_json()
     comment_edit = {'text': json['text']}
 
@@ -148,7 +149,7 @@ def delete(comment_id):
     return flask.jsonify(result)
 
 def admin_login():
-    # handle user login
+    """View to handle Admin logins."""
     form = auth_forms.LoginForm(flask.request.form)
     if form.validate_on_submit():
         # Login and validate the user.
@@ -158,5 +159,6 @@ def admin_login():
     return flask.render_template('login.html', form=form)
 
 def admin_logout():
+    """View to handle Admin logouts."""
     flask_login.logout_user()
     return 'Logged out successfully'

@@ -1,3 +1,5 @@
+"""Factory function for the WSGI application object.
+"""
 import os
 
 import flask
@@ -15,43 +17,57 @@ from . import identity
 from . import models
 from . import views
 
-# Use psycopg2cffi if PYPY
 if _compat.PYPY: # pragma: no cover
     from psycopg2cffi import compat as pg2cfficompat
 
 def app_factory():
+    """Factory function for the WSGI application object.
+
+    Reads config, initializes Flask extensions that are part of the core,
+    loads pg-config drivers and extensions, and configures core views.
+    """
+    # Use psycopg2cffi if PYPY
     if _compat.PYPY: # pragma: no cover
         pg2cfficompat.register()
+
+    ## Flask application
     app = flask.Flask('pg-discuss', static_folder=None,
                 template_folder='pg_discuss/templates')
 
     # Load default config values from pg_discuss.config module
     app.config.from_object(config)
+
     # Load custom config from user-defined PG_DISCUSS_SETTINGS_FILE
     app.config.from_pyfile(os.environ['PG_DISCUSS_SETTINGS_FILE'])
 
+    ## Flask-SQLAlchemy
     db.init_app(app)
-    app.manager = flask_script.Manager(app)
-    app.migrate = flask_migrate.Migrate(app, db)
-    # Login manager for Admin users.
-    app.admin_login_manager = flask_login.LoginManager(app)
 
-    def load_user(user_id):
-        return db.session.query(models.AdminUser).get(user_id)
-    app.admin_login_manager.user_loader(load_user)
+    ## Flask-Migrate
+    app.migrate = flask_migrate.Migrate(app, db)
+
+    ## Flask-Script
+    app.manager = flask_script.Manager(app)
+    app.manager.add_command('db', flask_migrate.MigrateCommand)
+    app.manager.add_command('createadminuser', auth_forms.CreateAdminUser)
+
+    ## Flask-Login, for Admin users.
+    app.admin_login_manager = flask_login.LoginManager(app)
+    # Set up callback to load user objects`
+    app.admin_login_manager.user_loader(
+        lambda user_id: db.session.query(models.AdminUser).get(user_id))
 
     ## Use stevedore to load drivers/extensions.
     # Discover all drivers/extensions, but do not load any.
     # Used for logging found extensions.
-    app.ext_mgr_all = stevedore.ExtensionManager(
-        namespace='pg_discuss.ext')
+    app.ext_mgr_all = stevedore.ExtensionManager(namespace='pg_discuss.ext')
 
     ## Load configured IdentityPolicy driver
     app.identity_policy_loader = stevedore.DriverManager(
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_IDENTITY_POLICY'],
     )
-    # Iniatialize IdentityPolicyManager with configured IdentityManager
+    # Initialize IdentityPolicyManager with configured IdentityManager
     app.identity_policy_mgr = identity.IdentityPolicyManager(
         app,
         app.identity_policy_loader.driver,
@@ -78,15 +94,15 @@ def app_factory():
     # Default routes. Other routes must be added through App extensions.
     # Default routes are set up before app extensions are loaded so extensions
     # can introspect/modify view functions.
-    app.route('/threads/<string:thread_client_id>/comments', methods=['GET'])(views.fetch)
-    app.route('/threads/<string:thread_client_id>/comments', methods=['POST'])(views.new)
+    app.route('/threads/<thread_cid>/comments', methods=['GET'])(views.fetch)
+    app.route('/threads/<thread_cid>/comments', methods=['POST'])(views.new)
     app.route('/comments/<int:comment_id>', methods=['GET'])(views.view)
     app.route('/comments/<int:comment_id>', methods=['PATCH'])(views.edit)
     app.route('/comments/<int:comment_id>', methods=['DELETE'])(views.delete)
     app.route('/login', methods=['GET', 'POST'])(views.admin_login)
     app.route('/logout', methods=['GET'])(views.admin_logout)
 
-    # Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
+    ## Load all extensions explicitly enabled via `ENABLE_EXT_*` parameters.
     app.ext_mgr = stevedore.NamedExtensionManager(
         namespace='pg_discuss.ext',
         names=config.get_enabled_extensions(app.config),
@@ -98,8 +114,5 @@ def app_factory():
     )
     # Run the `init_app` hooks.
     ext.exec_init_app(app)
-
-    app.manager.add_command('db', flask_migrate.MigrateCommand)
-    app.manager.add_command('createadminuser', auth_forms.CreateAdminUser)
 
     return app

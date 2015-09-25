@@ -1,4 +1,5 @@
-"""
+"""SQLAlchemy `Table` objects for database tables.
+
 The SQLAlchemy Expression Language is preferred for CRUD operations, so
 shorter aliases are created for the table objects are created here.
 """
