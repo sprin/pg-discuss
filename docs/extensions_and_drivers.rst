@@ -19,8 +19,8 @@ be enabled for each type of driver.
 IdentityPolicy
 --------------
 
-An `IdentityPolicy` driver implements the authentication policy by associating
-requests with identities. Cookies are used to "remember" identities.
+An `IdentityPolicy` driver implements the policy for associating requests with
+identities. Cookies are used to "remember" identities.
 
 The `IdentityPolicy` plugpoint allows for a wide range of authentication
 mechanisms to be implemented. Some possibilities include OAuth 2, traditional
@@ -48,7 +48,7 @@ Extensions
 
 Extension plugins use hooks to add additional functionality. Unlike drivers,
 no extensions are required for the application to run. Extensions can
-participate in to app initialization to configure new views or to hook in to
+participate in app initialization to configure new views or to hook in to
 the Flask frameworks events. Extensions can also hook in to custom events
 defined by pg-discuss.
 
@@ -72,20 +72,20 @@ pg-discuss hooks
 ----------------
 
  - validate_comment: validate comment, possibly mutating into valid form.
+   Receives an `action` parameter which is either `create` or `edit`.
  - on_pre_comment_insert: modify the comment before inserting into the
    database.
  - on_post_comment_insert: perform some action with the result of a comment
    insert.
  - on_pre_comment_update: modify the commment before updating in the database.
- - on_post_comment_update: perform some action with the result of a comment update.
- - on_pre_comment_fetch: return a filter clause to be appended to the select
-   statement used to fetch comment.
- - on_comment_pre_serialize: add fields to the "client comment" object to be
+ - on_post_comment_update: perform some action with the result of a comment
+   update.
+ - add_comment_filter_predicate: return an SQLAlchemy filter predicate to be
+   appended to the select statement used to fetch comment.
+ - on_pre_comment_serialize: add fields to the "client comment" object to be
    serialized.
- - on_thread_pre_serialize: add fields to the "client thread" object to be
+ - on_pre_thread_serialize: add fields to the "client thread" object to be
    serialized.
- - on_comment_collection_preserialize: add or modify the comment collection
-   object, whose JSON representation is the response to a fetch.
  - on_new_comment_response: modify the response returned from the new comment
    view, with the "raw comment" and "client comment" in the context.
 
