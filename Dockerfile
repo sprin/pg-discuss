@@ -54,6 +54,7 @@ WORKDIR /src
 #RUN pip --disable-pip-version-check install -r requirements.txt
 ADD setup.py /src/setup.py
 RUN python3.4 setup.py develop
+RUN python3.4 blessed_extensions/setup.py develop
 
 # Add uwsgi.ini
 ADD uwsgi.ini /src/uwsgi.ini
