@@ -52,7 +52,11 @@ def new(thread_cid):
     new_comment['custom_json'] = {}
 
     # Associate comment with identity
-    new_comment['identity_id'] = flask.g.identity['id']
+    if hasattr(flask.g, 'identity'):
+        new_comment['identity_id'] = flask.g.identity['id']
+    # Set identity to None if no identity exists in request
+    else:
+        new_comment['identity_id'] = None
 
     # Validate required, type, text length
     new_comment = forms.validate_new_comment(new_comment)
@@ -106,7 +110,10 @@ def edit(comment_id):
     old_comment = queries.fetch_comment_by_id(comment_id)
 
     # Check if does not belong to requesting identity
-    if old_comment['identity_id'] != flask.g.identity['id']:
+    if (
+        not hasattr(flask.g, 'identity')
+        or old_comment['identity_id'] != flask.g.identity['id']
+    ):
         flask.abort(400,
               'Cannot edit comment: comment belongs to another identity')
 
@@ -147,7 +154,10 @@ def delete(comment_id):
     old_comment = queries.fetch_comment_by_id(comment_id)
 
     # Check if does not belong to requesting identity
-    if old_comment['identity_id'] != flask.g.identity['id']:
+    if (
+        not hasattr(flask.g, 'identity')
+        or old_comment['identity_id'] != flask.g.identity['id']
+    ):
         flask.abort(400,
               'Cannot delete comment: this comment belongs to another identity')
 
