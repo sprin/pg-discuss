@@ -10,6 +10,7 @@ requires = [
     'Flask-SQLAlchemy>=2.0',
     'Flask-Script>=2.0',
     'Flask-Migrate>=1.5.0',
+    'Flask-Login',
     'voluptuous>=0.8',
     'stevedore>=1.7',
     'flask-cors>=2.1',
