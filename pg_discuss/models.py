@@ -42,7 +42,6 @@ the core code. Some possible uses:
  - archived flag
  - deleted flag
  - moderated flag
- - likes/dislikes
 """
 from sqlalchemy import (
     Boolean,
