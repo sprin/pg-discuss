@@ -47,7 +47,7 @@ setup(
             'blessed_csrf_token = blessed_extensions.csrf_token:CsrfTokenExt',
             'blessed_csrf_header = blessed_extensions.csrf_header:CsrfHeaderExt',
             'blessed_route_list = blessed_extensions.route_list:RouteListExt',
-            'blessed_archive_updates = blessed_extensions.archive_updates:ArchiveUpdatesExt',
+            'blessed_archive_comment_versions = blessed_extensions.archive_comment_versions:ArchiveCommentVersionsExt',
             'blessed_validate_comment_len = blessed_extensions.validate_comment_len:ValidateCommentLen',
             'blessed_unix_time_json_encoder = blessed_extensions.json_encoder:UnixTimeJSONEncoder',
             'blessed_iso_date_json_encoder = blessed_extensions.json_encoder:IsoDateJSONEncoder',

@@ -4,11 +4,12 @@ from pg_discuss import db
 from pg_discuss import ext
 from pg_discuss import tables
 
-class ArchiveUpdatesExt(ext.OnPostCommentUpdate, ext.AddCommentFilterPredicate):
+class ArchiveCommentVersionsExt(ext.OnPostCommentUpdate,
+                                ext.AddCommentFilterPredicate):
 
     def on_post_comment_update(self, old_comment, new_comment, **extras):
-        # "Archive" the old comment by re-inserting it, with a new pk.
-        # Set `archived` to False.
+        # "Archive" the old version of the comment by re-inserting it, with a
+        # new pk.  Set `archived` to True.
         t = tables.comment
         old_comment['version_of_id'] = old_comment['id']
         del old_comment['id']
