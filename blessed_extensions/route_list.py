@@ -36,4 +36,4 @@ class RouteListExt(ext.AppExtBase):
     """
 
     def init_app(self, app):
-        app.manager.add_command('list_routes', ListRoutes())
+        app.script_manager.add_command('list_routes', ListRoutes())

@@ -47,9 +47,9 @@ def app_factory():
     app.migrate = flask_migrate.Migrate(app, db)
 
     ## Flask-Script
-    app.manager = flask_script.Manager(app)
-    app.manager.add_command('db', flask_migrate.MigrateCommand)
-    app.manager.add_command('createadminuser', auth_forms.CreateAdminUser)
+    app.script_manager = flask_script.Manager(app)
+    app.script_manager.add_command('db', flask_migrate.MigrateCommand)
+    app.script_manager.add_command('createadminuser', auth_forms.CreateAdminUser)
 
     ## Flask-Login, for Admin users.
     app.admin_login_manager = flask_login.LoginManager(app)
