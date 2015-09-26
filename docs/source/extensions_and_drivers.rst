@@ -1,6 +1,6 @@
-======================
-Extensions and Drivers
-======================
+=============================
+Extension and Driver Overview
+=============================
 
 pg-discuss contains a small set of "core" modules whose primary responsibility
 is to provide the framework for pluggable components. Plugins are responsible
