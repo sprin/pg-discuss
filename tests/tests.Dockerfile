@@ -55,4 +55,4 @@ COPY . /src
 
 # Build the docs
 
-CMD ["python3.4", "-m", "nose", "--with-coverage", "--cover-package=pg_discuss"]
+CMD ["py.test", "--cov=pg_discuss", "tests"]

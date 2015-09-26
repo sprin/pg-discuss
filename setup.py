@@ -40,8 +40,8 @@ class RunTests(develop):
     def __init__(self, *args, **kwargs):
         global requires
         requires += [
-            'nose>=1.3.7',
-            'coverage>=4.0',
+            'pytest>=2.8.0',
+            'pytest-cov>=2.1.0',
         ]
         develop.__init__(self, *args, **kwargs)
 
