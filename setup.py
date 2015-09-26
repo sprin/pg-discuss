@@ -30,7 +30,7 @@ class DevelopDocs(develop):
 
     def __init__(self, *args, **kwargs):
         global requires
-        requires += ['sphinx']
+        requires += ['sphinx>=1.3.1']
         develop.__init__(self, *args, **kwargs)
 
 setup(
