@@ -49,11 +49,10 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py \
 RUN pip --disable-pip-version-check install uwsgi
 
 # Add and install Python modules
-#ADD requirements.txt /src/requirements.txt
 WORKDIR /src
-#RUN pip --disable-pip-version-check install -r requirements.txt
 ADD setup.py /src/setup.py
 RUN python3.4 setup.py develop
+ADD blessed_extensions/setup.py /src/blessed_extensions/setup.py
 RUN python3.4 blessed_extensions/setup.py develop
 
 # Add uwsgi.ini
