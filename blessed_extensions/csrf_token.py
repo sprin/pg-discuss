@@ -15,8 +15,6 @@ import werkzeug.security
 from pg_discuss import _compat
 from pg_discuss import ext
 
-__all__ = ('generate_csrf', 'validate_csrf', 'CsrfProtect')
-
 
 def generate_csrf(secret_key=None, time_limit=None):
     """Generate csrf token code.
