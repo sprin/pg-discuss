@@ -6,10 +6,10 @@ from flask_admin.contrib.sqla import filters
 import sqlalchemy as sa
 
 from . import admin
-from pg_discuss import db
 from pg_discuss import ext
 from pg_discuss import models
 from pg_discuss import tables
+from pg_discuss.db import db
 
 class Moderate(admin.PrettyComment):
     pass

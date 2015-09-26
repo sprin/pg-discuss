@@ -11,11 +11,11 @@ import stevedore
 from . import _compat
 from . import auth_forms
 from . import config
-from . import db
 from . import ext
 from . import identity
 from . import models
 from . import views
+from .db import db
 
 if _compat.PYPY:  # pragma: no cover
     from psycopg2cffi import compat as pg2cfficompat

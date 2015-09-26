@@ -59,7 +59,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
-from . import db
+from .db import db
 
 
 class Thread(db.Model):

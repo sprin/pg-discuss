@@ -8,8 +8,8 @@ import flask_wtf
 import werkzeug
 import wtforms
 
-from . import db
 from . import models
+from .db import db
 
 
 class LoginForm(flask_wtf.Form):

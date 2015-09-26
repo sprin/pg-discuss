@@ -15,5 +15,3 @@ class PgAlchemy(flask_sqlalchemy.SQLAlchemy):
         options['isolation_level'] = 'AUTOCOMMIT'
 
 db = PgAlchemy()
-# Allow db instance to masquerade as module.
-sys.modules[__name__] = db

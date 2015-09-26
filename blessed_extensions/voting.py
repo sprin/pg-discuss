@@ -1,9 +1,9 @@
 import flask
 
-from pg_discuss import db
 from pg_discuss import ext
 from pg_discuss import queries
 from pg_discuss import tables
+from pg_discuss.db import db
 
 import sqlalchemy as sa
 

@@ -2,10 +2,10 @@
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql
 
-from . import db
 from . import ext
 from . import tables
 from . import utils
+from .db import db
 
 
 class CommentNotFoundError(Exception):

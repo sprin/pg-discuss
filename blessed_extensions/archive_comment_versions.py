@@ -1,8 +1,8 @@
 import sqlalchemy as sa
 
-from pg_discuss import db
 from pg_discuss import ext
 from pg_discuss import tables
+from pg_discuss.db import db
 
 class ArchiveCommentVersionsExt(ext.OnPostCommentUpdate,
                                 ext.AddCommentFilterPredicate):
