@@ -26,11 +26,23 @@ else:
 
 
 class DevelopDocs(develop):
-    """Custom command to build the docs."""
+    """Custom command to require docs dependencies."""
 
     def __init__(self, *args, **kwargs):
         global requires
         requires += ['sphinx>=1.3.1']
+        develop.__init__(self, *args, **kwargs)
+
+
+class RunTests(develop):
+    """Custom command to require test dependencies."""
+
+    def __init__(self, *args, **kwargs):
+        global requires
+        requires += [
+            'nose>=1.3.7',
+            'coverage>=4.0',
+        ]
         develop.__init__(self, *args, **kwargs)
 
 setup(
@@ -72,7 +84,6 @@ setup(
 
     cmdclass={
         'docs': DevelopDocs,
+        'test': RunTests,
     },
 )
-
-

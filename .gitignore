@@ -6,6 +6,7 @@ dist
 .tox
 .coverage
 env
+test_env
 local_settings.py
 __pycache__
 docs/source/api
