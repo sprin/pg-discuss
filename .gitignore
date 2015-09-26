@@ -5,6 +5,7 @@ dist
 *.egg-info
 .tox
 .coverage
+.cache
 env
 test_env
 local_settings.py
