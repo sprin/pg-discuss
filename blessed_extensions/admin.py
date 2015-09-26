@@ -40,7 +40,7 @@ class PrettyIdentity(models.Identity):
 
 class PrettyComment(models.Comment):
     """Subclass the Identity model to provide a nicer string represention."""
-    identity = sqlalchemy.orm.relationship('PrettyIdentity')
+    identity_ = sqlalchemy.orm.relationship('PrettyIdentity')
 
 
 class AuthenticatedModelView(flask_admin.contrib.sqla.ModelView):
@@ -68,6 +68,8 @@ class CustomAdminConverter(flask_admin.contrib.sqla.form.AdminModelConverter):
 
 class CommentAdmin(AuthenticatedModelView):
     model_form_converter=CustomAdminConverter
+    column_exclude_list = ['identity']
+    form_excluded_columns = ['identity']
     form_widget_args = {
         'custom_json': {'rows': 10}
     }
