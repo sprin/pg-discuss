@@ -113,7 +113,7 @@ Possible uses by extensions include:
 
  - upvotes/downvotes
  - likes/dislikes
- - abuse reports
+ - flagging abusive/inappropriate comments
 
 AdminUser
 ---------
