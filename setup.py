@@ -1,5 +1,6 @@
 import sys
 from setuptools import setup, find_packages
+from setuptools.command.develop import develop
 
 PYPY = hasattr(sys, 'pypy_version_info')
 
@@ -22,6 +23,15 @@ if PYPY:
     requires += ['psycopg2cffi>=2.7']
 else:
     requires += ['psycopg2>=2.6']
+
+
+class DevelopDocs(develop):
+    """Custom command to build the docs."""
+
+    def __init__(self, *args, **kwargs):
+        global requires
+        requires += ['sphinx']
+        develop.__init__(self, *args, **kwargs)
 
 setup(
     name='pg-discuss',
@@ -59,6 +69,10 @@ setup(
     zip_safe=False,
 
     install_requires=requires,
+
+    cmdclass={
+        'docs': DevelopDocs,
+    },
 )
 
 
