@@ -64,6 +64,7 @@ if __name__ == '__main__':
                 'blessed_admin = blessed_extensions.admin:AdminExt',
                 'blessed_moderation = blessed_extensions.moderation:ModerationExt',
                 'blessed_mod_email = blessed_extensions.mod_email:ModerationEmail',
+                'blessed_profiler = blessed_extensions.profiler:ProfilerExt',
             ],
         },
 
