@@ -89,10 +89,6 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # in the context of emails, etc.
 SERVER_NAME = os.environ.get('SERVER_NAME')
 
-# Comment defaults
-MIN_COMMENT_LENGTH = 3
-MAX_COMMENT_LENGTH = 65535
-
 # CORS: List of allowed origins (origins where widget will be embedded)
 # http://www.w3.org/TR/cors/
 CORS_ORIGINS = []
