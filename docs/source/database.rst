@@ -101,13 +101,17 @@ used.
 Other Models
 ============
 
-IdentityToCommentAssociation
-----------------------------
+IdentityComment
+---------------
 
-`IdentityToCommentAssociation` models many-to-many relationships between
-`Identity` and `Comment` models. The type of relationship is defined by
-`rel_type` string, and other attributes can be stored in `custom_json`. This
-model is made available solely for extensions and is not used in the core.
+:class:`~pg_discuss.models.IdentityComment` models many-to-many relationships
+between :class:`~pg_discuss.models.Identity` and
+:class:`~pg_discuss.models.Comment` models, implemented as an association
+table. The type of relationship is defined by
+:attr:`~pg_discuss.models.IdentityComment.rel_type` string, and other
+attributes can be stored in
+:attr:`~pg_discuss.models.IdentityComment.custom_json`. This model is made
+available solely for extensions and is not used in the core.
 
 Possible uses by extensions include:
 

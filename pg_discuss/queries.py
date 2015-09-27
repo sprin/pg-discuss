@@ -242,21 +242,21 @@ def validate_parent_exists(parent):
     return db.engine.execute(stmt).scalar()
 
 
-def insert_identity_to_comment(identity_to_comment):
+def insert_identity_comment(identity_comment):
     """Insert the a new identity-to-comment object in to the database."""
-    t = tables.identity_to_comment
+    t = tables.identity_comment
     stmt = (
         t.insert()
-        .values(**identity_to_comment)
+        .values(**identity_comment)
         .returning(*list(t.c))
     )
     result = db.engine.execute(stmt).first()
-    identity_to_comment = dict(result.items())
+    identity_comment = dict(result.items())
 
-    # TODO: Run on_post_identity_to_comment_insert hooks
+    # TODO: Run on_post_identity_comment_insert hooks
     # ext.exec_hooks(ext.OnPostIdentityInsert, identity)
 
-    return identity_to_comment
+    return identity_comment
 
 
 def cte_chain(statements):

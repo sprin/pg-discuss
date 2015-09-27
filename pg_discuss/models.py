@@ -152,14 +152,14 @@ class Identity(db.Model):
     __str__ = __unicode__
 
 
-class IdentityToCommentAssociation(db.Model):
+class IdentityComment(db.Model):
     """Association table between Identities and Comments, which may be used to
     by extensions to represent many-to-many relationships such as
     "upvotes"/"downvotes".
 
     This model is not utilized by the pg-discuss core.
     """
-    __tablename__ = 'identity_to_comment'
+    __tablename__ = 'identity_comment'
     id = Column(
         Integer,
         primary_key=True,
@@ -188,17 +188,17 @@ class IdentityToCommentAssociation(db.Model):
             'identity_id',
             'comment_id',
             'rel_type',
-            name='_comment_identity_uc'),
+            name='_identity_comment_uc'),
     )
     identity = relationship(
         "Identity",
         backref=backref(
-            'identity_to_comments_association',
+            'identity_comment',
             cascade='all, delete-orphan'))
     comment = relationship(
         "Comment",
         backref=backref(
-            'identity_to_comments_association',
+            'identity_comment',
             cascade='all, delete-orphan'))
 
     def __unicode__(self):

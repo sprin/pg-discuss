@@ -35,15 +35,15 @@ class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
             where id = %id;
         """
 
-        identity_to_comment = {
+        identity_comment = {
             'identity_id': flask.g.identity['id'],
             'comment_id': comment_id,
             'rel_type': vote_type,
         }
-        t = tables.identity_to_comment
+        t = tables.identity_comment
         ins = (
             t.insert()
-            .values(**identity_to_comment)
+            .values(**identity_comment)
             .returning(*list(t.c))
         )
         keyname = "{0}s".format(vote_type) # add 's' to pluralize vote_type

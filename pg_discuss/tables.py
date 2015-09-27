@@ -9,5 +9,5 @@ from . import models
 thread = models.Thread.__table__
 comment = models.Comment.__table__
 identity = models.Identity.__table__
-identity_to_comment = models.IdentityToCommentAssociation.__table__
+identity_comment = models.IdentityComment.__table__
 admin_user = models.AdminUser.__table__
