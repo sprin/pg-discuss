@@ -1,13 +1,13 @@
 """empty message
 
-Revision ID: 2106332a421
+Revision ID: 46a03f51647
 Revises: None
-Create Date: 2015-09-27 20:30:06.481155
+Create Date: 2015-09-27 20:56:54.697804
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '2106332a421'
+revision = '46a03f51647'
 down_revision = None
 
 from alembic import op
@@ -64,8 +64,7 @@ def upgrade():
     sa.Column('custom_json', postgresql.JSONB(), server_default='{}', nullable=False),
     sa.ForeignKeyConstraint(['comment_id'], ['comment.id'], ),
     sa.ForeignKeyConstraint(['identity_id'], ['identity.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('identity_id', 'comment_id', 'rel_type', name='_identity_comment_uc')
+    sa.PrimaryKeyConstraint('id')
     )
     ### end Alembic commands ###
 

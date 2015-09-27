@@ -63,7 +63,6 @@ def run_migrations_online():
                       version_table=version_table,
                       **current_app.extensions['migrate'].configure_args)
 
-
     try:
         with context.begin_transaction():
             context.run_migrations()

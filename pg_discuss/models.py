@@ -50,7 +50,6 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    UniqueConstraint,
     text,
 )
 from sqlalchemy.orm import (
@@ -183,13 +182,6 @@ class IdentityComment(db.Model):
         JSONB,
         server_default='{}',
         nullable=False)
-    __table_args__ = (
-        UniqueConstraint(
-            'identity_id',
-            'comment_id',
-            'rel_type',
-            name='_identity_comment_uc'),
-    )
     identity = relationship(
         "Identity",
         backref=backref(

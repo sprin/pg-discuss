@@ -7,6 +7,7 @@ from pg_discuss.db import db
 
 import sqlalchemy as sa
 
+
 class Voting(ext.AppExtBase, ext.OnPreCommentSerialize):
 
     def init_app(self, app):
