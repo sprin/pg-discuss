@@ -48,7 +48,7 @@ class DevelopTests(develop):
 
 setup(
     name='pg-discuss',
-    version='1.0',
+    version='1.0b1',
 
     description='A comment system backend on top of PostgreSQL',
     license='MIT',
