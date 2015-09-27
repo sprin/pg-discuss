@@ -47,7 +47,7 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py \
 # Add and install Python modules for docs
 WORKDIR /src
 ADD setup.py /src/setup.py
-RUN python3.4 setup.py docs
+RUN python3.4 setup.py develop_docs
 ADD blessed_extensions/setup.py /src/blessed_extensions/setup.py
 RUN python3.4 blessed_extensions/setup.py develop
 

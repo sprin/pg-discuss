@@ -1,10 +1,8 @@
 from setuptools import setup, find_packages
 
 requires = [
-    'Flask-Admin',
-    'Flask-Login',
-    'Flask-WTF',
-    'Flask-Mail',
+    'Flask-Admin>=1.3.0',
+    'Flask-Mail>=0.9.1',
 ]
 
 if __name__ == '__main__':

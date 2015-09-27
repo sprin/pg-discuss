@@ -49,7 +49,7 @@ WORKDIR /src
 ADD setup.py /src/setup.py
 RUN python3.4 setup.py test
 ADD blessed_extensions/setup.py /src/blessed_extensions/setup.py
-RUN python3.4 blessed_extensions/setup.py develop
+RUN python3.4 blessed_extensions/setup.py develop_tests
 
 COPY . /src
 

@@ -6,12 +6,13 @@ PYPY = hasattr(sys, 'pypy_version_info')
 
 requires = [
     'SQLAlchemy>=1.0',
-    'flask>=0.10',
+    'flask>=0.10, <1.0',
     'alembic>=0.8.0',
     'Flask-SQLAlchemy>=2.0',
     'Flask-Script>=2.0',
     'Flask-Migrate>=1.5.0',
-    'Flask-Login',
+    'Flask-Login>=0.3.0',
+    'Flask-WTF>=0.12',
     'voluptuous>=0.8',
     'stevedore>=1.7',
     'flask-cors>=2.1',
@@ -34,7 +35,7 @@ class DevelopDocs(develop):
         develop.__init__(self, *args, **kwargs)
 
 
-class RunTests(develop):
+class DevelopTests(develop):
     """Custom command to require test dependencies."""
 
     def __init__(self, *args, **kwargs):
@@ -94,7 +95,7 @@ setup(
     install_requires=requires,
 
     cmdclass={
-        'docs': DevelopDocs,
-        'test': RunTests,
+        'develop_docs': DevelopDocs,
+        'develop_tests': DevelopTests,
     },
 )

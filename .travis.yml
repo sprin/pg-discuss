@@ -1,0 +1,18 @@
+language: python
+services:
+ - postgresql
+python:
+  - "2.7"
+  - "3.4"
+env:
+  global:
+   - DATABASE_URL=postgresql://postgres@/pg-discuss
+   - SECRET_KEY=not_a_secret
+   - SERVER_NAME=localhost
+install:
+  - python setup.py develop_tests
+  - python blessed_extensions/setup.py develop
+# command to run tests
+before_script:
+  - psql -c 'create database pg-discuss;' -U postgres
+script: py.test tests
