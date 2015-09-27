@@ -78,6 +78,17 @@ setup(
               ],
     packages=find_packages(),
 
+    # Entrypoints for drivers included in core. We need to include basic
+    # drivers in core so that the app is functional without the
+    # `blessed_extensions` package or additional driver packages.
+    entry_points={
+        'pg_discuss.ext': [
+            'core_escaping_renderer = pg_discuss.drivers.escaping_renderer:EscapingRenderer',
+            'core_null_identity_policy = pg_discuss.drivers.null_identity_policy:NullIdentityPolicy',
+            'core_iso_date_json_encoder = pg_discuss.drivers.iso_date_json_encoder:IsoDateJSONEncoder',
+        ],
+    },
+
     zip_safe=False,
 
     install_requires=requires,

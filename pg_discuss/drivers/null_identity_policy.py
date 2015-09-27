@@ -1,4 +1,5 @@
-from pg_discuss import ext
+from .. import ext
+
 
 class NullIdentityPolicy(ext.IdentityPolicy):
     """An `IdentityPolicy` that never returns an identity."""

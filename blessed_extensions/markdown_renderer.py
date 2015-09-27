@@ -7,7 +7,6 @@ updated upon the next release of Mikasa.
 """
 import operator
 
-import markupsafe
 import misaka
 
 from pg_discuss import _compat
@@ -38,14 +37,3 @@ class MarkdownRenderer(ext.CommentRenderer):
         """Render Markdown to HTML.
         """
         return self.markdown.render(text)
-
-class EscapingRenderer(ext.CommentRenderer):
-    """Renderer driver that escapes using HTML entity encoding.
-
-    This neutralizes all markup contained in the comment text.
-    """
-
-    def render(self, text, **extras):
-        """Render to HMTL entity-encoded text.
-        """
-        return markupsafe.escape(text)

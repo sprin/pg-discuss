@@ -1,19 +1,9 @@
-"""Module containing default and "blessed" JSON encoders/decoders.
+"""Core JSON encoder. Converts DateTime object to ISO 8601 date strings.
 """
 import datetime
 
 import simplejson as json
 
-def unix_time(dt):
-    epoch = datetime.datetime.utcfromtimestamp(0)
-    delta = dt.replace(tzinfo = None) - epoch
-    return delta.total_seconds()
-
-class UnixTimeJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return unix_time(obj)
-        return json.JSONEncoder.default(self, obj)
 
 class IsoDateJSONEncoder(json.JSONEncoder):
     """Convert datetime objects to ISO 8601 strings. The exact format is
