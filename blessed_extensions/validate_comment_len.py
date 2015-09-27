@@ -8,9 +8,10 @@ from pg_discuss import ext
 
 class ValidateCommentLen(ext.ValidateComment):
 
-    def init_app(self, app):
+    def __init__(self, app):
         app.config.setdefault('MIN_COMMENT_LENGTH', 3)
         app.config.setdefault('MAX_COMMENT_LENGTH', 65535)
+        super(ext.ValidateComment, self).__init__(app)
 
     def validate_comment(self, comment, action, **extras):
         text = comment['text']
