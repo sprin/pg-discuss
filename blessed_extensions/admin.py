@@ -45,7 +45,7 @@ class PrettyComment(models.Comment):
 
 class AuthenticatedModelView(flask_admin.contrib.sqla.ModelView):
     def is_accessible(self):
-        return flask_login.current_user.is_authenticated()
+        return flask_login.current_user.is_authenticated
 
 class DictToJSONField(wtforms.fields.TextAreaField):
     def process_data(self, value):
