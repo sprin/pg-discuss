@@ -61,6 +61,16 @@ DRIVER_COMMENT_RENDERER = 'blessed_markdown_renderer'
 DRIVER_JSON_ENCODER = 'blessed_unix_time_json_encoder'
 DRIVER_IDENTITY_POLICY = 'blessed_auth_tkt_identity_policy'
 
+# Session settings
+# Default cookies to use `Secure` flag to avoid leaking unique machine
+# identifiers over the network. Non-HTTPS deployments must explicitly disable.
+# https://www.owasp.org/index.php/SecureFlag
+SESSION_COOKIE_SECURE=True
+# Default cookies to use `HttpOnly` flag to deny client side scripts access
+# to the cookie. Already defaults to True in Flask, but we want to be explicit.
+# https://www.owasp.org/index.php/HttpOnly
+SESSION_COOKIE_HTTP_ONLY=True
+
 # Log settings
 LOGLEVEL = 'INFO'
 
