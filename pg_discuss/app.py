@@ -117,6 +117,9 @@ def app_factory():
         on_load_failure_callback=ext.fail_on_ext_load,
         propagate_map_exceptions=True,
     )
+    # Create hook map
+    app.hook_map = ext.get_hook_map(app.ext_mgr.extensions, ext.hook_classes())
+
     # Run the `init_app` hooks.
     ext.exec_init_app(app)
 

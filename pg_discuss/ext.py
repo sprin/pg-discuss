@@ -16,7 +16,9 @@ when a certain event occurs. To allow Hook APIs to send additional parameters
 in the future, all Hook methods must take a `**extras` argument.
 """
 import abc
+import inspect
 import six
+import sys
 
 from flask import current_app
 import sqlalchemy as sa
@@ -208,6 +210,23 @@ class OnNewCommentResponse(GenericExtBase):
     hook_method = on_new_comment_response.__name__
 
 
+def hook_classes():
+    """Return a list of all hook classes in the `ext` module."""
+    return [cls for name, cls in inspect.getmembers(sys.modules[__name__])
+            if inspect.isclass(cls) and hasattr(cls, 'hook_method')]
+
+
+def get_hook_map(extensions, hook_classes):
+    """Create a map of hook classes to extensions that subclass them.
+    This is a speedup to avoid having to do `isinstance` checks
+    on extensions for every hook invocation.
+    """
+    hook_map = {}
+    for cls in hook_classes:
+        hook_map[cls] = [e.obj for e in extensions if isinstance(e.obj, cls)]
+    return hook_map
+
+
 # Extension utility functions
 def exec_hooks(ext_class, *args, **kwargs):
     """Execute the hook function associated with the extension mixin class.
@@ -219,15 +238,14 @@ def exec_hooks(ext_class, *args, **kwargs):
     given.
     """
 
-    def execute_hook(ext, ext_class, *args, **kwargs):
+    def execute_hook(ext_obj, ext_class, *args, **kwargs):
         """Invoke the hook associated with a given extension class on the
         extension object."""
-        return getattr(ext.obj, ext_class.hook_method)(*args, **kwargs)
+        return getattr(ext_obj, ext_class.hook_method)(*args, **kwargs)
 
     results = []
-    for ext in current_app.ext_mgr.extensions:
-        if isinstance(ext.obj, ext_class):
-            results.append(execute_hook(ext, ext_class, *args, **kwargs))
+    for ext_obj in current_app.hook_map[ext_class]:
+        results.append(execute_hook(ext_obj, ext_class, *args, **kwargs))
 
     return results
 
