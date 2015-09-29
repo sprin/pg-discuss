@@ -4,15 +4,11 @@ import datetime
 
 import simplejson as json
 
-
-def unix_time(dt):
-    epoch = datetime.datetime.utcfromtimestamp(0)
-    delta = dt.replace(tzinfo=None) - epoch
-    return delta.total_seconds()
+EPOCH = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
 
 
 class UnixTimeJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
-            return unix_time(obj)
+            return (obj - EPOCH).total_seconds()
         return json.JSONEncoder.default(self, obj)
