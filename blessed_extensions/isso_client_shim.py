@@ -58,7 +58,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
     def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread,
                                 **extras):
         # Change key to comment collection from "comments" to "replies"
-        client_thread['replies'] = build_comment_tree(comment_seq)
+        client_thread['replies'] = build_comment_tree_iter(comment_seq)
         del client_thread['comments']
 
         # Add the count of top-level comments under key `total_replies'
@@ -141,15 +141,25 @@ def rename_voting_keys(resp):
     resp.set_data(json.dumps(d))
     return resp
 
-def build_comment_tree(comment_seq, parent_id=None):
+
+def build_comment_tree_iter(comment_seq):
     """Build the nested tree of comments, counting the number of replies to
-    each comment along the way.
+    each comments as we go. Iterative version.
     """
-    children = [c for c in comment_seq if c['parent'] == parent_id]
-    for c in children:
-        c['replies'] = build_comment_tree(comment_seq, c['id'])
-        c['total_replies'] = len(c['replies'])
-    return children
+    result = []
+    lookup = {}
+    for c in comment_seq:
+        c['replies'] = []
+        c['total_replies'] = 0
+        if not c['parent']:
+            result.append(c)
+            lookup[c['id']] = c
+        else:
+            parent = lookup[c['parent']]
+            parent['replies'].append(c)
+            parent['total_replies'] += 1
+    return result
+
 
 def hash(val):
     salt = b"Eech7co8Ohloopo9Ol6baimi"
