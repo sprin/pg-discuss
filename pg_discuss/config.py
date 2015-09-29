@@ -7,48 +7,63 @@ All connection parameters and secrets should be read from the environment.
 import os
 
 # Extension settings
-# Configuration parameters of the form `ENABLE_EXT_*` are special:
-# the set of these parameters are parsed into a list of extension entrypoints
-# to be enabled.  The part of the string after the prefix `ENABLE_EXT_` is
-# taken to be the name of an extension entrypoint in all caps. All entrypoints
-# are required to have lowercase names.
-#
-# Example: if `ENABLED_EXT_FOO=True`, the extension with entrypoint name `foo`
-# will be enabled.
-#
-# The purpose of these "magic" config parameters is:
-# - to allow atomic enablement of extensions without knowing apriori all of the
-#   entrypoint names.
-# - to avoid importing extensions that are not enabled. It is possible for
-#   extensions to "self-enable" ala stevedore's `EnabledExtensionManager`,
-#   which requires that extensions be imported before checking to see if they
-#   are enabled.
-# - to avoid having to list extensions in a comma-separated string, which
-#   complicates atomic enabling and disabling of extensions.
+#: Configuration parameters of the form `ENABLE_EXT_*` are special:
+#: the set of these parameters are parsed into a list of extension entrypoints
+#: to be enabled.  The part of the string after the prefix `ENABLE_EXT_` is
+#: taken to be the name of an extension entrypoint in all caps. All entrypoints
+#: are required to have lowercase names.
+#:
+#: Example: if `ENABLED_EXT_FOO=True`, the extension with entrypoint name `foo`
+#: will be enabled.
+#:
+#: The purpose of these "magic" config parameters is:
+#: - to allow atomic enablement of extensions without knowing apriori all of the
+#:   entrypoint names.
+#: - to avoid importing extensions that are not enabled. It is possible for
+#:   extensions to "self-enable" ala stevedore's `EnabledExtensionManager`,
+#:   which requires that extensions be imported before checking to see if they
+#:   are enabled.
+#: - to avoid having to list extensions in a comma-separated string, which
+#:   complicates atomic enabling and disabling of extensions.
 #
 # See the `get_enabled_extensions` in this module for parsing details.
-ENABLE_EXT_BLESSED_CSRF_TOKEN = True
-ENABLE_EXT_BLESSED_CSRF_HEADER = True
-ENABLE_EXT_BLESSED_ROUTE_LIST = True
-ENABLE_EXT_BLESSED_ARCHIVE_COMMENT_VERSIONS = True
-ENABLE_EXT_BLESSED_VALIDATE_COMMENT_LEN = True
-ENABLE_EXT_BLESSED_ISSO_CLIENT_SHIM = True
-ENABLE_EXT_BLESSED_CORS = True
-ENABLE_EXT_BLESSED_CAPTURE_AUTHOR = True
-ENABLE_EXT_BLESSED_CAPTURE_EMAIL = True
-ENABLE_EXT_BLESSED_CAPTURE_WEBSITE = True
-ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
-ENABLE_EXT_BLESSED_VOTING = True
 ENABLE_EXT_BLESSED_ADMIN = True
-ENABLE_EXT_BLESSED_MODERATION = True
+#:
+ENABLE_EXT_BLESSED_CSRF_TOKEN = True
+#:
+ENABLE_EXT_BLESSED_CSRF_HEADER = True
+#:
+ENABLE_EXT_BLESSED_ROUTE_LIST = True
+#:
+ENABLE_EXT_BLESSED_ARCHIVE_COMMENT_VERSIONS = True
+#:
+ENABLE_EXT_BLESSED_VALIDATE_COMMENT_LEN = True
+#:
+ENABLE_EXT_BLESSED_ISSO_CLIENT_SHIM = True
+#:
+ENABLE_EXT_BLESSED_CORS = True
+#:
+ENABLE_EXT_BLESSED_CAPTURE_AUTHOR = True
+#:
+ENABLE_EXT_BLESSED_CAPTURE_EMAIL = True
+#:
+ENABLE_EXT_BLESSED_CAPTURE_WEBSITE = True
+#:
+ENABLE_EXT_BLESSED_CAPTURE_REMOTE_ADDR = True
+#:
+ENABLE_EXT_BLESSED_VOTING = True
+#:
+ENABLE_EXT_BLESSED_MODERATION = False
+#:
 ENABLE_EXT_BLESSED_MOD_EMAIL = False
+#:
 ENABLE_EXT_BLESSED_PROFILER = False
 
-# Optional: Order extensions using comma-separated list of extension names.
-# It is generally discouraged to write order-dependent extensions, but it may
-# be required in some cases.
-# It is not necessary to list all extensions, only those that are required
-# to be ordered. See `config:sorted_ext_names` for sort logic details.
+#: Optional: Order extensions using comma-separated list of extension names.
+#: It is generally discouraged to write order-dependent extensions, but it may
+#: be required in some cases.
+#: It is not necessary to list all extensions, only those that are required
+#: to be ordered. See `config:sorted_ext_names` for sort logic details.
 EXT_ORDER = (
     'blessed_voting,'
     'blessed_admin,'
@@ -57,42 +72,49 @@ EXT_ORDER = (
 )
 
 # Driver settings
+#: Comment renderer driver to use (as a setuptools entrypoint name)
 DRIVER_COMMENT_RENDERER = 'blessed_markdown_renderer'
+#: JSON encoder driver to use (as a setuptools entrypoint name)
 DRIVER_JSON_ENCODER = 'blessed_unix_time_json_encoder'
+#: Identity driver to use (as a setuptools entrypoint name)
 DRIVER_IDENTITY_POLICY = 'blessed_auth_tkt_identity_policy'
 
 # Session settings
-# Default cookies to use `Secure` flag to avoid leaking unique machine
-# identifiers over the network. Non-HTTPS deployments must explicitly disable.
-# https://www.owasp.org/index.php/SecureFlag
+#: Default cookies to use `Secure` flag to avoid leaking unique machine
+#: identifiers over the network. Non-HTTPS deployments must explicitly disable.
+#: https://www.owasp.org/index.php/SecureFlag
 SESSION_COOKIE_SECURE=True
-# Default cookies to use `HttpOnly` flag to deny client side scripts access
-# to the cookie. Already defaults to True in Flask, but we want to be explicit.
-# https://www.owasp.org/index.php/HttpOnly
+#: Default cookies to use `HttpOnly` flag to deny client side scripts access
+#: to the cookie. Already defaults to True in Flask, but we want to be explicit.
+#: https://www.owasp.org/index.php/HttpOnly
 SESSION_COOKIE_HTTP_ONLY=True
 
 # Log settings
+#: Log level
 LOGLEVEL = 'INFO'
 
-# List of parameters which should not be logged. This should list any
-# configuration parameters which include secrets, such as SECRET_KEY,
-# or the database connection string which may have a password.
+#: List of parameters which should not be logged. This should list any
+#: configuration parameters which include secrets, such as SECRET_KEY,
+#: or the database connection string which may have a password.
 DO_NOT_LOG_VARS = [
     'SECRET_KEY',
     'SQLALCHEMY_DATABASE_URI',
 ]
 
 # Connection parameters and secrets
+#: Database connection string.
 SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+#: Secret key used for cookie signing.
 SECRET_KEY = os.environ.get('SECRET_KEY')
-# SERVER_NAME is required by some extensions that need to build absolute urls
-# in the context of emails, etc.
+#: Name and port number of the server.
+#: SERVER_NAME is required by some extensions that need to build absolute urls
+#: in the context of emails, etc.
 SERVER_NAME = os.environ.get('SERVER_NAME')
 
-# CORS: List of allowed origins (origins where widget will be embedded)
-# http://www.w3.org/TR/cors/
+#: List of allowed origins (origins where widget will be embedded)
+#: http://www.w3.org/TR/cors/
 CORS_ORIGINS = []
-# CORS: List of headers that client is allowed to read.
+#: List of headers that client is allowed to read.
 CORS_EXPOSE_HEADERS = ['Date', 'X-Set-Cookie']
 
 
