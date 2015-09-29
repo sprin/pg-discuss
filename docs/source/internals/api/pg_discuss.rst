@@ -1,13 +1,12 @@
-pg_discuss package (core)
-=========================
+pg_discuss package
+==================
 
-Package Summary
----------------
+Subpackages
+-----------
 
-.. automodule:: pg_discuss
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. toctree::
+
+    pg_discuss.drivers
 
 Submodules
 ----------
@@ -27,3 +26,11 @@ Submodules
    pg_discuss.tables
    pg_discuss.utils
    pg_discuss.views
+
+Module contents
+---------------
+
+.. automodule:: pg_discuss
+    :members:
+    :undoc-members:
+    :show-inheritance:

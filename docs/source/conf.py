@@ -31,6 +31,7 @@ import os
 sys.path.append(os.path.abspath('../ext'))
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
     'viewcode',
 ]
 

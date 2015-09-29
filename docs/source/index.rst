@@ -17,9 +17,9 @@ system.
 
 .. toctree:: :maxdepth: 1
 
-   database
-   extensions_and_drivers
-   api/index
+   installation
+   configuration
+   internals/index
 
 Why pg-discuss?
 ===============
