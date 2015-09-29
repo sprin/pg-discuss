@@ -35,7 +35,11 @@ def fetch(thread_cid):
     """View to fetch the thread and it's comment collection as JSON."""
     raw_thread = queries.fetch_thread_by_client_id(thread_cid)
     comments_seq = queries.fetch_comments_by_thread_client_id(thread_cid)
-    comments_seq = [serialize.to_client_comment(c) for c in comments_seq]
+    app = flask.current_app
+    hook_map = app.hook_map
+    renderer = app.comment_renderer
+    comments_seq = [serialize._to_client_comment(
+        hook_map, renderer, c) for c in comments_seq]
     client_thread = serialize.to_client_thread(raw_thread, comments_seq)
     return flask.jsonify(client_thread)
 
