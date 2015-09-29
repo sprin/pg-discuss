@@ -69,7 +69,7 @@ def fetch_comments_by_thread_client_id(thread_client_id):
     stmt = ext.exec_filter_hooks(ext.AddCommentFilterPredicate, stmt)
 
     result = db.engine.execute(stmt)
-    comments_seq = [dict(x) for x in result]
+    comments_seq = [dict(x) for x in result.fetchall()]
 
     return comments_seq
 
