@@ -48,10 +48,22 @@ Core Configuration Options
 
 .. automodule:: pg_discuss.config
    :members:
-   :undoc-members:
+   :noindex:
+   :exclude-members: get_enabled_extensions, sorted_ext_names
 
 Blessed Extension Configuration Options
 =======================================
+
+Default settings for extensions are given here. Extensions are refered to by
+their setuptools entrypoint names.
+
+validate_comment_len
+--------------------
+
+.. automodule:: blessed_extensions.validate_comment_len
+   :members:
+   :noindex:
+   :exclude-members: ValidateCommentLen
 
 .. todo::
 

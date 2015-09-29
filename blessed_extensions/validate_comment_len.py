@@ -5,12 +5,19 @@ import voluptuous
 
 from pg_discuss import ext
 
+#: Minimum allowed comment length
+MIN_COMMENT_LENGTH = 3
+#: Maximum allowed comment length
+MAX_COMMENT_LENGTH = 65535
+
 
 class ValidateCommentLen(ext.ValidateComment):
+    """Extensions to validate that comment has length between a minimum and
+    maximum."""
 
     def __init__(self, app):
-        app.config.setdefault('MIN_COMMENT_LENGTH', 3)
-        app.config.setdefault('MAX_COMMENT_LENGTH', 65535)
+        app.config.setdefault('MIN_COMMENT_LENGTH', MIN_COMMENT_LENGTH)
+        app.config.setdefault('MAX_COMMENT_LENGTH', MAX_COMMENT_LENGTH)
         super(ext.ValidateComment, self).__init__(app)
 
     def validate_comment(self, comment, action, **extras):
