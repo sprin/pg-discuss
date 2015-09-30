@@ -1,9 +1,3 @@
-"""
-CSRF token generation, validation, and middleware.
-
-Forked from flask_wtf.csrf:
-https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
-"""
 import hashlib
 import hmac
 import os
@@ -14,6 +8,17 @@ import werkzeug.security
 
 from pg_discuss import _compat
 from pg_discuss import ext
+
+#: Protect all views from CSRF by verifying token by default.
+CSRF_TOKEN_CHECK_DEFAULT = True
+#: Expiration of a CSRF token in seconds.
+CSRF_TOKEN_TIME_LIMIT = 3600
+#: Headers in which to submit CSRF token.
+CSRF_TOKEN_HEADERS = ['X-CSRF-Token']
+#: Exempt a list of HTTP methods from the check (read-only methods should be
+#: exempted).
+CSRF_TOKEN_EXEMPT_METHODS = ['GET', 'HEAD', 'OPTIONS', 'TRACE']
+CSRF_SSL_STRICT = True
 
 
 def generate_csrf(secret_key=None, time_limit=None):
@@ -96,26 +101,25 @@ def get_csrf_token():
     return generate_csrf()
 
 class CsrfTokenExt(ext.AppExtBase):
-    """Enable csrf protect for Flask.
-    Register it with::
-        app = Flask(__name__)
-        CsrfTokenExt(app)
-    And in the templates, add the token input::
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    If you need to send the token via AJAX, and there is no form::
-        <meta name="csrf_token" content="{{ csrf_token() }}" />
-    You can grab the csrf token with JavaScript, and send the token together.
     """
+    CSRF token extension.
 
+    Forked from flask_wtf.csrf:
+    https://github.com/lepture/flask-wtf/blob/HEAD/flask_wtf/csrf.py
+
+    Verifies the token present in the cookie against a token sent in the
+    `X-CSRF-Token` HTTP header.
+    """
     def init_app(self, app):
         self._app = app
         self._exempt_views = []
-        app.config.setdefault('CSRF_TOKEN_CHECK_DEFAULT', True)
-        app.config.setdefault('CSRF_TOKEN_TIME_LIMIT', 3600)
-        app.config.setdefault('CSRF_TOKEN_HEADERS', ['X-CSRF-Token'])
+        app.config.setdefault('CSRF_TOKEN_CHECK_DEFAULT',
+                              CSRF_TOKEN_CHECK_DEFAULT)
+        app.config.setdefault('CSRF_TOKEN_TIME_LIMIT', CSRF_TOKEN_TIME_LIMIT)
+        app.config.setdefault('CSRF_TOKEN_HEADERS', CSRF_TOKEN_HEADERS)
         app.config.setdefault('CSRF_TOKEN_EXEMPT_METHODS',
-                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
-        app.config.setdefault('CSRF_SSL_STRICT', True)
+                              CSRF_TOKEN_EXEMPT_METHODS)
+        app.config.setdefault('CSRF_SSL_STRICT', CSRF_SSL_STRICT)
 
         app.route('/csrftoken', methods=['GET'])(get_csrf_token)
 

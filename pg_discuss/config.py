@@ -13,17 +13,18 @@ import os
 #: taken to be the name of an extension entrypoint in all caps. All entrypoints
 #: are required to have lowercase names.
 #:
-#: Example: if `ENABLED_EXT_FOO=True`, the extension with entrypoint name `foo`
+#: Example: if `ENABLE_EXT_FOO=True`, the extension with entrypoint name `foo`
 #: will be enabled.
 #:
 #: The purpose of these "magic" config parameters is:
-#: - to allow atomic enablement of extensions without knowing apriori all of the
-#:   entrypoint names.
+#:
+#: - to allow atomic enablement of extensions without knowing apriori all of
+#:   the entrypoint names.
 #: - to avoid importing extensions that are not enabled. It is possible for
 #:   extensions to "self-enable" ala stevedore's `EnabledExtensionManager`,
 #:   which requires that extensions be imported before checking to see if they
 #:   are enabled.
-#: - to avoid having to list extensions in a comma-separated string, which
+#: - to avoid having to list all extensions in a comma-separated string, which
 #:   complicates atomic enabling and disabling of extensions.
 #
 # See the `get_enabled_extensions` in this module for parsing details.
@@ -80,14 +81,16 @@ DRIVER_JSON_ENCODER = 'blessed_unix_time_json_encoder'
 DRIVER_IDENTITY_POLICY = 'blessed_auth_tkt_identity_policy'
 
 # Session settings
+#: Expiration of a permanent sesison in seconds.
+PERMANENT_SESSION_LIFETIME = 3600
 #: Default cookies to use `Secure` flag to avoid leaking unique machine
 #: identifiers over the network. Non-HTTPS deployments must explicitly disable.
 #: https://www.owasp.org/index.php/SecureFlag
-SESSION_COOKIE_SECURE=True
+SESSION_COOKIE_SECURE = True
 #: Default cookies to use `HttpOnly` flag to deny client side scripts access
-#: to the cookie. Already defaults to True in Flask, but we want to be explicit.
+#: to the cookie. Defaults to True in Flask, but we want to be explicit.
 #: https://www.owasp.org/index.php/HttpOnly
-SESSION_COOKIE_HTTP_ONLY=True
+SESSION_COOKIE_HTTP_ONLY = True
 
 # Log settings
 #: Log level

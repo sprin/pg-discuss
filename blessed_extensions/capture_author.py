@@ -4,12 +4,17 @@ from voluptuous import Schema
 from pg_discuss import _compat
 from pg_discuss import ext
 
+#: Allow the author field to be changed by editing a comment.
+CAPTURE_AUTHOR_ALLOW_EDIT = False
+
+
 class CaptureAuthor(ext.AppExtBase, ext.ValidateComment,
                     ext.OnPreCommentSerialize):
 
     def init_app(self, app):
         self._app = app
-        app.config.setdefault('CAPTURE_AUTHOR_ALLOW_EDIT', False)
+        app.config.setdefault('CAPTURE_AUTHOR_ALLOW_EDIT',
+                              CAPTURE_AUTHOR_ALLOW_EDIT)
 
     def validate_comment(self, comment, action, **extras):
         allow_edit = self._app.config['CAPTURE_AUTHOR_ALLOW_EDIT']

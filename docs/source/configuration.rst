@@ -55,7 +55,56 @@ Blessed Extension Configuration Options
 =======================================
 
 Default settings for extensions are given here. Extensions are refered to by
-their setuptools entrypoint names.
+their setuptools entrypoint names. Some extensions do not have any configurable
+settings and are not shown here.
+
+capture_author
+--------------
+
+.. automodule:: blessed_extensions.capture_author
+   :members:
+   :noindex:
+   :exclude-members: CaptureAuthor
+
+csrf_header
+-----------
+
+.. automodule:: blessed_extensions.csrf_header
+   :members:
+   :noindex:
+   :exclude-members: CsrfHeaderExt
+
+csrf_token
+----------
+
+.. automodule:: blessed_extensions.csrf_token
+   :members:
+   :noindex:
+   :exclude-members: generate_csrf, validate_csrf, get_csrf_token, some_origin, CsrfTokenExt
+
+markdown_renderer
+-----------------
+
+.. automodule:: blessed_extensions.markdown_renderer
+   :members:
+   :noindex:
+   :exclude-members: MarkdownRenderer
+
+mod_email
+---------
+
+.. automodule:: blessed_extensions.mod_email
+   :members:
+   :noindex:
+   :exclude-members: ModerationEmail, fetch_admin_emails, send_async_email
+
+profiler
+--------
+
+.. automodule:: blessed_extensions.profiler
+   :members:
+   :noindex:
+   :exclude-members: ProfilerExt
 
 validate_comment_len
 --------------------

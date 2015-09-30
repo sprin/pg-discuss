@@ -1,6 +1,3 @@
-"""Extension to add a validation rule that enforces a minimum and
-maximum comment length.
-"""
 import voluptuous
 
 from pg_discuss import ext
@@ -12,8 +9,9 @@ MAX_COMMENT_LENGTH = 65535
 
 
 class ValidateCommentLen(ext.ValidateComment):
-    """Extensions to validate that comment has length between a minimum and
-    maximum."""
+    """Extension to add a validation rule that enforces a minimum and
+    maximum comment length.
+    """
 
     def __init__(self, app):
         app.config.setdefault('MIN_COMMENT_LENGTH', MIN_COMMENT_LENGTH)

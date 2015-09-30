@@ -21,8 +21,6 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-        # Default cookie age is 900s, or 15m.
-        app.config.setdefault('COOKIE_MAX_AGE', 900)
 
         views = app.view_functions
 
@@ -83,7 +81,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # as it is non-empty. Identitys are authenticated through another means.
         cookie = functools.partial(werkzeug.dump_cookie,
             value='.',
-            max_age=self.app.config['COOKIE_MAX_AGE'],
+            max_age=self.app.permanent_session_lifetime.total_seconds()
         )
 
         comment_id = raw_comment['id']

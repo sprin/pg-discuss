@@ -2,6 +2,14 @@ import flask
 
 from pg_discuss import ext
 
+#: Protect all views from CSRF by checking `X-Requested-With` header by
+#: default.
+CSRF_HEADER_CHECK_DEFAULT = True
+#: Exempt a list of HTTP methods from the check (read-only methods should be
+#: exempted).
+CSRF_HEADER_EXEMPT_METHODS = ['GET', 'HEAD', 'OPTIONS', 'TRACE']
+
+
 class CsrfHeaderExt(ext.AppExtBase):
     """Middleware to verify the request is an XHR request.
     This assumes that all, or most, data-modifying views are intended to handle
@@ -26,10 +34,10 @@ class CsrfHeaderExt(ext.AppExtBase):
     def init_app(self, app):
         self._app = app
 
-        app.config.setdefault('CSRF_HEADER_ENABLED', True)
-        app.config.setdefault('CSRF_HEADER_CHECK_DEFAULT', True)
+        app.config.setdefault('CSRF_HEADER_CHECK_DEFAULT',
+                              CSRF_HEADER_CHECK_DEFAULT)
         app.config.setdefault('CSRF_HEADER_EXEMPT_METHODS',
-                              ['GET', 'HEAD', 'OPTIONS', 'TRACE'])
+                              CSRF_HEADER_EXEMPT_METHODS)
 
         self._exempt_views = []
 
@@ -57,13 +65,12 @@ class CsrfHeaderExt(ext.AppExtBase):
             self.protect()
 
     def protect(self):
-        if self._app.config['CSRF_HEADER_ENABLED']:
-            if not flask.request.is_xhr:
-                reason = (
-                    'XHR checking failed - X-Requested-With not set '
-                    'to XMLHttpRequest'
-                )
-                return self._error_response(reason)
+        if not flask.request.is_xhr:
+            reason = (
+                'XHR checking failed - X-Requested-With not set '
+                'to XMLHttpRequest'
+            )
+            return self._error_response(reason)
         flask.request.csrf_header_valid = True
 
     def exempt(self, view):
