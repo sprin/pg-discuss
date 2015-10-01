@@ -11,10 +11,15 @@ from pg_discuss import models
 from pg_discuss import tables
 from pg_discuss.db import db
 
+
 class Moderate(admin.PrettyComment):
     pass
 
+
 class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate):
+    """Extension that requires comments to be approved by an admin user
+    through the admin interface before publishing.
+    """
 
     def init_app(self, app):
         app.admin.add_view(CommentAdminWithModeration(
@@ -31,15 +36,18 @@ class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate):
         t = tables.comment
         return t.c.custom_json['approved'].cast(sa.Boolean).is_(True)
 
+
 class PendingApprovalFilter(filters.BaseSQLAFilter):
     def apply(self, query, value, alias=None):
         t = tables.comment
         if value:
-            return query.filter(t.c.custom_json['approved']==value)
+            return query.filter(t.c.custom_json['approved'] == value)
         else:
-            return query.filter(sa.not_(t.c.custom_json.has_key('approved')))
+            return query.filter(sa.not_('approved' in t.c.custom_json))
+
     def operation(self):
         return lazy_gettext('is')
+
 
 class CommentAdminWithModeration(admin.CommentAdmin):
 
@@ -109,5 +117,5 @@ class CommentAdminWithModeration(admin.CommentAdmin):
                 raise
 
             flask.flash(gettext('Failed to {} records. %(error)s'
-                          .format(action_text),
-                          error=str(ex)), 'error')
+                                .format(action_text),
+                                error=str(ex)), 'error')

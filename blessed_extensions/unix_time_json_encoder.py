@@ -8,6 +8,8 @@ EPOCH = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
 
 
 class UnixTimeJSONEncoder(json.JSONEncoder):
+    """JSON encoder driver to encode datetime values as Unix timestamps.
+    """
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return (obj - EPOCH).total_seconds()

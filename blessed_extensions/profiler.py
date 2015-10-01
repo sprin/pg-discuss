@@ -12,6 +12,9 @@ PROFILER_DIR = None
 
 
 class ProfilerExt(ext.AppExtBase):
+    """Extension to enable the werkzeug `ProfilerMiddleware`.
+    See: http://werkzeug.pocoo.org/docs/0.10/contrib/profiler/
+    """
     def init_app(self, app):
         app.config.setdefault('PROFILER_RESTRICTIONS', PROFILER_RESTRICTIONS)
         app.config.setdefault('PROFILER_DIR', PROFILER_DIR)

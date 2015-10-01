@@ -10,6 +10,11 @@ CAPTURE_AUTHOR_ALLOW_EDIT = False
 
 class CaptureAuthor(ext.AppExtBase, ext.ValidateComment,
                     ext.OnPreCommentSerialize):
+    """Extension to capture and persist the author field from the HTTP API.
+
+    Enables a setting, `CAPTURE_AUTHOR_ALLOW_EDIT`, which when True,
+    allows the author field to be edited by the Identity which posted.
+    """
 
     def init_app(self, app):
         self._app = app

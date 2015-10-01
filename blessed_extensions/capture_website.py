@@ -8,7 +8,9 @@ from voluptuous import (
 from pg_discuss import _compat
 from pg_discuss import ext
 
+
 class CaptureWebsite(ext.ValidateComment, ext.OnPreCommentSerialize):
+    """Extension to capture and persist the website from the HTTP API."""
     def validate_comment(self, comment, action, **extras):
         website = flask.request.get_json().get('website')
         if website:
@@ -20,6 +22,7 @@ class CaptureWebsite(ext.ValidateComment, ext.OnPreCommentSerialize):
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         if 'website' in raw_comment['custom_json']:
             client_comment['website'] = raw_comment['custom_json']['website']
+
 
 def normalize_url(url):
     if not url.startswith(("http://", "https://")):

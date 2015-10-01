@@ -10,7 +10,13 @@ import wtforms.fields
 from pg_discuss import ext
 from pg_discuss import models
 
+
 class AdminExt(ext.AppExtBase):
+    """Extension to add an admin interface. Allows management of Comment,
+    Thread, Identity, and AdminUser models.
+
+    Available to authenticated Admin users.
+    """
     def init_app(self, app):
         admin = flask_admin.Admin(app, 'pg-discuss Administration',
                                   template_mode='bootstrap3',
@@ -23,6 +29,7 @@ class AdminExt(ext.AppExtBase):
         admin.add_view(IdentityAdmin(PrettyIdentity, models.db.session,
                                      name='Identity'))
         admin.add_view(AdminUserAdmin(models.AdminUser, models.db.session))
+
 
 class PrettyIdentity(models.Identity):
     """Subclass the Identity model to provide a nicer string represention."""
@@ -38,6 +45,7 @@ class PrettyIdentity(models.Identity):
         return "({}) {}".format(self.id, str_)
     __str__ = __unicode__
 
+
 class PrettyComment(models.Comment):
     """Subclass the Identity model to provide a nicer string represention."""
     identity_ = sqlalchemy.orm.relationship('PrettyIdentity')
@@ -46,6 +54,7 @@ class PrettyComment(models.Comment):
 class AuthenticatedModelView(flask_admin.contrib.sqla.ModelView):
     def is_accessible(self):
         return flask_login.current_user.is_authenticated
+
 
 class DictToJSONField(wtforms.fields.TextAreaField):
     def process_data(self, value):
@@ -61,33 +70,39 @@ class DictToJSONField(wtforms.fields.TextAreaField):
         else:
             self.data = '{}'
 
+
 class CustomAdminConverter(flask_admin.contrib.sqla.form.AdminModelConverter):
     @flask_admin.contrib.sqla.form.converts('JSON')
     def conv_JSON(self, field_args, **extra):
         return DictToJSONField(**field_args)
 
+
 class CommentAdmin(AuthenticatedModelView):
-    model_form_converter=CustomAdminConverter
+    model_form_converter = CustomAdminConverter
     column_exclude_list = ['identity']
     form_excluded_columns = ['identity']
     form_widget_args = {
         'custom_json': {'rows': 10}
     }
 
+
 class ThreadAdmin(AuthenticatedModelView):
-    model_form_converter=CustomAdminConverter
+    model_form_converter = CustomAdminConverter
     form_widget_args = {
         'custom_json': {'rows': 10}
     }
 
+
 class IdentityAdmin(AuthenticatedModelView):
-    model_form_converter=CustomAdminConverter
+    model_form_converter = CustomAdminConverter
     form_widget_args = {
         'custom_json': {'rows': 10}
     }
+
 
 class AdminUserAdmin(AuthenticatedModelView):
     pass
+
 
 class MyAdminIndexView(flask_admin.AdminIndexView):
 

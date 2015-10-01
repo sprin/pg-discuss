@@ -3,6 +3,7 @@ import flask
 from pg_discuss import ext
 from pg_discuss import queries
 
+
 class AuthTktIdentityPolicy(ext.IdentityPolicy):
     """An IdentityPolicy tied to a browser session via a cookie.
 
@@ -20,7 +21,8 @@ class AuthTktIdentityPolicy(ext.IdentityPolicy):
         self.app = app
         # Enable the related extension to persist comment info
         # with the session identity.
-        app.config.setdefault('ENABLE_EXT_BLESSED_PERSIST_COMMENT_INFO_ON_ID', True)
+        app.config.setdefault('ENABLE_EXT_BLESSED_PERSIST_COMMENT_INFO_ON_ID',
+                              True)
 
     def remember(self, request, identity_id, **extras):
         # Update cookie
@@ -42,6 +44,7 @@ class AuthTktIdentityPolicy(ext.IdentityPolicy):
 
     def forget(self, request, **extras):
         flask.session.pop('identity_id')
+
 
 class PersistCommentInfoOnIdentity(ext.OnPostCommentInsert):
 

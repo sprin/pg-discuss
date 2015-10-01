@@ -1,8 +1,3 @@
-"""Extension to adapt JSON API to format used by Isso JavaScript client.
-
-If extensions that add edit/delete views are enabled, they must be loaded before
-this extension.
-"""
 import codecs
 import datetime
 import functools
@@ -14,9 +9,16 @@ import werkzeug.security
 
 from pg_discuss import ext
 
+
 class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
                      ext.OnPreThreadSerialize, ext.OnPreCommentInsert,
                      ext.OnNewCommentResponse):
+    """Extension to adapt JSON API to format used by Isso JavaScript client.
+
+    If extensions that add edit/delete views are enabled, they must be loaded
+    before this extension.
+    """
+
     def init_app(self, app):
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
@@ -30,12 +32,13 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
 
         app.route('/', methods=['GET'])(self.fetch_)
         app.route('/new', methods=['POST'])(self.new_)
-        app.route('/id/<int:comment_id>', methods=['GET'])( views['view'])
+        app.route('/id/<int:comment_id>', methods=['GET'])(views['view'])
         app.route('/count', methods=['POST'])(self.count)
-        app.route('/id/<int:comment_id>', methods=['PUT'])( views['edit'])
+        app.route('/id/<int:comment_id>', methods=['PUT'])(views['edit'])
         app.route('/id/<int:comment_id>', methods=['DELETE'])(views['delete'])
         app.route('/id/<int:comment_id>/like', methods=['POST'])(self.like_)
-        app.route('/id/<int:comment_id>/dislike', methods=['POST'])(self.dislike_)
+        app.route('/id/<int:comment_id>/dislike', methods=['POST'])(
+            self.dislike)
 
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         # Change `parent_id` key to `parent`
@@ -68,7 +71,10 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         If neither available, just skip hashing.
         """
         custom_json = new_comment['custom_json']
-        val_to_hash = custom_json.get('email') or custom_json.get('remote_addr')
+        val_to_hash = (
+            custom_json.get('email')
+            or custom_json.get('remote_addr')
+        )
         if val_to_hash:
             custom_json['hash'] = hash(val_to_hash)
 
@@ -78,8 +84,10 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         """
         # Set a cookie with a non-empty string value.
         # It does not matter to the client what the value is, just so long
-        # as it is non-empty. Identitys are authenticated through another means.
-        cookie = functools.partial(werkzeug.dump_cookie,
+        # as it is non-empty. Identitys are authenticated through another
+        # means.
+        cookie = functools.partial(
+            werkzeug.dump_cookie,
             value='.',
             max_age=self.app.permanent_session_lifetime.total_seconds()
         )
@@ -101,8 +109,8 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         thread_client_id = request.args.get('uri')
 
         # Set `parent_id` to parent.
-        json = request.get_json()
-        json['parent_id'] = json.get('parent')
+        json_data = request.get_json()
+        json_data['parent_id'] = json_data.get('parent')
 
         # Return response. Response will be further processed by
         # `on_new_comment_response` to set cookies.
@@ -131,6 +139,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
     def dislike_(self, comment_id):
         resp = self.app.view_functions['downvote'](comment_id)
         return rename_voting_keys(resp)
+
 
 def rename_voting_keys(resp):
     d = json.loads(resp.get_data())

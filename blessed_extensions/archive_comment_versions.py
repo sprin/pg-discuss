@@ -4,8 +4,15 @@ from pg_discuss import ext
 from pg_discuss import tables
 from pg_discuss.db import db
 
+
 class ArchiveCommentVersionsExt(ext.OnPostCommentUpdate,
                                 ext.AddCommentFilterPredicate):
+    """Extension to archive comment versions.
+
+    When a comment has been edited through the HTTP API, a version is saved
+    as another Comment record. Old versions always have a foreign key to the
+    most recent version of the comment in `version_of_id`.
+    """
 
     def on_post_comment_update(self, old_comment, new_comment, **extras):
         # "Archive" the old version of the comment by re-inserting it, with a

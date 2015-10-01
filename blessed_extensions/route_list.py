@@ -4,6 +4,18 @@ import flask_script
 from pg_discuss import _compat
 from pg_discuss import ext
 
+
+class RouteListExt(ext.AppExtBase):
+    """Extension to add a command to list the currently configured routes
+    in the application.
+
+    Useful since extensions can add routes at runtime.
+    """
+
+    def init_app(self, app):
+        app.script_manager.add_command('list_routes', ListRoutes())
+
+
 class ListRoutes(flask_script.Command):
     """List all routes configured on application.
     """
@@ -23,17 +35,3 @@ class ListRoutes(flask_script.Command):
 
         for line in sorted(output):
             print(line)
-
-class RouteListExt(ext.AppExtBase):
-    """Middleware to verify the request has Content-Type set to
-    application/json for data-modifying views.
-    This assumes that all, or most, data-modifying views are intended to handle
-    JSON XHR requests.
-
-    Register it with::
-        app = Flask(__name__)
-        CheckJsonMimetype(app)
-    """
-
-    def init_app(self, app):
-        app.script_manager.add_command('list_routes', ListRoutes())

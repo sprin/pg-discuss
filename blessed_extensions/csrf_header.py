@@ -15,10 +15,6 @@ class CsrfHeaderExt(ext.AppExtBase):
     This assumes that all, or most, data-modifying views are intended to handle
     XHR requests.
 
-    Register it with::
-        app = Flask(__name__)
-        CsrfHeaderExt(app)
-
     Note that Content-Type checking alone does not necessarily protect against
     CSRF if browsers implement "HTML JSON form submission":
     http://www.w3.org/TR/html-json-forms/
@@ -27,8 +23,8 @@ class CsrfHeaderExt(ext.AppExtBase):
     be adequate protection by some:
     http://security.stackexchange.com/q/23371
 
-    The CsrfProtectWithToken middleware (enabled by default) must be enabled for
-    full token-based CSRF protection.
+    The CsrfProtectWithToken middleware (enabled by default) must be enabled
+    for full token-based CSRF protection.
     """
 
     def init_app(self, app):
@@ -47,7 +43,10 @@ class CsrfHeaderExt(ext.AppExtBase):
         @app.before_request
         def _csrf_protect():
             # many things come from django.middleware.csrf
-            if flask.request.method in app.config['CSRF_HEADER_EXEMPT_METHODS']:
+            if (
+                flask.request.method
+                in app.config['CSRF_HEADER_EXEMPT_METHODS']
+            ):
                 return
 
             if self._exempt_views:
