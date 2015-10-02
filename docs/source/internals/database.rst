@@ -59,39 +59,39 @@ performant.
 Thread
 ------
 
-`Thread` represents a collection of comments associated with a particular
-external item, such as a blog post or other web page. Each external item
-must have a `client_id` associated with it that ties it to its thread. While
-the URL of the page may seem like an obvious choice, it should be avoided
-since URLs may change (domain changes, slug changes, etc). Also, the
-possibility of multiple items with threads on the same page should be
+:class:`~pg_discuss.models.Thread` represents a collection of comments
+associated with a particular external item, such as a blog post or other web
+page. Each external item must have a `client_id` associated with it that ties
+it to its thread. While the URL of the page may seem like an obvious choice, it
+should be avoided since URLs may change (domain changes, slug changes, etc).
+Also, the possibility of multiple items with threads on the same page should be
 considered. Defining `client_id` for each item to be an immutable, unique
-string is highly recommended. The JavaScript client may also send the URL
-in addition to the `client_id` upon thread creation, and a simple extension can
+string is highly recommended. The JavaScript client may also send the URL in
+addition to the `client_id` upon thread creation, and a simple extension can
 capture and persist the URL in the `custom_json` column.
 
 Comment
 -------
 
-`Comment` represents a particular version of a comment associated with a
-particular thread via `thread_id`. Optionally, it can be associated with an
-Identity via `identity_id`, and a parent comment via `parent_id`. If comment
-editing and archiving are enabled, an archived comment may point to the
-current comment via `version_of_id`. The `text` column contains the comment
-text itself, and the `custom_json` column allows persistence of custom
-attributes by extensions.
+:class:`~pg_discuss.models.Comment` represents a particular version of a
+comment associated with a particular thread via `thread_id`. Optionally, it can
+be associated with an Identity via `identity_id`, and a parent comment via
+`parent_id`. If comment editing and archiving are enabled, an archived comment
+may point to the current comment via `version_of_id`. The `text` column
+contains the comment text itself, and the `custom_json` column allows
+persistence of custom attributes by extensions.
 
 Identity
 --------
 
-`Identity` models an identity used to submit a comment. What the identity
-actually represents is up to the chosen `IdentityPolicy`: by default it
-simply represents a browser session, thus enabling users to edit and delete
-their own comments in the same browser session. Other implementations of
-`IdentityPolicy` may associate an `Identity` with a user who has been
-authenticated by another service, or perhaps an extension may create a login
-mechanism within the pg-discuss app. Custom `Identity` attributes can be
-persisted in `custom_json`.
+:class:`~pg_discuss.models.Identity` models an identity used to submit a
+comment. What the identity actually represents is up to the chosen
+`IdentityPolicy`: by default it simply represents a browser session, thus
+enabling users to edit and delete their own comments in the same browser
+session. Other implementations of `IdentityPolicy` may associate an `Identity`
+with a user who has been authenticated by another service, or perhaps an
+extension may create a login mechanism within the pg-discuss app. Custom
+`Identity` attributes can be persisted in `custom_json`.
 
 Technically, it is not required to use this model. If it is not desired to have
 any association between comments and logical identities, nor any authorization
@@ -122,6 +122,7 @@ Possible uses by extensions include:
 AdminUser
 ---------
 
-`AdminUser` provides the schema for authenticating Admin users via Flask-Login,
-if the included `AdminExt` is enabled. The hashed password is stored in
-`password`. The user can be disabled via the `active` flag.
+:class:`~pg_discuss.models.AdminUser` provides the schema for authenticating
+Admin users via Flask-Login, if the included `AdminExt` is enabled. The hashed
+password is stored in `password`. The user can be disabled via the `active`
+flag.
