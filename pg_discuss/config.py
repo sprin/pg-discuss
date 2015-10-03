@@ -61,8 +61,8 @@ ENABLE_EXT_BLESSED_MOD_EMAIL = False
 ENABLE_EXT_BLESSED_PROFILER = False
 
 #: Optional: Order extensions using comma-separated list of extension names.
-#: It is generally discouraged to write order-dependent extensions, but it may
-#: be required in some cases.
+#: It is generally discouraged to write order-dependent extensions, but
+#: is required in some cases.
 #: It is not necessary to list all extensions, only those that are required
 #: to be ordered. See `config:sorted_ext_names` for sort logic details.
 EXT_ORDER = (

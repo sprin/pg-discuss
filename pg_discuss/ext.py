@@ -117,8 +117,8 @@ class OnPreCommentInsert(GenericExtBase):
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPostCommentInsert(GenericExtBase):
-    """Mixin class for extensions that perform some action with the result of an
-    insert.
+    """Mixin class for extensions that perform some action with the result of
+    an insert.
     """
     @abc.abstractmethod
     def on_post_comment_insert(self, new_comment, **extras):
@@ -141,8 +141,8 @@ class OnPreCommentUpdate(GenericExtBase):
 
 @six.add_metaclass(abc.ABCMeta)
 class OnPostCommentUpdate(GenericExtBase):
-    """Mixin class for extensions that perform some action with the result of an
-    update.
+    """Mixin class for extensions that perform some action with the result of
+    an update.
     """
     @abc.abstractmethod
     def on_post_comment_update(self, old_comment, new_comment, **extras):
