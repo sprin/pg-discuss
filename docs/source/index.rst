@@ -17,6 +17,7 @@ system.
 
 .. toctree:: :maxdepth: 1
 
+   features
    installation
    configuration
    internals/index
