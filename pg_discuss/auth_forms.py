@@ -15,9 +15,9 @@ from .db import db
 class LoginForm(flask_wtf.Form):
     """Login form for Admin users."""
     login = wtforms.fields.TextField(
-        validators=[wtforms.validators.required()])
+        validators=[wtforms.validators.DataRequired()])
     password = wtforms.fields.PasswordField(
-        validators=[wtforms.validators.required()])
+        validators=[wtforms.validators.DataRequired()])
 
     def validate_login(self, field):
         """Validate that user is valid and password matches stored hash."""
@@ -43,10 +43,10 @@ class LoginForm(flask_wtf.Form):
 class RegistrationForm(wtforms.Form):
     """Registration form to validate new Admin user data."""
     login = wtforms.fields.TextField(
-        validators=[wtforms.validators.required()])
+        validators=[wtforms.validators.DataRequired()])
     email = wtforms.fields.TextField()
     password = wtforms.fields.PasswordField(
-        validators=[wtforms.validators.required()])
+        validators=[wtforms.validators.DataRequired()])
 
     def validate_login(self, field):
         """Validate that login does not already exist."""
