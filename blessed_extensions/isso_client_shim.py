@@ -38,7 +38,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         app.route('/id/<int:comment_id>', methods=['DELETE'])(views['delete'])
         app.route('/id/<int:comment_id>/like', methods=['POST'])(self.like_)
         app.route('/id/<int:comment_id>/dislike', methods=['POST'])(
-            self.dislike)
+            self.dislike_)
 
     def on_pre_comment_serialize(self, raw_comment, client_comment, **extras):
         # Change `parent_id` key to `parent`
