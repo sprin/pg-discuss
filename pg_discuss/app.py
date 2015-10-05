@@ -83,7 +83,7 @@ def app_factory():
         namespace='pg_discuss.ext',
         name=app.config['DRIVER_COMMENT_RENDERER'],
     )
-    app.comment_renderer = app.comment_renderer_loader.driver()
+    app.comment_renderer = app.comment_renderer_loader.driver(app)
 
     # Load configured JSONEncoder driver
     app.json_encoder_loader = stevedore.DriverManager(

@@ -25,7 +25,6 @@ class MarkdownRenderer(ext.CommentRenderer):
     """
 
     def __init__(self, app=None):
-        self.app = app
         # TODO: Allow flags to be given as a list in a configuration
         # variable. Need to wait until Mikasa 2 releases with stable API.
         app.config.setdefault('MARKDOWN_RENDER_FLAGS',
