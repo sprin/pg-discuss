@@ -50,10 +50,8 @@ RUN pip --disable-pip-version-check install uwsgi
 
 # Add and install Python modules
 WORKDIR /src
-ADD setup.py /src/setup.py
+COPY setup.py /src/setup.py
 RUN python3.4 setup.py develop
-ADD blessed_extensions/setup.py /src/blessed_extensions/setup.py
+COPY blessed_extensions/setup.py /src/blessed_extensions/setup.py
 RUN python3.4 blessed_extensions/setup.py develop
-
-# Add uwsgi.ini
-ADD uwsgi.ini /src/uwsgi.ini
+COPY . /src/
