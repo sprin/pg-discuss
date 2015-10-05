@@ -25,6 +25,7 @@ bottlenecks.
 import argparse
 import datetime
 import json
+import sqlalchemy as sa
 import timeit
 
 import praw
@@ -53,42 +54,48 @@ def load_got_six_weeks():
     thread_id = 1
     to_insert = []
 
-    with open('got_six_weeks.json') as f:
-        comments = json.loads(f.read())
+    # First, change comment.id to a bigint to handle reddit's 36-bit
+    # ids. Note this will succeed even when the column is already a bigint.
+    with app.app_context():
+        db.engine.execute(sa.text('''
+    ALTER TABLE comment ALTER COLUMN id TYPE bigint
+        '''))
 
-        for i, c in enumerate(comments):
-            id = int(c['id'], 36)
-            text = c['body']
-            created = datetime.datetime.fromtimestamp(c['created'])
-            custom_json = {
-                'author': c['author']
-            }
-            comment_to_insert = {
-                'id': id,
-                'thread_id': thread_id,
-                'text': text,
-                'created': created,
-                'custom_json': custom_json,
-            }
-            # The first comment has the "submission" as a parent, so we ignore
-            # the value of `parent_id`.
-            if i > 1:
-                parent_id = int(c['parent_id'][3:], 36)
-                comment_to_insert['parent_id'] = parent_id
-            to_insert.append(comment_to_insert)
+        with open('got_six_weeks.json') as f:
+            comments = json.loads(f.read())
 
-        with app.app_context():
-            db.engine.execute(
-                tables.thread.insert(),
-                **{
-                    'id': 1,
-                    'client_id': thread_cid,
-                })
+            for i, c in enumerate(comments):
+                id = int(c['id'], 36)
+                text = c['body']
+                created = datetime.datetime.fromtimestamp(c['created'])
+                custom_json = {
+                    'author': c['author']
+                }
+                comment_to_insert = {
+                    'id': id,
+                    'thread_id': thread_id,
+                    'text': text,
+                    'created': created,
+                    'custom_json': custom_json,
+                }
+                # The first comment has the "submission" as a parent, so we ignore
+                # the value of `parent_id`.
+                if i > 1:
+                    parent_id = int(c['parent_id'][3:], 36)
+                    comment_to_insert['parent_id'] = parent_id
+                to_insert.append(comment_to_insert)
 
-            db.engine.execute(
-                tables.comment.insert(),
-                to_insert,
-            )
+        db.engine.execute(
+            tables.thread.insert(),
+            **{
+                'id': 1,
+                'client_id': thread_cid,
+            })
+
+        db.engine.execute(
+            tables.comment.insert(),
+            to_insert,
+        )
 
 
 def time_got_six_weeks_fetch():
