@@ -7,8 +7,8 @@ Demo
    <div id="page" style="text-align:center;">
    <div id="wrapper" style="width: 900px; text-align: left; margin-left: auto; margin-right: auto;">
    <h2>pg-discuss demo with <a href="http://posativ.org/isso/">Isso</a> JavaScript client</a></h2>
-   <p>Feel free to post as much as you like. Data is replaced nightly.</p><p>Want to see how pg-discuss handles lots of comments? Check out <a href="./got_six_weeks.html">"Got six weeks?"</a></p>
+   <p>Comments are taken from the longest running reddit thread <a href="https://www.reddit.com/r/science/comments/6nz1k/got_six_weeks_try_the_hundred_push_ups_training/">"Got six weeks?"</a> The authors of pg-discuss do not endorse any of the comments made below.</p><p>May take several seconds to render depending on your browser/system specs.</p>
    <script data-isso="https://pg-discuss-demo.sprin.io" data-isso-max-comments-top="1000" data-isso-max-comments-nested="1000" src="https://pg-discuss-demo.sprin.io/embed.min.js"></script>
-   <section data-isso-id="demo" id="isso-thread" data-title="demo"></section>
+   <section data-isso-id="got_six_weeks" id="isso-thread" data-title="got six weeks?"></section>
    </div>
    </div>
