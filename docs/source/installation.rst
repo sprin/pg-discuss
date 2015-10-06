@@ -227,6 +227,13 @@ official PGDG repositories:
  - For rpm-based distros (Fedora/CentOS/RHEL): http://yum.postgresql.org/
  - For apt-based distros (Debian/Ubuntu): http://apt.postgresql.org/
 
+Example installation via PGDG on CentOS 7:
+
+.. code-block:: console
+
+  sudo yum install -y http://yum.postgresql.org/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-1.noarch.rpm
+  sudo yum install -y postgresql95-server
+
 .. note::
 
    From this point, you should check the documentation for the
@@ -239,16 +246,23 @@ area, called a `creating a cluster`. The `initdb` utility does this.
 
 .. _`creating a cluster`: http://www.postgresql.org/docs/9.5/static/creating-cluster.html
 
+First, we need to create the `postgres` user if there is not one already
+created by the install process:
+
+.. code-block:: console
+
+   sudo useradd postgres
+
 We may need to create the parent directory as root, then run `initdb` as the
 `postgres` user. Assuming `initdb` was installed to /usr/pgsql-9.5/bin/initdb,
 and the unit file expects the cluster directory to be in `/var/lib/pgsql/9.5`:
 
 .. code-block:: console
 
-   root# mkdir /var/lib/pgsql
-   root# chown postgres /var/lib/pgsql
-   root# su postgres
-   postgres$ /usr/pgsql-9.5/bin/initdb -D /var/lib/pgsql/9.5
+   $ sudo mkdir /var/lib/pgsql
+   $ sudo chown postgres /var/lib/pgsql
+   $ sudo su postgres
+   $ sudo /usr/pgsql-9.5/bin/postgresql95-setup initdb
 
 Enable and start the service. Assuming your package installed a unit file
 called `postgresql95`:
@@ -258,10 +272,11 @@ called `postgresql95`:
    systemctl enable postgresql95
    systemctl start postgresql95
 
-Finally, create a database for `pg-discuss`:
+Create a user for pg-discuss:
 
 .. code-block:: console
 
+   createuser -P -l -e pg-discuss
    sudo su - postgres -c 'createdb -E UTF-8 pg-discuss'
 
 Congrats!
@@ -269,4 +284,4 @@ Congrats!
 
 With uwsgi, pg-discuss, PostgreSQL installed, we just need to configure
 pg-discuss before we are fully up and running. Head on over to the
-:ref:`Configuration` section.
+]:ref:`Configuration` section.
