@@ -1,4 +1,5 @@
 import codecs
+import collections
 import datetime
 import functools
 
@@ -9,6 +10,9 @@ import werkzeug.security
 
 from pg_discuss import ext
 
+
+#: Maximum depth of replies to be returned from the fetch API.
+MAX_REPLY_DEPTH = 10
 
 class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
                      ext.OnPreThreadSerialize, ext.OnPreCommentInsert,
@@ -23,6 +27,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+        app.config.setdefault('MAX_REPLY_DEPTH', MAX_REPLY_DEPTH)
 
         views = app.view_functions
 
@@ -58,8 +63,24 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
 
     def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread,
                                 **extras):
+        try:
+            top_limit = int(request.args.get('limit'))
+        except TypeError:
+            top_limit = None
+        try:
+            nested_limit = int(request.args.get('nested_limit'))
+        except TypeError:
+            nested_limit = None
+
+        reply_depth_limit = self.app.config['MAX_REPLY_DEPTH']
+
         # Change key to comment collection from "comments" to "replies"
-        client_thread['replies'] = build_comment_tree_iter(comment_seq)
+        client_thread['replies'] = build_comment_tree_iter(
+            comment_seq,
+            top_limit,
+            nested_limit,
+            reply_depth_limit,
+        )
         del client_thread['comments']
 
         # Add the count of top-level comments under key `total_replies'
@@ -111,6 +132,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Set `parent_id` to parent.
         json_data = request.get_json()
         json_data['parent_id'] = json_data.get('parent')
+        print(json_data['parent_id'])
 
         # Return response. Response will be further processed by
         # `on_new_comment_response` to set cookies.
@@ -149,22 +171,52 @@ def rename_voting_keys(resp):
     return resp
 
 
-def build_comment_tree_iter(comment_seq):
+def build_comment_tree_iter(comment_seq, top_limit=None, nested_limit=None,
+                            reply_depth_limit=None):
     """Build the nested tree of comments, counting the number of replies to
     each comments as we go. Iterative version.
     """
     result = []
-    lookup = {}
+    current_level = {}
+    parent_id_map = collections.defaultdict(list)
+    top_level_count = 0
+    nested_count = 0
+    # Build a map of the top-level comments as `current_level` and
+    # and build a map of parent ids to their replies.
     for c in comment_seq:
         c['replies'] = []
         c['total_replies'] = 0
-        if not c['parent']:
+        if not c['parent_id'] and top_level_count < top_limit:
             result.append(c)
-            lookup[c['id']] = c
+            current_level[c['id']] = c
+            top_level_count += 1
         else:
-            parent = lookup[c['parent']]
-            parent['replies'].append(c)
-            parent['total_replies'] += 1
+            parent_id = c['parent_id']
+            parent_id_map[parent_id].append(c)
+
+    # Build the comment tree by non-recursively collecting all the replies for
+    # the current level, then collecting all replies for the next level, etc.
+    # Ignore any replies that are beyond `nested_limit`.
+    depth = 0
+    while parent_id_map:
+        parents = list(current_level.values())
+        depth += 1
+        if reply_depth_limit and depth >= reply_depth_limit:
+            break
+        for parent in parents:
+            replies = parent_id_map.pop(parent['id'], None)
+            if replies:
+                nested_count += len(replies)
+                if nested_count >= nested_limit:
+                    break
+                else:
+                    parent['total_replies'] = nested_count
+                    parent['replies'] = replies
+                # Add replies to next round of iteration
+                for r in replies:
+                    current_level[r['id']] = r
+            del current_level[parent['id']]
+
     return result
 
 
