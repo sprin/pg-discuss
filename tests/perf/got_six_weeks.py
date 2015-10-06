@@ -28,14 +28,14 @@ import json
 import sqlalchemy as sa
 import timeit
 
-import praw
-
 from pg_discuss import tables
 from pg_discuss.app import app_factory
 from pg_discuss.db import db
 
 
 def fetch_got_six_weeks_from_reddit():
+    import praw
+
     r = praw.Reddit('PRAW comment scraper')
     r.config.store_json_result = True
 
@@ -60,10 +60,17 @@ def load_got_six_weeks():
         db.engine.execute(sa.text('''
     ALTER TABLE comment ALTER COLUMN id TYPE bigint
         '''))
+        db.engine.execute(sa.text('''
+    ALTER TABLE comment ALTER COLUMN parent_id TYPE bigint
+        '''))
+        db.engine.execute(sa.text('''
+    ALTER TABLE identity_comment ALTER COLUMN comment_id TYPE bigint
+        '''))
 
         with open('got_six_weeks.json') as f:
             comments = json.loads(f.read())
 
+            submission_id = None
             for i, c in enumerate(comments):
                 id = int(c['id'], 36)
                 text = c['body']
@@ -78,11 +85,18 @@ def load_got_six_weeks():
                     'created': created,
                     'custom_json': custom_json,
                 }
-                # The first comment has the "submission" as a parent, so we ignore
-                # the value of `parent_id`.
-                if i > 1:
+                # Ignore parent_id for comments which reply to the submission.
+                # The first comment is a reply to the submission, so we
+                # can track the submission id that way.
+                if i == 0:
+                    submission_id = c['parent_id']
+                    comment_to_insert['parent_id'] = None
+                elif c['parent_id'] == submission_id:
+                    comment_to_insert['parent_id'] = None
+                else:
                     parent_id = int(c['parent_id'][3:], 36)
                     comment_to_insert['parent_id'] = parent_id
+
                 to_insert.append(comment_to_insert)
 
         db.engine.execute(
