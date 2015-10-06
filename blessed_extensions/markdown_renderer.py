@@ -8,7 +8,7 @@ from pg_discuss import ext
 #: Markdown rendering flags. These flags have integer values: the default of
 #: "2" is for the `HTML_ESCAPE` flag.
 #: See: http://misaka.61924.nl/api/
-MARKDOWN_RENDER_FLAGS = [misaka.HTML_ESCAPE]
+MARKDOWN_RENDER_FLAGS = [misaka.HTML_ESCAPE, misaka.HTML_HARD_WRAP]
 #: Markdown extension flags. These flags have integer values: the default of
 #: "2" is for the `EXT_FENCED_CODE` extension.
 #: See: http://misaka.61924.nl/api/
