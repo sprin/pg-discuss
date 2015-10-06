@@ -1,6 +1,7 @@
 """Factory function for the WSGI application object.
 """
 import os
+import sys
 
 import flask
 import flask_login
@@ -43,6 +44,9 @@ def app_factory():
                                      '/opt/pg-discuss/local_settings.py')
     if custom_settings:
         app.config.from_pyfile(custom_settings)
+
+    # Set the recursion limit
+    sys.setrecursionlimit(app.config['PYTHON_RECURSION_LIMIT'])
 
     # Flask-SQLAlchemy
     db.init_app(app)

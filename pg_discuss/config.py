@@ -6,6 +6,10 @@ All connection parameters and secrets should be read from the environment.
 """
 import os
 
+#: Python recursion limit. This determines at what level of comment nesting
+#: the JSON encoder will hit "RuntimeError: maximum recursion depth exceeded".
+PYTHON_RECURSION_LIMIT = 30000
+
 # Extension settings
 #: Configuration parameters of the form `ENABLE_EXT_*` are special:
 #: the set of these parameters are parsed into a list of extension entrypoints
