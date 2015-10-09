@@ -1,12 +1,18 @@
 language: python
-services:
- - postgresql
+addons:
+  apt:
+    sources:
+    - precise-pgdg-9.5
+    packages:
+    - postgresql-9.5
+  postgresql: 9.5
 python:
-  - "2.7"
+  #- "2.7"
   - "3.4"
 env:
   global:
-   - DATABASE_URL=postgresql://postgres@/pg-discuss
+   - PGPORT=5433
+   - DATABASE_URL=postgresql://travis@:5433/pg-discuss
    - SECRET_KEY=not_a_secret
    - SERVER_NAME=localhost
    - PG_DISCUSS_SETTINGS_FILE=''
@@ -15,7 +21,10 @@ install:
   - python blessed_extensions/setup.py develop
 # command to run tests
 before_script:
-  - psql -c 'create database "pg-discuss";' -U postgres
+  - env
+  - psql -c 'show server_version;'
+  - psql -c 'create database "pg-discuss";'
+  - psql $DATABASE_URL -c 'show server_version;'
   - python main.py db upgrade -d migrations
   - python main.py db upgrade -d ext_migrations
 script: py.test tests
