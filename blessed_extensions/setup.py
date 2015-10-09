@@ -2,6 +2,7 @@
 from setuptools import setup, find_packages
 
 requires = [
+    'pytz>=2015.6',
     'Flask-Admin>=1.3.0',
     'Flask-Mail>=0.9.1',
 ]

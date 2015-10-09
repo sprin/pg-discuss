@@ -2,9 +2,10 @@
 """
 import datetime
 
+import pytz
 import simplejson as json
 
-EPOCH = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
+EPOCH = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=pytz.utc)
 
 
 class UnixTimeJSONEncoder(json.JSONEncoder):
