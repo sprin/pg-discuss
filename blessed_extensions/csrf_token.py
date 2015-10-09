@@ -101,17 +101,11 @@ class CsrfTokenExt(ext.AppExtBase):
         flask.request.csrf_token_valid = True
 
     def exempt(self, view):
-        """A decorator that can exclude a view from csrf protection.
-        Remember to put the decorator above the `route`::
-            csrf = CsrfProtect(app)
-            @csrf.exempt
-            @app.route('/some-view', methods=['POST'])
-            def some_view():
-                return
+        """Exclude a view from csrf protection. Takes a view function as the
+        single argument.
         """
         view_location = '%s.%s' % (view.__module__, view.__name__)
         self._exempt_views.append(view_location)
-        return view
 
     def _error_response(self, reason):
         return flask.abort(403, reason)

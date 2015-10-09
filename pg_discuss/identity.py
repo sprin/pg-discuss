@@ -57,14 +57,8 @@ class IdentityPolicyManager(object):
             self.identity_policy.remember(flask.request, identity['id'])
 
     def exempt(self, view):
-        """A decorator that can exclude a view from JSON mimetype checking.
-        Remember to put the decorator above the `route`::
-            identity_policy_mgr = IdentityPolicyManager(app)
-            @identity_policy_mgr.exempt
-            @app.route('/some-view', methods=['GET'])
-            def some_view():
-                return
+        """Exclude a view from the IdentityPolicy middleware. Takes a view
+        functions as the single argument.
         """
         view_location = '%s.%s' % (view.__module__, view.__name__)
         self._exempt_views.append(view_location)
-        return view
