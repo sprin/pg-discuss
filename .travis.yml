@@ -14,7 +14,7 @@ install:
   - python blessed_extensions/setup.py develop
 # command to run tests
 before_script:
-  - psql -c 'create database pg-discuss;' -U postgres
+  - psql -c 'create database "pg-discuss";' -U postgres
   - python main.py db upgrade -d migrations
   - python main.py db upgrade -d ext_migrations
 script: py.test tests
