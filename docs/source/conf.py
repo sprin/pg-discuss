@@ -137,6 +137,19 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+if on_rtd:
+    # Override default css to get a larger width for ReadTheDoc build
+    html_context = {
+        'css_files': [
+            '_static/alabaster.css',
+            'https://media.readthedocs.org/css/readthedocs-doc-embed.css',
+            '_static/pygments.css',
+            'https://media.readthedocs.org/css/badge_only.css',
+            '_static/style.css',
+        ],
+    }
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
