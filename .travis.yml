@@ -15,4 +15,6 @@ install:
 # command to run tests
 before_script:
   - psql -c 'create database pg-discuss;' -U postgres
+  - python main.py db upgrade -d migrations
+  - python main.py db upgrade -d ext_migrations
 script: py.test tests
