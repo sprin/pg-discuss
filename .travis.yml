@@ -9,6 +9,7 @@ env:
    - DATABASE_URL=postgresql://postgres@/pg-discuss
    - SECRET_KEY=not_a_secret
    - SERVER_NAME=localhost
+   - PG_DISCUSS_SETTINGS_FILE=''
 install:
   - python setup.py develop_tests
   - python blessed_extensions/setup.py develop
