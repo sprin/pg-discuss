@@ -1,5 +1,9 @@
 {# layout.html #}
 {# Import the theme's layout. #}
 {% extends "!layout.html" %}
+{% block document %}
+<a href="https://github.com/sprin/pg-discuss"><img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/github_banner.png" alt="Fork me on GitHub"></a>
+  {{ super() }}
+{% endblock %}
 
 {% set css_files = css_files + ['_static/style.css'] %}
