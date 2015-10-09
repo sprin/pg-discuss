@@ -12,10 +12,7 @@ except ImportError:  # pragma: no cover
     # python 3
     from urllib.parse import urlparse  # NOQA
 
-try:
-    reduce
-except NameError:  # pragma: no cover
-    from functools import reduce  # NOQA
+from functools import reduce
 
 PY3 = sys.version_info[0] == 3
 PYPY = hasattr(sys, 'pypy_version_info')
