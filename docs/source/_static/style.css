@@ -8,3 +8,10 @@ h1 span.viewcode-link {
 .thread {
     font-family: 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+.thread pre {
+  background: #eee;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  color: #4d4d4c;
+  overflow: auto;
+}
