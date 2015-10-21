@@ -1,3 +1,5 @@
+import logging
+
 from pg_discuss.app import app_factory
 
 app = app_factory()
@@ -7,7 +9,10 @@ if __name__ == '__main__':
 else:
     # If not running a management command, set log level and log configuration.
     # Set up logging
-    app.logger.setLevel(app.config['LOGLEVEL'])
+
+    if not app.debug:
+        app.logger.addHandler(logging.StreamHandler())
+        app.logger.setLevel(app.config['LOGLEVEL'])
 
     # Log configuration parameters
     app.logger.info('Configuration parameters:\n{}'.format(
