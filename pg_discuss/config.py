@@ -5,6 +5,7 @@ Defaults are appropriate for production use.
 All connection parameters and secrets should be read from the environment.
 """
 import os
+import logging
 
 #: Python recursion limit. This determines at what level of comment nesting
 #: the JSON encoder will hit "RuntimeError: maximum recursion depth exceeded".
@@ -100,7 +101,7 @@ SESSION_COOKIE_HTTP_ONLY = True
 
 # Log settings
 #: Log level
-LOGLEVEL = 'INFO'
+LOGLEVEL = logging.INFO
 
 #: List of parameters which should not be logged. This should list any
 #: configuration parameters which include secrets, such as SECRET_KEY,
