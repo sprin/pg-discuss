@@ -186,10 +186,11 @@ def build_comment_tree_iter(comment_seq, top_limit=None, nested_limit=None,
     for c in comment_seq:
         c['replies'] = []
         c['total_replies'] = 0
-        if not c['parent_id'] and top_level_count < top_limit:
-            result.append(c)
-            current_level[c['id']] = c
-            top_level_count += 1
+        if not c['parent_id']:
+            if not top_limit or top_level_count < top_limit:
+                result.append(c)
+                current_level[c['id']] = c
+                top_level_count += 1
         else:
             parent_id = c['parent_id']
             parent_id_map[parent_id].append(c)
