@@ -63,6 +63,8 @@ ENABLE_EXT_BLESSED_MODERATION = False
 ENABLE_EXT_BLESSED_MOD_EMAIL = False
 #:
 ENABLE_EXT_BLESSED_PROFILER = False
+#:
+ENABLE_EXT_BLESSED_DOZER = False
 
 #: Optional: Order extensions using comma-separated list of extension names.
 #: It is generally discouraged to write order-dependent extensions, but
@@ -120,7 +122,13 @@ SERVER_NAME = os.environ.get('SERVER_NAME')
 
 #: List of allowed origins (origins where widget will be embedded)
 #: http://www.w3.org/TR/cors/
+#: Attempt to read CORS_ORIGIN from environment as a comma-separated list of
+#: origins.
 CORS_ORIGINS = []
+cors_origins_from_env = os.environ.get('CORS_ORIGINS')
+if cors_origins_from_env:
+    CORS_ORIGINS = cors_origins_from_env.split(',')
+
 #: List of headers that client is allowed to read.
 CORS_EXPOSE_HEADERS = ['Date', 'X-Set-Cookie']
 
