@@ -11,6 +11,10 @@ import logging
 #: the JSON encoder will hit "RuntimeError: maximum recursion depth exceeded".
 PYTHON_RECURSION_LIMIT = 30000
 
+#: Flask-SQLAlchemy can track object modifications. Disable because of
+#: memory overhead.
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 # Extension settings
 #: Configuration parameters of the form `ENABLE_EXT_*` are special:
 #: the set of these parameters are parsed into a list of extension entrypoints
