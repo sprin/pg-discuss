@@ -44,4 +44,4 @@ class MarkdownRenderer(ext.CommentRenderer):
     def render(self, text, **extras):
         """Render Markdown to HTML.
         """
-        return self.markdown.render(text)
+        return self.markdown(text)

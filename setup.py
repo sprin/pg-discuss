@@ -17,7 +17,7 @@ requires = [
     'stevedore>=1.7',
     'flask-cors>=2.1',
     'simplejson>=3.8',
-    'misaka==2.0.0b1.post2',
+    'misaka>=2.0.0',
 ]
 
 if PYPY:
