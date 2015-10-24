@@ -69,7 +69,18 @@ def fetch_comments_by_thread_client_id(thread_client_id):
     stmt = ext.exec_filter_hooks(ext.AddCommentFilterPredicate, stmt)
 
     result = db.engine.execute(stmt)
+    # Very large result sets can cause a lot of memory allocation here
+    # that CPython may not give back to the OS, due to a lack of compacting
+    # GC. See: http://stackoverflow.com/a/5495318
+    # However, assuming a worst case of 50K smallish rows, the memory for the
+    # process will only roughly double (to about 100MB).
+    # If comments could be sorted in the database, it would not be necessary
+    # to fetch all the results and sort in-process. This has the drawback
+    # of putting more load on the database server. If memory due to large
+    # allocations for results is an issue, it is recommended to reload
+    # workers after exceeding a memory limit via uwsgi's `reload-on-rss`.
     comments_seq = [dict(x) for x in result.fetchall()]
+    result.close()
 
     return comments_seq
 
