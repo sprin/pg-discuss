@@ -1,0 +1,6 @@
+[Unit]
+Description=reset demo
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker exec pg-discuss-demo /bin/sh -c "psql $DATABASE_URL < /src/docs/demo/demo.sql"
