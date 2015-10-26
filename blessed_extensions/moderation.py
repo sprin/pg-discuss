@@ -29,6 +29,7 @@ class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate,
     database.
     """
     def __init__(self, app):
+        self.app = app
         app.config.setdefault('MODERATION_ACTIVE', MODERATION_ACTIVE)
 
     def init_app(self, app):
