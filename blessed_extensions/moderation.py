@@ -11,15 +11,25 @@ from pg_discuss import models
 from pg_discuss import tables
 from pg_discuss.db import db
 
+#: Enable moderation by setting new posts to `pending`.
+MODERATION_ACTIVE = True
+
 
 class Moderate(admin.PrettyComment):
     pass
 
 
-class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate):
+class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate,
+    ext.OnPreCommentInsert):
     """Extension that requires comments to be approved by an admin user
-    through the admin interface before publishing.
+    through the admin interface before publishing. Once this plugin is enabled,
+    it can be deactivated by setting `MODERATION_ACTIVE` to False.
+    Removing the plugin entirely will cause pending/rejected comments to
+    appear, thus is not recommended unless some cleanup is done in the
+    database.
     """
+    def __init__(self, app):
+        app.config.setdefault('MODERATION_ACTIVE', MODERATION_ACTIVE)
 
     def init_app(self, app):
         app.admin.add_view(CommentAdminWithModeration(
@@ -34,22 +44,28 @@ class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate):
         default fetch.
         """
         t = tables.comment
-        return t.c.custom_json['approved'].cast(sa.Boolean).is_(True)
+        return sa.or_(
+            t.c.custom_json['mod_mode'].cast(sa.Text) == 'pending',
+            t.c.custom_json['mod_mode'].cast(sa.Text) == 'rejected',
+        )
+
+    def on_pre_comment_insert(self, new_comment, **extras):
+        """Set `mod_mode` to `pending`, unless `MODERATION_ACTIVE` is False.
+        """
+        if self.app.config['MODERATION_ACTIVE']:
+            new_comment['custom_json']['mod_mode'] = 'pending'
 
 
 class PendingApprovalFilter(filters.BaseSQLAFilter):
     def apply(self, query, value, alias=None):
         t = tables.comment
-        if value:
-            return query.filter(t.c.custom_json['approved'] == value)
-        else:
-            return query.filter(sa.not_('approved' in t.c.custom_json))
+        return query.filter(t.c.custom_json['mod_mode'].cast(sa.Text) == value)
 
     def operation(self):
         return lazy_gettext('is')
 
 
-class CommentAdminWithModeration(admin.CommentAdmin):
+class CommentAdminWithModeration(admin.AuthenticatedModelView):
 
     column_list = ('identity', 'thread', 'text')
     can_delete = False
@@ -57,15 +73,15 @@ class CommentAdminWithModeration(admin.CommentAdmin):
     column_filters = [PendingApprovalFilter(
         models.Comment.custom_json,
         'Approval Status',
-        [('', 'Pending'),
-         ('true', 'Approved'),
-         ('false', 'Rejected')])]
+        [('pending', 'Pending'),
+         ('approved', 'Approved'),
+         ('rejected', 'Rejected')])]
 
     @expose('/')
     def index_view(self):
         """Redirect to default 'Pending' filter if no query args."""
         if not flask.request.args:
-            return flask.redirect(flask.request.url + '?flt1_0=')
+            return flask.redirect(flask.request.url + '?flt1_0=pending')
         else:
             return super(CommentAdminWithModeration, self).index_view()
 
@@ -83,23 +99,23 @@ class CommentAdminWithModeration(admin.CommentAdmin):
 
     def set_approval(self, ids, action):
         if action == 'approve':
-            jsonb_val = 'true'
+            jsonb_val = 'approved'
             action_text = 'approved'
         elif action == 'reject':
-            jsonb_val = 'false'
+            jsonb_val = 'rejected'
             action_text = 'rejected'
 
         try:
             t = tables.comment
-            approved = sa.func.jsonb_set(
+            mod_mode = sa.func.jsonb_set(
                 sa.text('custom_json'),
-                sa.text("'{approved}'"),
-                sa.text("'{}'::jsonb".format(jsonb_val))
+                sa.text("'{mod_mode}'"),
+                sa.text('\'"{}"\''.format(jsonb_val))
             )
             stmt = (
                 t.update()
                 .where(t.c.id.in_(ids))
-                .values(custom_json=approved)
+                .values(custom_json=mod_mode)
                 .returning(t.c.id)
             )
             result = db.engine.execute(stmt).fetchall()
