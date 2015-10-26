@@ -45,8 +45,8 @@ class ModerationExt(ext.AppExtBase, ext.AddCommentFilterPredicate,
         """
         t = tables.comment
         return sa.or_(
-            t.c.custom_json['mod_mode'].cast(sa.Text) == 'pending',
-            t.c.custom_json['mod_mode'].cast(sa.Text) == 'rejected',
+            t.c.custom_json['mod_mode'].cast(sa.Text) == 'approved',
+            sa.not_(t.c.custom_json.has_key('mod_mode'))
         )
 
     def on_pre_comment_insert(self, new_comment, **extras):
