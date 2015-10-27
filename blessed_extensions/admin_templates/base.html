@@ -1,0 +1,16 @@
+{% import 'admin/layout.html' as layout with context -%}
+{% extends 'admin/base.html' %}
+{% block head_tail %}
+  {{ super() }}
+  <link href="{{ url_for('admin_static', filename='layout.css') }}" rel="stylesheet">
+  <script>
+     document.addEventListener("DOMContentLoaded", function(event) { 
+        var mod_action = document.querySelector(".dropdown:last-child a");
+        //var mod_action = nodes[nodes.length- 1];
+        mod_action.className = mod_action.className + " btn-primary";
+      });
+  </script>
+{% endblock %}
+{% block access_control %}
+<a id="logout" href="/logout">Log out</a>
+{% endblock %}

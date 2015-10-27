@@ -3,13 +3,17 @@ import flask_admin
 import flask_admin.contrib.sqla
 import flask_admin.contrib.sqla.form
 import flask_login
+import os
+import jinja2
 import simplejson as json
 import sqlalchemy.orm
 import wtforms.fields
+import werkzeug.utils
 
 from pg_discuss import ext
 from pg_discuss import models
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class AdminExt(ext.AppExtBase):
     """Extension to add an admin interface. Allows management of Comment,
@@ -18,8 +22,23 @@ class AdminExt(ext.AppExtBase):
     Available to authenticated Admin users.
     """
     def init_app(self, app):
+        # Add template loader
+        my_loader = jinja2.ChoiceLoader([
+            app.jinja_loader,
+            jinja2.FileSystemLoader(THIS_DIR),
+        ])
+        app.jinja_loader = my_loader
+
+        # Add static file route. The web server should be configured to serve
+        # static files, not the app, but we do it here to allow the files
+        # to be served without additional web server config.
+        app.route('/admin_static/<path:filename>', methods=['GET'])(
+            self.admin_static)
+
+        # Configure Admin
         admin = flask_admin.Admin(app, 'pg-discuss Administration',
                                   template_mode='bootstrap3',
+                                  base_template='admin_templates/base.html',
                                   index_view=MyAdminIndexView())
         app.admin = admin
         # Add views
@@ -33,6 +52,11 @@ class AdminExt(ext.AppExtBase):
         # Set up login callback.
         app.login_callback = (
             lambda: flask.redirect(flask.url_for('admin.index')))
+
+    def admin_static(self, filename):
+        return flask.send_from_directory(
+            THIS_DIR + '/admin_static/',
+            werkzeug.utils.secure_filename(filename))
 
 
 class PrettyIdentity(models.Identity):

@@ -1,0 +1,6 @@
+#logout {
+  float: right;
+}
+.btn-primary:focus, .btn-primary:hover {
+    background-color: #265A88 !important;
+}
