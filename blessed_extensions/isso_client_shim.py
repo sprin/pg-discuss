@@ -75,11 +75,12 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         reply_depth_limit = self.app.config['MAX_REPLY_DEPTH']
 
         # Change key to comment collection from "comments" to "replies"
-        client_thread['replies'] = build_comment_tree_iter(
-            comment_seq,
-            top_limit,
-            nested_limit,
-            reply_depth_limit,
+        client_thread['replies'] = build_comment_tree(
+            comment_seq=comment_seq,
+            parent_id=None,
+            index=0,
+            count_limit=None,
+            reply_depth_limit=reply_depth_limit,
         )
         del client_thread['comments']
 
@@ -171,54 +172,147 @@ def rename_voting_keys(resp):
     return resp
 
 
-def build_comment_tree_iter(comment_seq, top_limit=None, nested_limit=None,
-                            reply_depth_limit=None):
+def build_comment_tree(comment_seq,
+                       parent_id=None,
+                       index=0,
+                       count_limit=None,
+                       reply_depth_limit=None):
     """Build the nested tree of comments, counting the number of replies to
-    each comments as we go. Iterative version.
+    each comments as we go. Our goal is to have the subtree of comments
+    that belong to the parent, starting at the specified index, with up
+    to `count_limit` replies, sorted by chronological order, and no
+    replies at a depth greater than `reply_depth_limit`. All this processing is
+    expensive, but is a fairly intuitive way of selecting a subtree to allow
+    for both incrementally loading long, flat threads as well as digging deeper
+    into highly nested comments.
+
+    We assume that the sequence of
+    comments has been sorted by `created` time, which enables us to construct
+    the tree by iterating over the list sequentially.
+
+    Pagination:
+    `parent` is the parent comment we want to retrieve nested comments for.
+    If `parent` is None, then we assume we are retrieving the top-level
+    comments.
+    `index` is the index relative to the chronologically ordered set of
+    comments to a parent (or, the top-level comments).
     """
-    result = []
-    current_level = {}
-    parent_id_map = collections.defaultdict(list)
-    top_level_count = 0
-    nested_count = 0
-    # Build a map of the top-level comments as `current_level` and
-    # and build a map of parent ids to their replies.
+    # Seek ahead to the parent we are interested in.
+    if parent_id:
+        while True:
+            c = comment_seq.pop()
+            if c['id'] != parent_id:
+                break
+
+    # Construct the full tree, starting from the parent.
+    # Once we have the full tree starting from the parent, we can
+    # sort/annotate/prune it however we like.
+    comment_tree = construct_full_tree(comment_seq)
+
+    # We start by discarding all comments up to `index`.
+    del comment_tree['replies'][:index]
+    # We can now descend the tree and annotate each node with counts
+    # of its descendants and later siblings+sibling descendants.
+    annotate_counts(comment_tree)
+
+    # We need to discard any nodes at a depth greater than `reply_depth_limit`.
+    discard_beyond_depth_limit(comment_tree, depth_limit=reply_depth_limit)
+
+    # Keep only the first `count_limit` nodes by chronology.
+    if count_limit:
+        keep_count_limit(comment_tree, count_limit)
+
+    return comment_tree['replies']
+
+
+def construct_full_tree(comment_seq):
+    """Construct the full tree, given an ordered sequence of comments."""
+    comment_tree = {'replies': []}
+    comment_dict = {}
+
     for c in comment_seq:
         c['replies'] = []
-        c['total_replies'] = 0
+        # Index the comment into the dictionary by id.
+        comment_dict[c['id']] = c
+        # Increment the total comment count.
+
+        # If no parent_id, must be a top-level comment.
         if not c['parent_id']:
-            if not top_limit or top_level_count < top_limit:
-                result.append(c)
-                current_level[c['id']] = c
-                top_level_count += 1
+            comment_tree['replies'].append(c)
+
+        # Otherwise, this is a nested comment, and we append it to the replies
+        # of the parent, using the map to look up the parent. The parent is
+        # guaranteed to exist in the map, since our `comment_seq` array is
+        # sorted by `created` time.
         else:
-            parent_id = c['parent_id']
-            parent_id_map[parent_id].append(c)
+            comment_dict[c['parent_id']]['replies'].append(c)
 
-    # Build the comment tree by non-recursively collecting all the replies for
-    # the current level, then collecting all replies for the next level, etc.
-    # Ignore any replies that are beyond `nested_limit`.
-    depth = 0
-    while parent_id_map:
-        parents = list(current_level.values())
-        depth += 1
-        if reply_depth_limit and depth >= reply_depth_limit:
-            break
-        for parent in parents:
-            replies = parent_id_map.pop(parent['id'], None)
-            if replies:
-                nested_count += len(replies)
-                if nested_count >= nested_limit:
-                    break
-                else:
-                    parent['total_replies'] = nested_count
-                    parent['replies'] = replies
-                # Add replies to next round of iteration
-                for r in replies:
-                    current_level[r['id']] = r
-            del current_level[parent['id']]
+    return comment_tree
 
-    return result
+def annotate_counts(node):
+    """Recursive function to annotate each node with the count of all
+    of it's descendants, as well as the count of all sibling comments plus
+    their children, made after each node.
+    """
+    # If no replies, this is a leaf node. Stop and return 1.
+    node['reply_count'] = 0
+    if not node['replies']:
+        return 1
+    else:
+        # Annotate descendants and sum counts.
+        for r in node['replies']:
+            node['reply_count'] += annotate_counts(r)
+        # Once descendants are annotated with descendant counts,
+        # annotate with the count of siblings and their children coming after
+        # this node.
+        after_count = 0
+        for r in reversed(node['replies']):
+            r['after_count'] = after_count
+            after_count += r['reply_count'] + 1
+        return node['reply_count'] + 1
+
+
+def keep_count_limit(node, count_limit):
+    """Keep only the first `count_limit` nodes by chronology."""
+    # First, we need to find the `created` time of the `count_limit`-th node.
+    created_times = []
+
+    def walk_tree_for_created(n):
+        created = n.get('created')
+        if created:
+            created_times.append(n['created'])
+        for r in n['replies']:
+            walk_tree_for_created(r)
+
+    walk_tree_for_created(node)
+
+    created_times.sort()
+
+    keep_time = created_times[count_limit]
+
+    def walk_tree_and_discard(n):
+        # Discard any direct descendants that are greater than the time.
+        for i in range(len(n['replies']) - 1, -1, -1):
+            if n['replies'][i]['created'] > keep_time:
+                del n['replies'][i]
+
+        # Recursively check the remaining replies.
+        for r in n['replies']:
+            walk_tree_and_discard(r)
+    walk_tree_and_discard(node)
+
+
+def discard_beyond_depth_limit(node, depth_limit, cur_depth=0):
+    """Discard nodes beyond the depth limit. The root is considered "level 0",
+    and the first descendants are "level 1".
+    """
+    if cur_depth == depth_limit:
+        del node['replies']
+    else:
+        for r in node['replies']:
+            discard_beyond_depth_limit(r, depth_limit, cur_depth + 1)
+
+
 
 
 def hash(val):
