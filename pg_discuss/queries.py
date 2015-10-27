@@ -63,6 +63,7 @@ def fetch_comments_by_thread_client_id(thread_client_id):
         sa.select(t_comment.c)
         .select_from(sa.join(t_comment, t_thread))
         .where(t_thread.c.client_id == thread_client_id)
+        .order_by(sa.asc(t_comment.c.created))
     )
 
     # Run add_comment_filter_predicate hooks
