@@ -119,6 +119,10 @@ virtualenv in a directory the user can read:
 Install pg-discuss
 ------------------
 
+.. todo::
+
+   Upload to PyPI
+
 pg-discuss is available via pip from `PyPI`. This will install PyPI and it's
 dependencies:
 
@@ -136,6 +140,25 @@ these:
 
    PG_DISCUSS_PATH=/opt/pg-discuss/lib/python3.4/site-packages/pg_discuss/
    python3 $PG_DISCUSS_PATH/blessed_extensions/setup.py install
+
+Get the Isso JavaScript client
+------------------------------
+
+Currently, the only supported JavaScript client is `Isso`_. You can build the
+JavaScript from the sources by following the directions on the `Isso
+installation page`_. This will build an `embed.min.js` file. You can also
+download a built version used by the live demo that is hosted here:
+`embed.min.js`_. Copy the built `embed.min.js` to your web server root.  For
+example, if you copied the file to `/var/www/embed.min.js`, you could use
+`uwsgi` to serve it like so:
+
+.. _`Isso`: http://posativ.org/isso/
+.. _`Isso installation page`: http://posativ.org/isso/docs/install/#install-from-source
+.. _`embed.min.js`: https://pg-discuss-demo.sprin.io/embed.min.js
+
+.. code-block:: ini
+
+   static-map = /embed.min.js=/var/www/embed.min.js
 
 Install and Configure uwsgi
 ---------------------------
