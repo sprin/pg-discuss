@@ -193,7 +193,7 @@ def admin_login():
         # Login and validate the user.
         user = form.get_user()
         flask_login.login_user(user)
-        return 'Logged in successfully.'
+        return flask.current_app.login_callback()
     return flask.render_template('login.html', form=form)
 
 

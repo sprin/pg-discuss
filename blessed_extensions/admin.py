@@ -30,6 +30,10 @@ class AdminExt(ext.AppExtBase):
                                      name='Identity'))
         admin.add_view(AdminUserAdmin(models.AdminUser, models.db.session))
 
+        # Set up login callback.
+        app.login_callback = (
+            lambda: flask.redirect(flask.url_for('admin.index')))
+
 
 class PrettyIdentity(models.Identity):
     """Subclass the Identity model to provide a nicer string represention."""
@@ -54,6 +58,10 @@ class PrettyComment(models.Comment):
 class AuthenticatedModelView(flask_admin.contrib.sqla.ModelView):
     def is_accessible(self):
         return flask_login.current_user.is_authenticated
+
+    def inaccessible_callback(self, name, **kwargs):
+        # redirect to login page if user doesn't have access
+        return flask.redirect(flask.url_for('admin_login'))
 
 
 class DictToJSONField(wtforms.fields.TextAreaField):
