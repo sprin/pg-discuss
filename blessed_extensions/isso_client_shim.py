@@ -11,9 +11,6 @@ import werkzeug.security
 from pg_discuss import ext
 
 
-#: Maximum depth of replies to be returned from the fetch API.
-MAX_REPLY_DEPTH = 10
-
 class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
                      ext.OnPreThreadSerialize, ext.OnPreCommentInsert,
                      ext.OnNewCommentResponse):
@@ -27,7 +24,6 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Disable all pretty-printing. Flask will not disable it since
         # `X-Requested-With: XMLHttpRequest` is not sent.
         app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-        app.config.setdefault('MAX_REPLY_DEPTH', MAX_REPLY_DEPTH)
 
         views = app.view_functions
 
@@ -63,16 +59,19 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
 
     def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread,
                                 **extras):
+        # We interpret the client options slightly differently than the
+        # Isso backend. `limit` is treated as a limit to the number of
+        # direct descendants that will be returned for each node,
+        # and `nested_limit` is treated as a limit to the depth of replies
+        # returned.
         try:
             reply_limit = int(request.args.get('limit'))
         except TypeError:
             reply_limit = None
         try:
-            nested_limit = int(request.args.get('nested_limit'))
+            reply_depth_limit = int(request.args.get('nested_limit'))
         except TypeError:
-            nested_limit = None
-
-        reply_depth_limit = self.app.config['MAX_REPLY_DEPTH']
+            reply_depth_limit = None
 
         # Change key to comment collection from "comments" to "replies"
         client_thread['replies'] = build_comment_tree(
@@ -285,12 +284,13 @@ def keep_reply_limit(node, reply_limit):
     """Keep only the first `count_limit` nodes by chronology."""
     def walk_tree_and_discard(n):
         # Discard any direct descendants beyond the `reply_limit`.
-        for i in range(len(n['replies']) - 1, -1, -1):
-            del n['replies'][reply_limit:]
+        if 'replies' in n:
+            for i in range(len(n['replies']) - 1, -1, -1):
+                del n['replies'][reply_limit:]
 
-        # Recursively check the remaining replies.
-        for r in n['replies']:
-            walk_tree_and_discard(r)
+            # Recursively check the remaining replies.
+            for r in n['replies']:
+                walk_tree_and_discard(r)
     walk_tree_and_discard(node)
 
 
@@ -303,8 +303,9 @@ def keep_count_limit(node, count_limit):
         created = n.get('created')
         if created:
             created_times.append(n['created'])
-        for r in n['replies']:
-            walk_tree_for_created(r)
+        if 'replies' in n:
+            for r in n['replies']:
+                walk_tree_for_created(r)
 
     walk_tree_for_created(node)
 
@@ -314,9 +315,10 @@ def keep_count_limit(node, count_limit):
 
     def walk_tree_and_discard(n):
         # Discard any direct descendants that are greater than the time.
-        for i in range(len(n['replies']) - 1, -1, -1):
-            if n['replies'][i]['created'] > keep_time:
-                del n['replies'][i]
+        if 'replies' in n:
+            for i in range(len(n['replies']) - 1, -1, -1):
+                if n['replies'][i]['created'] > keep_time:
+                    del n['replies'][i]
 
         # Recursively check the remaining replies.
         for r in n['replies']:
@@ -328,7 +330,7 @@ def discard_beyond_depth_limit(node, depth_limit, cur_depth=0):
     """Discard nodes beyond the depth limit. The root is considered "level 0",
     and the first descendants are "level 1".
     """
-    if cur_depth == depth_limit:
+    if cur_depth > depth_limit:
         del node['replies']
     else:
         for r in node['replies']:
