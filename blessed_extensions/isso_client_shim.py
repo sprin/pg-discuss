@@ -64,9 +64,9 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
     def on_pre_thread_serialize(self, raw_thread, comment_seq, client_thread,
                                 **extras):
         try:
-            top_limit = int(request.args.get('limit'))
+            reply_limit = int(request.args.get('limit'))
         except TypeError:
-            top_limit = None
+            reply_limit = None
         try:
             nested_limit = int(request.args.get('nested_limit'))
         except TypeError:
@@ -79,6 +79,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
             comment_seq=comment_seq,
             parent_id=None,
             index=0,
+            reply_limit=reply_limit,
             count_limit=None,
             reply_depth_limit=reply_depth_limit,
         )
@@ -175,6 +176,7 @@ def rename_voting_keys(resp):
 def build_comment_tree(comment_seq,
                        parent_id=None,
                        index=0,
+                       reply_limit=None,
                        count_limit=None,
                        reply_depth_limit=None):
     """Build the nested tree of comments, counting the number of replies to
@@ -218,7 +220,14 @@ def build_comment_tree(comment_seq,
     # We need to discard any nodes at a depth greater than `reply_depth_limit`.
     discard_beyond_depth_limit(comment_tree, depth_limit=reply_depth_limit)
 
+    # Keep only the first `reply_limit` nodes for each subtree.
+    # This ensures that there are not more than `reply_limit` replies
+    # returned for any given comment.
+    if reply_limit:
+        keep_reply_limit(comment_tree, reply_limit)
+
     # Keep only the first `count_limit` nodes by chronology.
+    # This puts an absolute limit on the number of comments returned.
     if count_limit:
         keep_count_limit(comment_tree, count_limit)
 
@@ -270,6 +279,19 @@ def annotate_counts(node):
             r['after_count'] = after_count
             after_count += r['reply_count'] + 1
         return node['reply_count'] + 1
+
+
+def keep_reply_limit(node, reply_limit):
+    """Keep only the first `count_limit` nodes by chronology."""
+    def walk_tree_and_discard(n):
+        # Discard any direct descendants beyond the `reply_limit`.
+        for i in range(len(n['replies']) - 1, -1, -1):
+            del n['replies'][reply_limit:]
+
+        # Recursively check the remaining replies.
+        for r in n['replies']:
+            walk_tree_and_discard(r)
+    walk_tree_and_discard(node)
 
 
 def keep_count_limit(node, count_limit):
