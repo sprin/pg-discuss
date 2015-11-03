@@ -3,6 +3,7 @@ import datetime
 import functools
 
 from flask import request
+import pytz
 import simplejson as json
 import werkzeug
 import werkzeug.security
@@ -64,19 +65,42 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # and `nested_limit` is treated as a limit to the depth of replies
         # returned.
         try:
+            # Because of a regression in Python 3, we must jump through
+            # some hoops to correctly convert a Decimal string representing
+            # a fractional Unix timestamp to a Datetime object.
+            # See: https://bugs.python.org/issue23607
+            # Naively using floats will result in comparison errors.
+            after = request.args.get('after')
+            if after:
+                seconds_str, ms_str = after.split('.')
+                after = datetime.datetime.fromtimestamp(
+                    int(seconds_str),
+                    tz=pytz.utc)
+                td = datetime.timedelta(microseconds=int(ms_str))
+                after = after + td
+        except TypeError:
+            after = None
+
+        try:
             reply_limit = int(request.args.get('limit'))
         except TypeError:
             reply_limit = None
+
         try:
             reply_depth_limit = int(request.args.get('nested_limit'))
         except TypeError:
             reply_depth_limit = None
 
+        try:
+            parent_id = int(request.args.get('parent'))
+        except TypeError:
+            parent_id = None
+
         # Change key to comment collection from "comments" to "replies"
         comment_tree = build_comment_tree(
             comment_seq=comment_seq,
-            parent_id=None,
-            index=0,
+            parent_id=parent_id,
+            after=after,
             reply_limit=reply_limit,
             count_limit=None,
             reply_depth_limit=reply_depth_limit,
@@ -177,6 +201,7 @@ def rename_voting_keys(resp):
 def build_comment_tree(comment_seq,
                        parent_id=None,
                        index=0,
+                       after=None,
                        reply_limit=None,
                        count_limit=None,
                        reply_depth_limit=None):
@@ -200,17 +225,17 @@ def build_comment_tree(comment_seq,
     `index` is the index relative to the chronologically ordered set of
     comments to a parent (or, the top-level comments).
     """
-    # Seek ahead to the parent we are interested in.
-    if parent_id:
-        while True:
-            c = comment_seq.pop()
-            if c['id'] != parent_id:
-                break
-
     # Construct the full tree, starting from the parent.
     # Once we have the full tree starting from the parent, we can
     # sort/annotate/prune it however we like.
-    comment_tree = construct_full_tree(comment_seq)
+    comment_tree = construct_full_tree(comment_seq, parent_id)
+
+    # Find index of the first comment created after `after`
+    if after:
+        for i, comment in enumerate(comment_tree['replies']):
+            if comment['created'] > after:
+                index = max(i, 0)
+                break
 
     # We start by discarding all comments up to `index`.
     del comment_tree['replies'][:index]
@@ -235,12 +260,16 @@ def build_comment_tree(comment_seq,
     return comment_tree
 
 
-def construct_full_tree(comment_seq):
+def construct_full_tree(comment_seq, parent_id=None):
     """Construct the full tree, given an ordered sequence of comments."""
     comment_tree = {'replies': []}
     comment_dict = {}
 
     for c in comment_seq:
+        # Track which comment is the desired parent, if supplied.
+        if parent_id and c['id'] == parent_id:
+            parent = c
+
         c['replies'] = []
         # Index the comment into the dictionary by id.
         comment_dict[c['id']] = c
@@ -257,6 +286,10 @@ def construct_full_tree(comment_seq):
         else:
             comment_dict[c['parent_id']]['replies'].append(c)
 
+    # Return the tree starting with the desired parent, if supplied.
+    if parent_id:
+        return parent
+    # Else, return the complete tree.
     return comment_tree
 
 
@@ -327,8 +360,8 @@ def keep_count_limit(node, count_limit):
             num_discarded = 0
             for i in range(len_replies - 1, -1, -1):
                 if n['replies'][i]['created'] > keep_time:
-                    del n['replies'][i]
                     num_discarded += 1
+                    del n['replies'][i]
 
             hidden_replies = n.get('hidden_replies', 0)
             n['hidden_replies'] = hidden_replies + num_discarded
