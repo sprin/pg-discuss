@@ -1,5 +1,4 @@
 import codecs
-import collections
 import datetime
 import functools
 
@@ -74,7 +73,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
             reply_depth_limit = None
 
         # Change key to comment collection from "comments" to "replies"
-        client_thread['replies'] = build_comment_tree(
+        comment_tree = build_comment_tree(
             comment_seq=comment_seq,
             parent_id=None,
             index=0,
@@ -82,7 +81,10 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
             count_limit=None,
             reply_depth_limit=reply_depth_limit,
         )
+        client_thread.update(comment_tree)
         del client_thread['comments']
+        # Isso threads have a null `id` attribute
+        client_thread['id'] = None
 
         # Add the count of top-level comments under key `total_replies'
         client_thread['total_replies'] = len(client_thread['replies'])
@@ -230,7 +232,7 @@ def build_comment_tree(comment_seq,
     if count_limit:
         keep_count_limit(comment_tree, count_limit)
 
-    return comment_tree['replies']
+    return comment_tree
 
 
 def construct_full_tree(comment_seq):
@@ -256,6 +258,7 @@ def construct_full_tree(comment_seq):
             comment_dict[c['parent_id']]['replies'].append(c)
 
     return comment_tree
+
 
 def annotate_counts(node):
     """Recursive function to annotate each node with the count of all
@@ -285,7 +288,11 @@ def keep_reply_limit(node, reply_limit):
     def walk_tree_and_discard(n):
         # Discard any direct descendants beyond the `reply_limit`.
         if 'replies' in n:
-            for i in range(len(n['replies']) - 1, -1, -1):
+            if len(n['replies']) > reply_limit:
+                hidden_replies = n.get('hidden_replies', 0)
+                num_discarded = len(n['replies']) - reply_limit
+                n['hidden_replies'] = hidden_replies + num_discarded
+
                 del n['replies'][reply_limit:]
 
             # Recursively check the remaining replies.
@@ -316,9 +323,15 @@ def keep_count_limit(node, count_limit):
     def walk_tree_and_discard(n):
         # Discard any direct descendants that are greater than the time.
         if 'replies' in n:
-            for i in range(len(n['replies']) - 1, -1, -1):
+            len_replies = len(n['replies'])
+            num_discarded = 0
+            for i in range(len_replies - 1, -1, -1):
                 if n['replies'][i]['created'] > keep_time:
                     del n['replies'][i]
+                    num_discarded += 1
+
+            hidden_replies = n.get('hidden_replies', 0)
+            n['hidden_replies'] = hidden_replies + num_discarded
 
         # Recursively check the remaining replies.
         for r in n['replies']:
@@ -335,8 +348,6 @@ def discard_beyond_depth_limit(node, depth_limit, cur_depth=0):
     else:
         for r in node['replies']:
             discard_beyond_depth_limit(r, depth_limit, cur_depth + 1)
-
-
 
 
 def hash(val):
