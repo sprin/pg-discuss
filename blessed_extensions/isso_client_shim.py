@@ -159,7 +159,6 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Set `parent_id` to parent.
         json_data = request.get_json()
         json_data['parent_id'] = json_data.get('parent')
-        print(json_data['parent_id'])
 
         # Return response. Response will be further processed by
         # `on_new_comment_response` to set cookies.
@@ -323,7 +322,8 @@ def keep_reply_limit(node, reply_limit):
         if 'replies' in n:
             if len(n['replies']) > reply_limit:
                 hidden_replies = n.get('hidden_replies', 0)
-                num_discarded = len(n['replies']) - reply_limit
+                c = n['replies'][reply_limit]
+                num_discarded = c['after_count'] + c['reply_count'] + 1
                 n['hidden_replies'] = hidden_replies + num_discarded
 
                 del n['replies'][reply_limit:]
@@ -359,8 +359,9 @@ def keep_count_limit(node, count_limit):
             len_replies = len(n['replies'])
             num_discarded = 0
             for i in range(len_replies - 1, -1, -1):
-                if n['replies'][i]['created'] > keep_time:
-                    num_discarded += 1
+                c = n['replies'][i]
+                if c['created'] > keep_time:
+                    num_discarded += c['after_count'] + c['reply_count'] + 1
                     del n['replies'][i]
 
             hidden_replies = n.get('hidden_replies', 0)
