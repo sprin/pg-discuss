@@ -31,6 +31,7 @@ import timeit
 from pg_discuss import tables
 from pg_discuss.app import app_factory
 from pg_discuss.db import db
+from blessed_extensions.isso_client_shim import hash
 
 
 def fetch_got_six_weeks_from_reddit():
@@ -76,8 +77,10 @@ def load_got_six_weeks():
                 text = c['body']
                 created = datetime.datetime.fromtimestamp(c['created'])
                 custom_json = {
-                    'author': c['author']
+                    'author': c['author'],
                 }
+                if c['author'] != '[deleted]':
+                    custom_json['hash'] = hash(c['author'])
                 comment_to_insert = {
                     'id': id,
                     'thread_id': thread_id,
