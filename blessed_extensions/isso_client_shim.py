@@ -64,22 +64,29 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # direct descendants that will be returned for each node,
         # and `nested_limit` is treated as a limit to the depth of replies
         # returned.
+        after = None
         try:
             # Because of a regression in Python 3, we must jump through
             # some hoops to correctly convert a Decimal string representing
             # a fractional Unix timestamp to a Datetime object.
             # See: https://bugs.python.org/issue23607
             # Naively using floats will result in comparison errors.
-            after = request.args.get('after')
-            if after:
-                seconds_str, ms_str = after.split('.')
+            after_str = request.args.get('after')
+            if after_str:
+                try:
+                    seconds_str, ms_str = after_str.split('.')
+                except ValueError:
+                    seconds_str = after_str
+                    ms_str = None
+
                 after = datetime.datetime.fromtimestamp(
                     int(seconds_str),
                     tz=pytz.utc)
-                td = datetime.timedelta(microseconds=int(ms_str))
-                after = after + td
+                if ms_str:
+                    td = datetime.timedelta(microseconds=int(ms_str))
+                    after = after + td
         except TypeError:
-            after = None
+            pass
 
         try:
             reply_limit = int(request.args.get('limit'))
