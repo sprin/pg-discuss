@@ -125,14 +125,14 @@ Migrations
 Once the database connection is correctly configured, we will need to run
 migrations.
 
-.. code-block: console
+.. code-block:: console
 
    python3.4 main.py db upgrade
 
 Migrations for bundled extensions are located in a separate directory. If
 any of the bundled extensions are used, we need to also run:
 
-.. code-block: console
+.. code-block:: console
 
    python3.4 main.py db upgrade --directory ext_migrations/
 
