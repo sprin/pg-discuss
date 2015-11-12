@@ -21,6 +21,7 @@ Submodules
    blessed_extensions.mod_email
    blessed_extensions.moderation
    blessed_extensions.profiler
+   blessed_extensions.proxyfix
    blessed_extensions.route_list
    blessed_extensions.setup
    blessed_extensions.unix_time_json_encoder
