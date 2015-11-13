@@ -34,6 +34,7 @@ Custom configuration is accomplished through a user-defined Python file.
 Creating such a file is not required to use the default configuration. The file
 path defaults to `/opt/pg-discuss/local_settings.py`, but can be changed to
 another path by setting the `PG_DISCUSS_SETTINGS_FILE` environment variable.
+If this file does not exist, it will not be loaded.
 
 In your Python file, you can override the values in :mod:`pg_discuss.config`,
 as well as any default settings in extensions. By using this idiom, you can

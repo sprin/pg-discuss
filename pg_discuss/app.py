@@ -42,7 +42,7 @@ def app_factory():
     # Load custom config from user-defined PG_DISCUSS_SETTINGS_FILE
     custom_settings = os.environ.get('PG_DISCUSS_SETTINGS_FILE',
                                      '/opt/pg-discuss/local_settings.py')
-    if custom_settings:
+    if custom_settings and os.path.isfile(custom_settings):
         app.config.from_pyfile(custom_settings)
 
     # Set the recursion limit
