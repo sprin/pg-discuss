@@ -71,11 +71,10 @@ def new(thread_cid):
     # Validate required, type, text length
     new_comment = forms.validate_new_comment(new_comment)
 
-    # Try to fetch the existing thread record
-    try:
-        thread = queries.fetch_thread_by_client_id(thread_cid)
-    except queries.ThreadNotFoundError:
-        # Create a new thread record if one does not exist.
+    # Try to fetch the existing thread record, and create a new thread
+    # if one is not found.
+    thread = queries.fetch_thread_by_client_id(thread_cid)
+    if not thread:
         thread = queries.insert_thread({'client_id': thread_cid})
 
     new_comment['thread_id'] = thread['id']
