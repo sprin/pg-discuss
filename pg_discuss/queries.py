@@ -29,13 +29,12 @@ def fetch_thread_by_client_id(thread_client_id):
     # stmt = ext.exec_filter_hooks(ext.OnPreThreadFetch, stmt)
 
     result = db.engine.execute(stmt).first()
-    if not result:
-        raise ThreadNotFoundError(
-            'Thread {0} not found'.format(thread_client_id)
-        )
-    comment = dict(result.items())
 
-    return comment
+    if not result:
+        return None
+    thread = dict(result.items())
+
+    return thread
 
 
 def fetch_comment_by_id(comment_id):

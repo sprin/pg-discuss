@@ -34,6 +34,9 @@ def check_mimetype(f):
 def fetch(thread_cid):
     """View to fetch the thread and it's comment collection as JSON."""
     raw_thread = queries.fetch_thread_by_client_id(thread_cid)
+    # If the thread has not yet been created, return an empty JSON object.
+    if not raw_thread:
+        return flask.jsonify({})
     comments_seq = queries.fetch_comments_by_thread_client_id(thread_cid)
     app = flask.current_app
     hook_map = app.hook_map
