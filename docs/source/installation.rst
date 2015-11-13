@@ -123,6 +123,19 @@ Install pg-discuss
 
    Upload to PyPI
 
+First, we need to install some system dependencies to enable Python C
+extensions to be compiled. These are:
+
+ - PostgreSQL development headers, in a package typically named
+   `postgresql-devel`.
+ - libffi development haeders, in a package typically named `libffi-devel`.
+
+On Centos 7, we can install with:
+
+.. code-block:: console
+
+  sudo yum install -y postgresql-devel libffi-devel
+
 pg-discuss is available via pip from `PyPI`. This will install PyPI and it's
 dependencies:
 
