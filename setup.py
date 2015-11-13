@@ -59,13 +59,14 @@ setup(
     url='https://sprin.io',
     download_url='https://github.com/sprin/pg-discuss',
 
-    classifiers=['Development Status :: 3 - Alpha',
+    classifiers=['Development Status :: 4 - Beta',
                  'License :: OSI Approved :: MIT License',
                  'Programming Language :: Python',
                  'Programming Language :: Python :: 2',
                  'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: 3.4',
+                 'Programming Language :: Python :: 3.5',
                  'Intended Audience :: Developers',
                  'Environment :: Web Environment',
                  'Framework :: Flask',
@@ -75,8 +76,7 @@ setup(
 
     scripts=[],
 
-    provides=['pg_discuss',
-              ],
+    provides=['pg_discuss'],
     packages=find_packages(),
 
     # Entrypoints for drivers included in core. We need to include basic
