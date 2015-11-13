@@ -117,8 +117,8 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         # Isso threads have a null `id` attribute
         client_thread['id'] = None
 
-        # Add the count of top-level comments under key `total_replies'
-        client_thread['total_replies'] = len(client_thread['replies'])
+        # Add the count of all comments as `total_replies_in_thread`
+        client_thread['total_replies_in_thread'] = client_thread['reply_count']
 
     def on_pre_comment_insert(self, new_comment, **extras):
         """Hash email, or remote_addr.
