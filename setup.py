@@ -74,7 +74,7 @@ setup(
 
     platforms=['Any'],
 
-    scripts=[],
+    scripts=['main.py'],
 
     provides=['pg_discuss'],
     packages=find_packages(),
@@ -88,6 +88,7 @@ setup(
             'core_null_identity_policy = pg_discuss.drivers.null_identity_policy:NullIdentityPolicy',
             'core_iso_date_json_encoder = pg_discuss.drivers.iso_date_json_encoder:IsoDateJSONEncoder',
         ],
+        'console_scripts': ['pgd-admin = pg_discuss.management:execute_from_command_line'],
     },
 
     zip_safe=False,
