@@ -1,6 +1,5 @@
 import sys
 import os
-from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 
 PYPY = hasattr(sys, 'pypy_version_info')
@@ -36,7 +35,6 @@ def get_data_files_list(paths):
                     os.path.join(root, f) for f in filenames
                     if not f.endswith('.pyc')]
                 data_files.append([root, full_filenames])
-    print(data_files)
     return data_files
 
 
@@ -91,8 +89,9 @@ setup(
     scripts=['main.py', 'blessed-ext-setup.py'],
 
     provides=['pg_discuss'],
-    packages=find_packages(),
-    data_files=get_data_files_list(['isso', 'migrations', 'ext_migrations']),
+    packages=['pg_discuss', 'pg_discuss.drivers'],
+    data_files=get_data_files_list(['isso', 'migrations', 'ext_migrations',
+                                   'blessed_extensions']),
 
     # Entrypoints for drivers included in core. We need to include basic
     # drivers in core so that the app is functional without the

@@ -1,6 +1,6 @@
 # Include the data files
-recursive-include isso *
 include main.py
-include blessed-ext-setup.py
+recursive-include isso *
+recursive-include blessed_extensions *.py *.rst *.html *.css
 recursive-include migrations *.py *.ini *.rst
 recursive-include ext_migrations *.py *.ini *.rst
