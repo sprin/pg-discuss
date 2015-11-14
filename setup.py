@@ -1,4 +1,5 @@
 import sys
+import os
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 
@@ -24,6 +25,19 @@ if PYPY:
     requires += ['psycopg2cffi>=2.7']
 else:
     requires += ['psycopg2>=2.6']
+
+
+def get_data_files_list(paths):
+    data_files = []
+    for path in paths:
+        for root, dirnames, filenames in os.walk(path):
+            if not root.endswith('__pycache__'):
+                full_filenames = [
+                    os.path.join(root, f) for f in filenames
+                    if not f.endswith('.pyc')]
+                data_files.append([root, full_filenames])
+    print(data_files)
+    return data_files
 
 
 class DevelopDocs(develop):
@@ -78,6 +92,7 @@ setup(
 
     provides=['pg_discuss'],
     packages=find_packages(),
+    data_files=get_data_files_list(['isso', 'migrations', 'ext_migrations']),
 
     # Entrypoints for drivers included in core. We need to include basic
     # drivers in core so that the app is functional without the
