@@ -1,3 +1,5 @@
+.. _Extensions:
+
 =============================
 Extension and Driver Overview
 =============================

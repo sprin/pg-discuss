@@ -92,7 +92,9 @@ You have two choices for preparing the Python package environment:
  - Create a `virtualenv`_ for pg-discuss. This is appropriate for servers
    hosting multiple applications, not using virtualization.
  - Install pg-discuss using the system Python packages. This is usually only
-   appropriate if you are using a dedicated VM or creating a container image.
+   appropriate if you are creating a container image, since the Python packages
+   installed by pg-discuss may interfere with Python system packages required by
+   the operating system.
 
 .. _`virtualenv`: https://virtualenv.pypa.io/en/latest/userguide.html
 
@@ -146,7 +148,8 @@ On Centos 7, we can install with:
   sudo yum install -y python3-devel postgresql-devel libffi-devel
 
 pg-discuss is available via pip from `PyPI`. This will install PyPI and it's
-dependencies:
+dependencies (assuming the virtualenv has been activated as per the last
+section):
 
 .. code-block:: console
 
@@ -155,32 +158,53 @@ dependencies:
 .. _`PyPI`:https://pypi.python.org/pypi
 
 pg-discuss depends on extensions for most of it's useful functionality. A set
-of "blessed extensions" - blessed by the maintainers - are included. The
+of "blessed extensions" - blessed by the maintainers - are bundled with the
+pg-discuss package, but not actually installed on the Python path. However, the
 default configuration will complain if they are not present. To install these
 to the virtual environment:
 
 .. code-block:: console
 
-   python bin/blessed-ext-setup.py install
+   python blessed_extensions/setup.py install
 
-Get the Isso JavaScript client
+.. note::
+
+   The reason these extensions are not installed by default are:
+
+    - To give the operator the choice of not installing the bundled extensions
+      in favor of some other set of extensions.
+    - To demonstrate that extensions can be shipped as just a Python package
+      that declare setuptools entrypoints in a setup.py file, and can be easily
+      installed locally or from PyPI.
+    - To ensure that the core has basic functionality without any extensions.
+
+   However, the strong recommendation at this point is to install these bundled
+   extensions. See :ref:`Extensions` for more details.
+
+The Isso JavaScript client
 ------------------------------
 
-Currently, the only supported JavaScript client is `Isso`_. You can build the
-JavaScript from the sources by following the directions on the `Isso
-installation page`_. This will build an `embed.min.js` file. You can also
-download a built version used by the live demo that is hosted here:
-`embed.min.js`_. Copy the built `embed.min.js` to your web server root.  For
-example, if you copied the file to `/var/www/embed.min.js`, you could use
-`uwsgi` to serve it like so:
+Currently, the only supported JavaScript client is `Isso`_ (modified, `sources
+here`_). For ease of deployment, the minified file is bundled with the package
+at `isso/js/embed.min.js`. The "development" file (not minified) is also
+included at `isso/js/embed.dev.js`.
+
+Copy the built `embed.min.js` to your web server root.  For example, if you
+copied the file to `/var/www/embed.min.js`, you could use `uwsgi` to serve it
+like so:
 
 .. _`Isso`: http://posativ.org/isso/
+.. _`sources here`: https://github.com/sprin/isso/tree/pg-discuss
 .. _`Isso installation page`: http://posativ.org/isso/docs/install/#install-from-source
-.. _`embed.min.js`: https://pg-discuss-demo.sprin.io/embed.min.js
 
 .. code-block:: ini
 
    static-map = /embed.min.js=/var/www/embed.min.js
+
+You can build the JavaScript from the individual source files by following the
+directions on the `Isso installation page`_. This will build an `embed.min.js`
+file.
+
 
 Install and Configure uwsgi
 ---------------------------

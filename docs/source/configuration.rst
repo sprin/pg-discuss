@@ -44,6 +44,91 @@ read as many (or as few) settings as you want from the environment:
 
    MY_VAR = os.environ.get('MY_VAR')
 
+Skip ahead to :ref:`Core Config` if you want to see all the options that
+can be set in a custom config file.
+
+Migrations
+==========
+
+Once the database connection is correctly configured with `DATABASE_URL`, we
+will need to run migrations. From within the virtual environment:
+
+.. code-block:: console
+
+   pgd-admin db upgrade
+
+Migrations for bundled extensions are located in a separate directory. If
+any of the bundled extensions are used, we need to also run:
+
+.. code-block:: console
+
+   pgd-admin db upgrade --directory ext_migrations/
+
+Similarly, other extensions you install may have their own migrations. Simply
+point the `upgrade` to the directory where they are located.
+
+Embedding
+=========
+
+Embedding the Isso client, and it's configuration options, are described on
+Isso's `Client Configuration`_ page.
+
+.. _Client Configuration`: http://posativ.org/isso/docs/configuration/client/
+
+There are two configuration parameters that are especially important:
+`data-isso` and `data-isso-id`.
+
+data-isso
+---------
+
+This is the location of the pg-discuss backend. It may be on the same host/port
+as the content, or it may be on an entirely different domain. In this example,
+we'll assume that:
+
+ - content is served from `https://www.example.com`.
+ - pg-discuss is available at `https://www.example.com/pg-discuss`.
+ - `embed.min.js` is served from
+    `https://www.example.com/pg-discuss/embed.min.js`.
+
+Because all of these are served from the same domain, `www.example.com`, we do
+not need to do any extra configuration for cross-domain resource sharing
+(CORS).
+
+However, if we wanted to host our content and pg-discuss on different domains,
+we can enabled CORS on the pg-discuss server. CORS can be enabled via  the
+`blessed_cors` extension and the associated `CORS_ORIGINS` setting documented
+above, or it can be enabled on the proxy or web server, such as nginx or uwsgi.
+
+data-isso-id
+------------
+
+With pg-discuss, it's recommended that you use a unique ID for each thread, for
+each page where the comment widget is embedded. This is done by specifying
+`data-isso-id`. If you do not specify it, the URI will be used as the thread
+identifier, which means if your URI changes, your thread will be lost without
+manual updates to the thread ids in the database.
+
+Putting it together
+-------------------
+
+Here's what we need to drop in to our HTML page source:
+
+.. code-block:: html
+
+   <script data-isso="https://www.example.com/pg-discuss" src="pg-discuss/embed.min.js"></script>
+   <section data-isso-id="my-thread" id="isso-thread"></section>
+
+The `<script>` tag can be placed in the head or body, and the `<section>` tag
+defines the element where the widget will render.
+
+For a simple, real-world example, check out the `source`_ of this simplified
+`live demo`_.
+
+.. _`source`: view-source:https://pg-discuss.readthedocs.org/en/latest/_static/got_six_weeks.html
+.. _`live demo`: https://pg-discuss.readthedocs.org/en/latest/_static/got_six_weeks.html
+
+.. _Core Config:
+
 Core Configuration Options
 ==========================
 
@@ -120,22 +205,3 @@ validate_comment_len
    Need to place extension config var defaults to be a member of the class,
    so autodoc can find them.
 
-Migrations
-==========
-
-Once the database connection is correctly configured, we will need to run
-migrations.
-
-.. code-block:: console
-
-   python3.4 main.py db upgrade
-
-Migrations for bundled extensions are located in a separate directory. If
-any of the bundled extensions are used, we need to also run:
-
-.. code-block:: console
-
-   python3.4 main.py db upgrade --directory ext_migrations/
-
-Similarly, other extensions you install may have their own migrations. Simply
-point the `upgrade` to the directory where they are located.
