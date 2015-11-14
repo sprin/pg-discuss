@@ -1,3 +1,4 @@
 # Include the data files
 recursive-include isso *
 include . main.py
+include . blessed-ext-setup.py
