@@ -116,6 +116,14 @@ virtualenv in a directory the user can read:
 
     python3 -m virtualenv /opt/pg-discuss
 
+For the following Python package installation steps, we need to activate the
+virtual environment:
+
+.. code-block:: console
+
+    cd /opt/pg-discuss
+    source bin/activate
+
 Install pg-discuss
 ------------------
 
@@ -126,33 +134,34 @@ Install pg-discuss
 First, we need to install some system dependencies to enable Python C
 extensions to be compiled. These are:
 
- - PostgreSQL development headers, in a package typically named
-   `postgresql-devel`.
- - libffi development haeders, in a package typically named `libffi-devel`.
+ - Python development headers. For Python 3, in a package typically named
+   `python3-devel`, and `python-devel` for Python 2.
+ - PostgreSQL development headers, typically named `postgresql-devel`.
+ - libffi development haeders, typically named `libffi-devel`.
 
 On Centos 7, we can install with:
 
 .. code-block:: console
 
-  sudo yum install -y postgresql-devel libffi-devel
+  sudo yum install -y python3-devel postgresql-devel libffi-devel
 
 pg-discuss is available via pip from `PyPI`. This will install PyPI and it's
 dependencies:
 
 .. code-block:: console
 
-   python3 -m pip install pg-discuss
+   python -m pip install pg-discuss
 
 .. _`PyPI`:https://pypi.python.org/pypi
 
 pg-discuss depends on extensions for most of it's useful functionality. A set
-of "blessed extensions" - blessed by the maintainers - are included. To install
-these:
+of "blessed extensions" - blessed by the maintainers - are included. The
+default configuration will complain if they are not present. To install these
+to the virtual environment:
 
 .. code-block:: console
 
-   PG_DISCUSS_PATH=/opt/pg-discuss/lib/python3.4/site-packages/pg_discuss/
-   python3 $PG_DISCUSS_PATH/blessed_extensions/setup.py install
+   python bin/blessed-ext-setup.py install
 
 Get the Isso JavaScript client
 ------------------------------
