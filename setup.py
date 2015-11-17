@@ -1,5 +1,6 @@
 import sys
 import os
+from setuptools import setup
 from setuptools.command.develop import develop
 
 PYPY = hasattr(sys, 'pypy_version_info')
