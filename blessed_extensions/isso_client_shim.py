@@ -177,6 +177,9 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         """
         # Use the `uri` parameter as the thread `client_id`.
         thread_client_id = request.args.get('uri')
+        # Render the landing page if there is no `uri` parameter.
+        if not thread_client_id:
+            return self.app.view_functions['landing']()
         resp = self.app.view_functions['fetch'](thread_client_id)
         # Set a `Date` HTTP header with the current datetime.
         resp.headers['Date'] = datetime.datetime.now().isoformat() + 'Z'

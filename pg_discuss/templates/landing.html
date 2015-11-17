@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<head>
+	<title>Welcome to pg-discuss</title>
+	<meta charset="utf-8">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font-size: 100%;
+      font: inherit;
+      vertical-align: baseline;
+      font-family: 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    html {
+      box-sizing: border-box;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    #content {
+        width: 1400px;
+        margin: 30px auto 0px;
+    }
+    #header {
+      padding: 10px;
+      height: 120px;
+      background-color: #e4ffff;
+    }
+    .logo-link,
+    .logo-link:active,
+    .logo-link:hover,
+    .logo-link:visited {
+      float: left;
+      text-decoration: none;
+      color: #000000;
+    }
+    #logo {
+      height: 100px;
+    }
+    #navigation {
+      float: right;
+    }
+    h1 {
+      display: inline-block;
+      padding: 0 20px;
+      line-height: 50px;
+    }
+    #content {
+      font-size: 1.2em;
+      width: 60%;
+    }
+    pre {
+      background-color: #f0f0f0;
+      padding: 10px;
+    }
+    #thread-container {
+      width: 90%;
+      margin: 0 auto;
+    }
+    #isso-thread pre {
+      background: #eee;
+      border: 1px solid #ddd;
+      padding: 10px 15px;
+      color: #4d4d4c;
+      overflow: auto;
+    }
+  </style>
+  <script data-isso="{{ request.url_root }}" src="{{ url_for('static', filename='embed.min.js', _external=True) }}"></script>
+</head>
+<body>
+<div id="header">
+  <a class="logo-link" href="https://pg-discuss.sprin.io" title="pg-discuss - embeddable comments">
+    <img id="logo"src="{{ url_for('static', filename='pg-discuss.svg') }}" alt="pg-discuss"></img></a>
+  <a class="logo-link" href="https://pg-discuss.sprin.io" title="pg-discuss - embeddable comments">
+  <h1>pg-discuss</h1>
+</a>
+  <span id="navigation">
+    <a href="{{ url_for('admin.index') }}">Admin Interface</a>
+</div>
+
+<div id="content">
+  <h2>Welcome to pg-discuss!</h2>
+  <p>To embed the widget into an HTML page, you need to add a script tag:
+  <pre>&lt;script data-isso="{{ request.url_root }}" src="{{ url_for('static', filename='embed.min.js', _external=True) }}"&gt;&lt;/script&gt;</pre>
+  <p>and a section tag where you want the comment widget to be rendered:
+   <pre>&lt;section data-isso-id="my-thread" id="isso-thread"&gt;&lt;/section&gt;</pre>
+  <p>Replace "my-thread" with a permanent, unique name for the article/page
+  you are embedding the widget into, such as a UUID or the article slug. If
+  you are using a templating system that cannot generate a unique name, you
+  may omit the "data-isso-id" attribute entirely, and the URI will be used
+  as a thread identifier.
+  <p>For more configuration options, see the <a href="https://pg-discuss.sprin.io/en/latest/configuration.html">Configuration docs</a>.
+  <p>Here's an example with a "test" thread:
+  <div id="thread-container">
+  <section data-isso-id="test" id="isso-thread"></section>
+  </div>
+</div>
+</body>

@@ -33,7 +33,7 @@ def app_factory():
         pg2cfficompat.register()
 
     # Flask application
-    app = flask.Flask('pg-discuss', static_folder=None,
+    app = flask.Flask('pg-discuss', static_folder='pg_discuss/static',
                       template_folder='pg_discuss/templates')
 
     # Load default config values from pg_discuss.config module
@@ -126,5 +126,12 @@ def app_factory():
 
     # Run the `init_app` hooks.
     ext.exec_init_app(app)
+
+    # Add a route to the landing page at the root, '/'. Ignore if an extension
+    # has already set up a route for the root.
+    try:
+        app.route('/', methods=['GET'])(views.landing)
+    except:
+        pass
 
     return app

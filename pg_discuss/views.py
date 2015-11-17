@@ -188,6 +188,10 @@ def delete(comment_id):
     return flask.jsonify(result)
 
 
+def landing():
+    return flask.render_template('landing.html')
+
+
 def admin_login():
     """View to handle Admin logins."""
     form = auth_forms.LoginForm(flask.request.form)
