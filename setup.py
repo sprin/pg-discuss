@@ -69,7 +69,7 @@ setup(
     author='Steffen Prince',
     author_email='steffen@sprin.io',
 
-    url='https://sprin.io',
+    url='https://pg-discuss.sprin.io',
     download_url='https://github.com/sprin/pg-discuss',
 
     classifiers=['Development Status :: 4 - Beta',
