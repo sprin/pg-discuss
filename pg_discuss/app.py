@@ -33,8 +33,8 @@ def app_factory():
         pg2cfficompat.register()
 
     # Flask application
-    app = flask.Flask('pg-discuss', static_folder='pg_discuss/static',
-                      template_folder='pg_discuss/templates')
+    app = flask.Flask('pg-discuss')
+    app.root_path = os.path.abspath(os.path.dirname(__file__))
 
     # Load default config values from pg_discuss.config module
     app.config.from_object(config)
