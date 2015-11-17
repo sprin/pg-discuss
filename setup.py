@@ -89,6 +89,8 @@ setup(
 
     provides=['pg_discuss'],
     packages=['pg_discuss', 'pg_discuss.drivers'],
+    include_package_data=True,
+    package_data={'pg_discuss': ['*.html', '*.js', '*.svg']},
     data_files=(
         get_data_files_list(['isso', 'migrations', 'ext_migrations',
                              'blessed_extensions'])
