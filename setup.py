@@ -87,7 +87,7 @@ setup(
 
     platforms=['Any'],
 
-    scripts=['main.py', 'blessed-ext-setup.py'],
+    scripts=['main.py'],
 
     provides=['pg_discuss'],
     packages=['pg_discuss', 'pg_discuss.drivers'],
