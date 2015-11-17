@@ -50,7 +50,7 @@ operate, extend, and redistribute the application as you see fit. Contributions
 are welcome.
 
 Supports Multiple JavaScript Widgets
------------------------------------
+------------------------------------
 
 The pg-discuss API can be adapted to work with existing embeddable comment
 widgets. Of course, new widgets can also be written using the default REST
