@@ -1,5 +1,6 @@
 # Include the data files
 include main.py
+include uwsgi.ini
 recursive-include isso *
 recursive-include blessed_extensions *.py *.rst *.html *.css
 recursive-include migrations *.py *.ini *.rst
