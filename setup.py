@@ -87,13 +87,12 @@ setup(
 
     platforms=['Any'],
 
-    scripts=['main.py'],
-
     provides=['pg_discuss'],
     packages=['pg_discuss', 'pg_discuss.drivers'],
-    data_files=get_data_files_list(['isso', 'migrations', 'ext_migrations',
-                                   'blessed_extensions'])
-                                   + [['', ['uwsgi.ini']]],
+    data_files=(
+        get_data_files_list(['isso', 'migrations', 'ext_migrations',
+                             'blessed_extensions'])
+        + [['', ['uwsgi.ini', 'main.py']]]),
 
     # Entrypoints for drivers included in core. We need to include basic
     # drivers in core so that the app is functional without the
