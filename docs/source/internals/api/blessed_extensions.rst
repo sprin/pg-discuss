@@ -14,7 +14,6 @@ Submodules
    blessed_extensions.capture_remote_addr
    blessed_extensions.capture_website
    blessed_extensions.cors
-   blessed_extensions.csrf_header
    blessed_extensions.csrf_token
    blessed_extensions.isso_client_shim
    blessed_extensions.markdown_renderer

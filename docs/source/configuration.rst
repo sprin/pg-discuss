@@ -95,7 +95,7 @@ not need to do any extra configuration for cross-domain resource sharing
 (CORS).
 
 However, if we wanted to host our content and pg-discuss on different domains,
-we can enabled CORS on the pg-discuss server. CORS can be enabled via  the
+we can enable CORS on the pg-discuss server. CORS can be enabled via  the
 `blessed_cors` extension and the associated `CORS_ORIGINS` setting documented
 above, or it can be enabled on the proxy or web server, such as nginx or uwsgi.
 
@@ -151,14 +151,6 @@ capture_author
    :members:
    :noindex:
    :exclude-members: CaptureAuthor
-
-csrf_header
------------
-
-.. automodule:: blessed_extensions.csrf_header
-   :members:
-   :noindex:
-   :exclude-members: CsrfHeaderExt
 
 csrf_token
 ----------

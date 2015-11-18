@@ -353,4 +353,4 @@ Congrats!
 
 With uwsgi, pg-discuss, PostgreSQL installed, we just need to configure
 pg-discuss before we are fully up and running. Head on over to the
-]:ref:`Configuration` section.
+:ref:`Configuration` section.
