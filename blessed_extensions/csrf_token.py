@@ -42,10 +42,20 @@ class CsrfTokenExt(ext.AppExtBase):
                               CSRF_TOKEN_EXEMPT_METHODS)
         app.config.setdefault('CSRF_SSL_STRICT', CSRF_SSL_STRICT)
 
-        app.route('/csrftoken', methods=['GET'])(get_csrf_token)
-
         if not app.config['CSRF_TOKEN_CHECK_DEFAULT']:
             return
+
+        @app.after_request
+        def add_token(response):
+            """Add the token to *every* response. We don't necessarily know
+            which endpoints the client will access and expect to get a
+            token in the response, so it is simplest if we always return a
+            token.
+            """
+            token = generate_csrf()
+            for header_name in CSRF_TOKEN_HEADERS:
+                response.headers[header_name] = token
+            return response
 
         @app.before_request
         def _csrf_protect():
@@ -186,10 +196,6 @@ def validate_csrf(data, secret_key=None, time_limit=None):
     ).hexdigest()
 
     return werkzeug.security.safe_str_cmp(hmac_compare, hmac_csrf)
-
-
-def get_csrf_token():
-    return generate_csrf()
 
 
 def same_origin(current_uri, compare_uri):
