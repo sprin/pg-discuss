@@ -48,10 +48,23 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py \
 # Install uwsgi and setuptools
 RUN pip --disable-pip-version-check install uwsgi
 
+# Create pg-discuss user
+RUN groupadd pg-discuss \
+    && mkdir /opt/pg-discuss \
+    && useradd --system -d /opt/pg-discuss -g pg-discuss pg-discuss
+
 # Add and install Python modules
-WORKDIR /src
-COPY setup.py /src/setup.py
-RUN python3.4 setup.py develop
-COPY blessed_extensions/setup.py /src/blessed_extensions/setup.py
-RUN python3.4 blessed_extensions/setup.py develop
-COPY . /src/
+WORKDIR /opt/pg-discuss
+
+# Install the Python dependencies before copying the source
+# In order to use setup.py without source, we need to stub the package tree.
+COPY setup.py /opt/pg-discuss/setup.py
+COPY blessed_extensions/setup.py /opt/pg-discuss/blessed_extensions/setup.py
+RUN mkdir -p pg_discuss/drivers \
+    && touch pg_discuss/__init__.py \
+    && touch pg_discuss/drivers/__init__.py \
+    && touch blessed_extensions/__init__.py \
+    && pip install -e . \
+    && pip install -e blessed_extensions
+
+COPY . /opt/pg-discuss
