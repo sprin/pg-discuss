@@ -466,6 +466,7 @@ define('app/config',[],function() {
         "css": true,
         "lang": (navigator.language || navigator.userLanguage).split("-")[0],
         "reply-to-self": false,
+        "require-email": false,
         "max-comments-top": "inf",
         "max-comments-nested": 5,
         "reveal-on-click": 5,
@@ -587,30 +588,31 @@ define('app/i18n/fr',{
 });
 
 define('app/i18n/ru',{
-    "postbox-text": "Комментировать здесь (минимум 3 символа)",
+    "postbox-text": "Оставить комментарий (минимум 3 символа)",
     "postbox-author": "Имя (необязательно)",
     "postbox-email": "Email (необязательно)",
-    "postbox-website": "Website (необязательно)",
+    "postbox-website": "Сайт (необязательно)",
     "postbox-submit": "Отправить",
-    "num-comments": "1 комментарий\n{{ n }} комментариев",
-    "no-comments": "Нет комментарев",
+    "num-comments": "1 комментарий\n{{ n }} комментария\n{{ n }} комментариев",
+    "no-comments": "Оставить комментарий",
     "comment-reply": "Ответить",
     "comment-edit": "Правка",
     "comment-save": "Сохранить",
     "comment-delete": "Удалить",
-    "comment-confirm": "Подтвердить",
+    "comment-confirm": "Подтвердить удаление",
     "comment-close": "Закрыть",
     "comment-cancel": "Отменить",
-    "comment-deleted": "Удалить комментарий",
-    "comment-queued": "Комментарий должен быть разблокирован",
-    "comment-anonymous": "Анонимный",
-    "date-now": "Сейчас",
-    "date-minute": "Минут назад\n{{ n }} минут назад",
-    "date-hour": "Час назад\n{{ n }} часов назад",
-    "date-day": "Вчера\n{{ n }} дней назад",
-    "date-week": "на прошлой недели\n{{ n }} недель назад",
-    "date-month": "в прошлом месяце\n{{ n }} месяцев назад",
-    "date-year": "в прошлом году\n{{ n }} года назад\n{{ n }} лет назад"
+    "comment-deleted": "Комментарий удалён",
+    "comment-queued": "Комментарий будет проверен модератором",
+    "comment-anonymous": "Аноним",
+    "comment-hidden": "Показать ещё 1 комментарий\nПоказать ещё {{ n }} комментария\nПоказать ещё {{ n }} комментариев",
+    "date-now": "Только что",
+    "date-minute": "{{ n }} минуту назад\n{{ n }} минуты назад\n{{ n }} минут назад",
+    "date-hour": "{{ n }} час назад\n{{ n }} часа назад\n{{ n }} часов назад",
+    "date-day": "{{ n }} день назад\n{{ n }} дня назад\n{{ n }} дней назад",
+    "date-week": "{{ n }} неделю назад\n{{ n }} недели назад\n{{ n }} недель назад",
+    "date-month": "{{ n }} месяц назад\n{{ n }} месяца назад\n{{ n }} месяцев назад",
+    "date-year": "{{ n }} год назад\n{{ n }} года назад\n{{ n }} лет назад"
 });
 
 define('app/i18n/it',{
@@ -1027,6 +1029,11 @@ define('app/api',["app/lib/promise", "app/globals"], function(Q, globals) {
                 globals.offset.update(new Date(date));
             }
 
+            var csrf_token = xhr.getResponseHeader("X-CSRF-Token");
+            if (csrf_token !== null) {
+                globals.csrf_token = csrf_token;
+            }
+
             var cookie = xhr.getResponseHeader("X-Set-Cookie");
             if (cookie && cookie.match(/^isso-/)) {
                 document.cookie = cookie;
@@ -1045,6 +1052,9 @@ define('app/api',["app/lib/promise", "app/globals"], function(Q, globals) {
             xhr.open(method, url, true);
             xhr.withCredentials = true;
             xhr.setRequestHeader("Content-Type", "application/json");
+            if ("csrf_token" in globals) {
+                xhr.setRequestHeader("X-CSRF-Token", globals.csrf_token);
+            }
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
@@ -2032,8 +2042,21 @@ define('app/isso',["app/dom", "app/utils", "app/config", "app/api", "app/jade", 
                 $(".textarea", this).focus();
                 return false;
             }
+            if (config["require-email"] &&
+                $("[name='email']", this).value.length <= 0)
+            {
+              $("[name='email']", this).focus();
+              return false;
+            }
             return true;
         };
+
+        // email is not optional if this config parameter is set
+        if (config["require-email"])
+        {
+          $("[name='email']", el).placeholder =
+            $("[name='email']", el).placeholder.replace(/ \(.*\)/, "");
+        }
 
         // submit form, initialize optional fields with `null` and reset form.
         // If replied to a comment, remove form completely.
@@ -2198,6 +2221,30 @@ define('app/isso',["app/dom", "app/utils", "app/config", "app/api", "app/jade", 
 
         var form = null;  // XXX: probably a good place for a closure
 
+        if (config["nesting-level"] >= 1) {
+          $("a.reply", footer).toggle("click",
+              function(toggler) {
+                  // Check if this new reply will result in a nesting level over
+                  // the limit, and if so, associate the reply with the parent of
+                  // the comment being replied to.
+                  if (config["nesting-level"] !== "inf"
+                      && el.get_level() >= config["nesting-level"]) {
+                    form = footer.insertAfter(new Postbox(comment.parent));
+                  }
+                  else {
+                    form = footer.insertAfter(new Postbox(comment.id));
+                  }
+                  form.onsuccess = function() { toggler.next(); };
+                  $(".textarea", form).focus();
+                  $("a.reply", footer).textContent = i18n.translate("comment-close");
+              },
+              function() {
+                  form.remove();
+                  $("a.reply", footer).textContent = i18n.translate("comment-reply");
+              }
+          );
+        };
+
         if (config.vote) {
             // update vote counter, but hide if votes sum to 0
             var votes = function (value) {
@@ -2229,29 +2276,18 @@ define('app/isso',["app/dom", "app/utils", "app/config", "app/api", "app/jade", 
         }
 
         if (!config.locked) {
-          if (config["nesting-level"] >= 1) {
-            $("a.reply", footer).toggle("click",
-                function(toggler) {
-                    // Check if this new reply will result in a nesting level over
-                    // the limit, and if so, associate the reply with the parent of
-                    // the comment being replied to.
-                    if (config["nesting-level"] !== "inf"
-                        && el.get_level() >= config["nesting-level"]) {
-                      form = footer.insertAfter(new Postbox(comment.parent));
-                    }
-                    else {
-                      form = footer.insertAfter(new Postbox(comment.id));
-                    }
-                    form.onsuccess = function() { toggler.next(); };
-                    $(".textarea", form).focus();
-                    $("a.reply", footer).textContent = i18n.translate("comment-close");
-                },
-                function() {
-                    form.remove();
-                    $("a.reply", footer).textContent = i18n.translate("comment-reply");
-                }
-            );
-          };
+          $("a.reply", footer).toggle("click",
+              function(toggler) {
+                  form = footer.insertAfter(new Postbox(comment.parent === null ? comment.id : comment.parent));
+                  form.onsuccess = function() { toggler.next(); };
+                  $(".textarea", form).focus();
+                  $("a.reply", footer).textContent = i18n.translate("comment-close");
+              },
+              function() {
+                  form.remove();
+                  $("a.reply", footer).textContent = i18n.translate("comment-reply");
+              }
+          );
 
           $("a.edit", footer).toggle("click",
               function(toggler) {
