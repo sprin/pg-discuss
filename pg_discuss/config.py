@@ -133,7 +133,7 @@ if cors_origins_from_env:
     CORS_ORIGINS = cors_origins_from_env.split(',')
 
 #: List of headers that client is allowed to read.
-CORS_EXPOSE_HEADERS = ['Date', 'X-Set-Cookie']
+CORS_EXPOSE_HEADERS = ['Date', 'X-Set-Cookie', 'X-CSRF-Token']
 
 
 def get_enabled_extensions(config):
