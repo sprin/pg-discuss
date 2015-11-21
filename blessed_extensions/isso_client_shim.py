@@ -144,7 +144,7 @@ class IssoClientShim(ext.AppExtBase, ext.OnPreCommentSerialize,
         cookie = functools.partial(
             werkzeug.dump_cookie,
             value='.',
-            max_age=self.app.permanent_session_lifetime.total_seconds()
+            max_age=int(self.app.permanent_session_lifetime.total_seconds())
         )
 
         comment_id = raw_comment['id']
