@@ -11,3 +11,4 @@ test_env
 local_settings.py
 __pycache__
 docs/build
+.sandstorm/.vagrant
