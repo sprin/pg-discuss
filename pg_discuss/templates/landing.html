@@ -67,6 +67,33 @@
     }
   </style>
   <script data-isso="{{ request.url_root }}" src="{{ url_for('static', filename='embed.min.js', _external=True) }}"></script>
+  <!-- Sandstorm API publishing. Has no effect one other platforms. -->
+  <script>
+  function fillIframe() {
+    // Remove the non-sandstorm script.
+    var embedScript = document.getElementById("embed-script");
+    embedScript.parentNode.removeChild(embedScript);
+    // Set up the template, and post to Sandstorm.
+    // TODO: Set up static file published and get real public id.
+    var template = '<script data-isso="$API_HOST" '
+       + 'src="publicId.sandstorm.example.com/embed.min.js" '
+       + 'data-sandstorm-token="$API_TOKEN"><\/script>';
+    window.parent.postMessage({renderTemplate: {rpcId: "0", template: template, forSharing: true}}, "*");
+  }
+  var messageListener = function(event) {
+    if (event.data.rpcId === "0") {
+      if (event.data.error) {
+        console.log("ERROR: " + event.data.error);
+      } else {
+        var el = document.getElementById("offer-iframe");
+        el.setAttribute("src", event.data.uri);
+        el.style.display = 'block';
+      }
+    }
+  };
+  window.addEventListener("message", messageListener);
+  document.addEventListener("DOMContentLoaded", fillIframe);
+  </script>
 </head>
 <body>
 <div id="header">
@@ -82,7 +109,9 @@
 <div id="content">
   <h2>Welcome to pg-discuss!</h2>
   <p>To embed the widget into an HTML page, you need to add a script tag:
-  <pre>&lt;script data-isso="{{ request.url_root }}" src="{{ url_for('static', filename='embed.min.js', _external=True) }}"&gt;&lt;/script&gt;</pre>
+  <!-- Hidden offer iframe for sandstorm deployments. Remains hidden in non-sandstorm deployments. -->
+  <iframe style="width: 100%; height: 55px; margin: 0; border: 0; display: none" id="offer-iframe"></iframe>
+  <pre id="embed-script">&lt;script data-isso="{{ request.url_root }}" src="{{ url_for('static', filename='embed.min.js', _external=True) }}"&gt;&lt;/script&gt;</pre>
   <p>and a section tag where you want the comment widget to be rendered:
    <pre>&lt;section data-isso-id="my-thread" id="isso-thread"&gt;&lt;/section&gt;</pre>
   <p>Replace "my-thread" with a permanent, unique name for the article/page
