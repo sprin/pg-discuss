@@ -22,8 +22,10 @@ ENABLE_EXT_BLESSED_CSRF_TOKEN = False
 EOF
 
 # Install Python packages
-$VENV/bin/pip install -e /opt/app
-$VENV/bin/pip install -e /opt/app/blessed_extensions
+if [ ! -f $VENV/bin/pgd-admin ] ; then
+    $VENV/bin/pip install -e /opt/app
+    $VENV/bin/pip install -e /opt/app/blessed_extensions
+fi
 
 # Spawn postgresql
 sudo su sandstorm -c '/usr/lib/postgresql/9.4/bin/postgres -D /var/lib/postgresql/9.4/main -c config_file=/etc/postgresql/9.4/main/postgresql.conf' &
@@ -35,8 +37,15 @@ while [ ! -e $POSTGRESQL_SOCKET_FILE ] ; do
     sleep .2
 done
 
-sudo su - postgres -c 'createuser -l --no-password -e sandstorm'
-sudo su - postgres -c 'createdb -E UTF-8 pg-discuss'
+sandstorm_user_exists=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='sandstorm'")
+database_exists=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='pg-discuss'")
+
+if [[ sandstorm_user_exists -ne 1 ]] ; then
+    sudo -u postgres 'createuser -l --no-password -e sandstorm'
+fi
+if [[ database_exists -ne 1 ]] ; then
+    sudo -u postgres 'createdb -E UTF-8 pg-discuss'
+fi
 
 sudo su sandstorm -c '. /opt/app/env/bin/activate \
     && export PG_DISCUSS_SETTINGS_FILE=/opt/app/local_settings.py \
