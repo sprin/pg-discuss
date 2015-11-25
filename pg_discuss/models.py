@@ -51,6 +51,7 @@ from sqlalchemy import (
     Integer,
     String,
     text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import (
     backref,
@@ -132,11 +133,21 @@ class Comment(db.Model):
 
 
 class Identity(db.Model):
-    """Identity model."""
+    """Identity model. provider refers to the Identity provider,
+    such as Sandstorm, or some third-party OAuth service.
+    provider_id is the ID that the provider uses to identify
+    the user. Together, provider and provider_id should effectively serve as
+    a composite primary key, when present."""
     id = Column(
         Integer,
         primary_key=True,
         nullable=False)
+    provider = Column(
+        String,
+        nullable=True)
+    provider_id = Column(
+        String,
+        nullable=True)
     created = Column(
         DateTime(timezone=True),
         server_default=text('NOW()'),
@@ -145,9 +156,14 @@ class Identity(db.Model):
         JSONB,
         server_default='{}',
         nullable=False)
+    UniqueConstraint('provider', 'provider_id')
 
     def __unicode__(self):
-        return '({}) {}'.format(self.id, self.custom_json)
+        return '{} ({} {}) {}'.format(
+            self.id,
+            self.provider,
+            self.provider_id,
+            self.custom_json)
     __str__ = __unicode__
 
 
