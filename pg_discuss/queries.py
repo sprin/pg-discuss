@@ -204,6 +204,28 @@ def fetch_identity(identity_id):
     return identity
 
 
+def fetch_identity_by_provider_id(provider_id, provider):
+    """Fetch an identity object by provider_id from the database."""
+    t = tables.identity
+    stmt = (
+        t.select()
+        .where(t.c.provider_id == provider_id)
+        .where(t.c.provider == provider)
+    )
+
+    # TODO: Run on_pre_identity_fetch hooks
+    # stmt = ext.exec_filter_hooks(ext.OnPreIdentityFetch, stmt)
+
+    result = db.engine.execute(stmt).first()
+    if not result:
+        raise IdentityNotFoundError(
+            'Identity {0} {1} not found'.format(provider, provider_id)
+        )
+    identity = dict(result.items())
+
+    return identity
+
+
 def update_comment(comment_id, comment_edit, old_comment,
                    update_modified=False):
     """Update the comment in the database in response to a request
