@@ -38,7 +38,6 @@ etc/python2.7/sitecustomize.py
 etc/ssl/certs/ssl-cert-snakeoil.pem
 etc/ssl/openssl.cnf
 etc/ssl/private
-etc/ssl/private/ssl-cert-snakeoil.key
 lib/x86_64-linux-gnu/ld-2.19.so
 lib/x86_64-linux-gnu/libacl.so.1
 lib/x86_64-linux-gnu/libacl.so.1.1.0

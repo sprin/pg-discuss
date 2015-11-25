@@ -14,21 +14,18 @@ set -o pipefail
 cat << EOF > /opt/app/local_settings.py
 SQLALCHEMY_DATABASE_URI='postgresql://sandstorm@/pg-discuss'
 SECRET_KEY='$secret_key'
-# How do we know if we should keep the cookie secure?
-SESSION_COOKIE_SECURE = False
-ENABLE_EXT_BLESSED_CORS = True
-# Can't seem to send custom headers, so CSRF token is disabled.
+# Sandstorm handles CORS headers.
+ENABLE_EXT_BLESSED_CORS = False
+# We are protected from CSRF by the bearer token.
 ENABLE_EXT_BLESSED_CSRF_TOKEN = False
 EOF
 
 # Install Python packages
-if [ ! -f $VENV/bin/pgd-admin ] ; then
-    $VENV/bin/pip install -e /opt/app
-    $VENV/bin/pip install -e /opt/app/blessed_extensions
-fi
+$VENV/bin/pip install -e /opt/app
+$VENV/bin/pip install -e /opt/app/blessed_extensions
 
 # Spawn postgresql
-sudo su sandstorm -c '/usr/lib/postgresql/9.4/bin/postgres -D /var/lib/postgresql/9.4/main -c config_file=/etc/postgresql/9.4/main/postgresql.conf' &
+sudo -u sandstorm /usr/lib/postgresql/9.4/bin/postgres -D /var/lib/postgresql/9.4/main -c config_file=/etc/postgresql/9.4/main/postgresql.conf &
 
 POSTGRESQL_SOCKET_FILE=/var/run/postgresql/.s.PGSQL.5432
 # Wait for postgresql to bind its socket
@@ -41,10 +38,10 @@ sandstorm_user_exists=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE
 database_exists=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='pg-discuss'")
 
 if [[ sandstorm_user_exists -ne 1 ]] ; then
-    sudo -u postgres 'createuser -l --no-password -e sandstorm'
+    sudo -u postgres /usr/bin/createuser -l --no-password -e sandstorm
 fi
 if [[ database_exists -ne 1 ]] ; then
-    sudo -u postgres 'createdb -E UTF-8 pg-discuss'
+    sudo -u postgres /usr/bin/createdb -E UTF-8 pg-discuss
 fi
 
 sudo su sandstorm -c '. /opt/app/env/bin/activate \
