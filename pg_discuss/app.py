@@ -134,4 +134,11 @@ def app_factory():
     except:
         pass
 
+    # Run request callbacks after request.
+    @app.after_request
+    def call_after_request_callbacks(response):
+        for callback in getattr(flask.g, 'after_request_callbacks', ()):
+            callback(response)
+        return response
+
     return app
