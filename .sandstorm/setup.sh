@@ -44,6 +44,7 @@ sed --in-place='' \
 sed --in-place='' \
         --expression 's/^#listen_addresses.*/listen_addresses = '\'\''/' \
         --expression 's/dynamic_shared_memory_type.*/dynamic_shared_memory_type = none/' \
+        --expression 's/ssl =*/ssl = false/' \
         /etc/postgresql/9.4/main/postgresql.conf
 
 # patch pg_hba.conf to trust all local connections
@@ -57,7 +58,5 @@ systemctl disable nginx
 systemctl disable postgresql@9.4-main
 
 chown -R sandstorm:sandstorm /var/lib/postgresql
-chown -R sandstorm:sandstorm /etc/ssl/private/
 chown -R sandstorm:sandstorm /var/run/postgresql
 chown -R sandstorm:sandstorm /etc/postgresql
-
