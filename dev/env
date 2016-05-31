@@ -1,0 +1,4 @@
+DATABASE_URL=postgresql:///pg-discuss
+SECRET_KEY=notarealsecretkey
+SERVER_NAME=localhost:8080
+PG_DISCUSS_SETTINGS_FILE=./dev/local_settings.py

@@ -6,8 +6,8 @@ dist
 .tox
 .coverage
 .cache
-env
+/env
 test_env
-local_settings.py
+/local_settings.py
 __pycache__
 docs/build
