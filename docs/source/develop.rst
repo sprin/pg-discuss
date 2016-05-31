@@ -50,9 +50,18 @@ Install dependencies. Assuming your pg_config executable is in
    python -m pip install -e blessed_extensions
    python -m pip install uwsgi
 
-Run uwsgi, using the dev configuration.
+Run the initial schema migrations using the configuration files found in the
+`dev` directory:
 
 .. code-block:: console
 
    cd dev
+   pgd-admin db upgrade
+   pgd-admin db upgrade --directory ext_migrations/
+
+Finally, from the `dev` directory, run `uwsgi`. The app will show a landing
+page that is useful for development purposes on `http://localhost:8080`.
+
+.. code-block:: console
+
    env $(cat env) uwsgi --ini uwsgi.ini
