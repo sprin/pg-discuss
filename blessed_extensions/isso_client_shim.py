@@ -389,6 +389,7 @@ def discard_beyond_depth_limit(node, depth_limit, cur_depth=0):
     """
     if cur_depth > depth_limit:
         del node['replies']
+        node['deeper_replies'] = node['reply_count']
     else:
         for r in node['replies']:
             discard_beyond_depth_limit(r, depth_limit, cur_depth + 1)
