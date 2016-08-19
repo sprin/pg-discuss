@@ -21,6 +21,7 @@ system.
    features
    installation
    configuration
+   develop
    internals/index
 
 Why pg-discuss?

@@ -334,12 +334,12 @@ and the unit file expects the cluster directory to be in `/var/lib/pgsql/9.5`:
    $ sudo /usr/pgsql-9.5/bin/postgresql95-setup initdb
 
 Enable and start the service. Assuming your package installed a unit file
-called `postgresql95`:
+called `postgresql-9.5`:
 
 .. code-block:: console
 
-   systemctl enable postgresql95
-   systemctl start postgresql95
+   systemctl enable postgresql-9.5
+   systemctl start postgresql-9.5
 
 Create a user for pg-discuss:
 
